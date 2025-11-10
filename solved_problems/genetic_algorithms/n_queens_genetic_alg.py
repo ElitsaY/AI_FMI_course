@@ -14,13 +14,15 @@ class QueensBoard:
         for i in range(n):
             self.conflict_row[queens_positions[i]] += 1
             self.diagonal_negative_conflicts[queens_positions[i] + i] += 1
-            self.diagonal_positive_conflicts[n - 1 - queens_positions[i] + i] +=  1
+            self.diagonal_positive_conflicts[n - 1 + queens_positions[i] - i] +=  1
 
         self.conflicts_count = 0
         for queens_in_row in self.conflict_row:
             self.conflicts_count += queens_in_row - 1 if queens_in_row > 1 else 0
+
         for queens_in_diag_neg in self.diagonal_negative_conflicts:
             self.conflicts_count += queens_in_diag_neg - 1 if queens_in_diag_neg > 1 else 0
+
         for queens_in_diag_pos in self.diagonal_positive_conflicts:
             self.conflicts_count += queens_in_diag_pos - 1 if queens_in_diag_pos > 1 else 0
     
@@ -75,7 +77,7 @@ def main():
             print(f"Solution at {best[0].queens_positions} round {r}")
             break
 
-        # print(f"====Round {r} === smallest conflict {sorted(best)[0].conflicts_count}")
+        print(f"====Round {r} === smallest conflict {sorted(best)[0].conflicts_count}")
         offspring = [b.queens_positions for b in best]
 
         # for q in sorted(queens_population):

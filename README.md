@@ -1,13 +1,4 @@
-# 🤖 AI_FMI_COURSE: Foundations of Artificial Intelligence
-
-This repository contains the materials, solved problems, and notebooks for the **Foundations of Artificial Intelligence** course at Sofia university, FMI. The content is organized to provide a practical and theoretical understanding of core AI concepts.
-
-## 📖 Table of Contents
-
-1.  [Course Overview](#-course-overview)
-2.  [Jupyter Notebooks](#-jupyter-notebooks)
-3.  [Solved Problems](#-solved-problems)
-
+# AI_FMI_COURSE: Foundations of Artificial Intelligence
 
 ## 💡 Course Overview
 
@@ -35,5 +26,4 @@ The primary course materials are presented in a series of Jupyter Notebooks, pro
 | `04_Genetic_Algorithms.ipynb` | **Genetic Algorithms (GAs)** | Principles, encoding, fitness functions, selection, crossover, and mutation. |
 | `05_Games.ipynb` | **Adversarial Search/Game Theory** | Minimax algorithm and Alpha-Beta Pruning. |
 
-## ✨ Solved Problems
 
