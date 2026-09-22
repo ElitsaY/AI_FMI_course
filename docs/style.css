@@ -204,9 +204,9 @@ h2.section-title { font-size: 1.7rem; margin: 0 0 0.6rem; }
 }
 @media (max-width: 760px) { .tree-panel { grid-template-columns: 1fr; } }
 .tree-panel svg { width: 100%; height: auto; }
-.node circle { stroke-width: 2.5; transition: all 0.25s ease; cursor: pointer; }
+.node circle, .node rect { stroke-width: 2.5; transition: all 0.25s ease; cursor: pointer; }
 .node text { font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 15px; fill: var(--ink); pointer-events: none; }
-.node.goal circle { stroke-dasharray: 4 3; }
+.node.goal circle, .node.goal rect { stroke-dasharray: 4 3; }
 .edge { stroke: #c9c1da; stroke-width: 2; }
 .edge-label { font-size: 11px; fill: var(--ink-soft); font-weight: 700; }
 .node-info {
@@ -303,10 +303,11 @@ input[type="range"] { width: 100%; accent-color: var(--indigo); }
 .log-box p.current { background: color-mix(in srgb, var(--amber) 20%, transparent); font-weight: 700; }
 .log-box p.win { background: color-mix(in srgb, var(--teal) 20%, transparent); font-weight: 800; }
 
-.node.visited circle { fill: color-mix(in srgb, var(--indigo) 14%, #fff); }
-.node.current circle { fill: var(--amber); }
-.node.frontier circle { fill: #fff; stroke: var(--indigo); }
-.node.found circle { fill: var(--teal); }
+.node.visited circle, .node.visited rect { fill: color-mix(in srgb, var(--indigo) 14%, #fff); }
+.node.current circle, .node.current rect { fill: var(--amber); }
+.node.frontier circle, .node.frontier rect { fill: #fff; stroke: var(--indigo); }
+.node.found circle, .node.found rect { fill: var(--teal); }
+.node.fail circle, .node.fail rect { fill: color-mix(in srgb, var(--coral) 20%, #fff); stroke: var(--coral); }
 
 /* ---- summary table ---- */
 .table-wrap { overflow-x: auto; border-radius: var(--radius); box-shadow: var(--shadow-sm); border: 1px solid var(--line); }
@@ -414,3 +415,22 @@ footer { text-align: center; color: var(--ink-soft); font-size: 0.85rem; padding
 .paper-card dl { margin: 0; display: grid; gap: 0.5rem; }
 .paper-card dt { font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.03em; color: var(--indigo); }
 .paper-card dd { margin: 0.1rem 0 0; font-size: 0.9rem; }
+.paper-card .go { display: inline-block; margin-top: 0.7rem; font-weight: 700; font-size: 0.85rem; }
+
+/* ---- deep-dive paper pages ---- */
+.fail-badge {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  background: color-mix(in srgb, var(--coral) 12%, var(--surface)); border: 1px dashed var(--coral);
+  border-radius: var(--radius-sm); padding: 0.5rem 0.8rem; font-size: 0.85rem; color: var(--ink-soft); margin-top: 0.8rem;
+}
+.fail-badge b { color: var(--coral); }
+.caption-note { font-size: 0.82rem; color: var(--ink-soft); background: color-mix(in srgb, var(--amber) 10%, var(--surface)); border: 1px dashed var(--line); border-radius: var(--radius-sm); padding: 0.7rem 0.9rem; margin: 0.8rem 0; }
+.stat-strip { display: flex; flex-wrap: wrap; gap: 0.8rem; margin: 1.2rem 0; }
+.stat-strip .stat { flex: 1; min-width: 130px; background: color-mix(in srgb, var(--indigo) 6%, var(--surface)); border: 1px dashed var(--line); border-radius: var(--radius-sm); padding: 0.9rem 1rem; text-align: center; }
+.stat-strip .stat .n { font-family: 'Poppins', sans-serif; font-size: 1.4rem; font-weight: 800; color: var(--indigo); display: block; }
+.stat-strip .stat .l { font-size: 0.72rem; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.03em; }
+.funnel { display: grid; gap: 0.5rem; margin: 1rem 0; }
+.funnel-row { display: grid; grid-template-columns: 170px 1fr 90px; align-items: center; gap: 0.7rem; font-size: 0.85rem; }
+.funnel-row .label { font-weight: 700; }
+.funnel-row .num { text-align: right; font-variant-numeric: tabular-nums; color: var(--ink-soft); }
+.back-link { display: inline-block; margin-bottom: 1rem; font-weight: 700; font-size: 0.88rem; }

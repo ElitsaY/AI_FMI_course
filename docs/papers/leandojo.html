@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LeanDojo — Paper Deep Dive | Class Notes</title>
+<meta name="description" content="LeanDojo: Theorem Proving with Retrieval-Augmented Language Models (NeurIPS 2023), explained through the lens of best-first search — with an interactive proof-search tree.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+
+<header class="site-nav">
+  <span class="brand"><span class="dot"></span> Class Notes</span>
+  <nav>
+    <a href="../index.html">Home</a>
+    <a href="../labs/lab02-informed-search.html">Lab 02</a>
+  </nav>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <p class="eyebrow">Paper deep dive</p>
+    <h1>LeanDojo</h1>
+    <p class="lede">Theorem Proving with Retrieval-Augmented Language Models — Yang, Swope, Gu, Chalamala, Song, Yu, Godil, Prenger, Anandkumar. NeurIPS 2023 (Datasets &amp; Benchmarks Track, Oral).</p>
+    <div class="badges">
+      <span class="badge dfs">Best-First Search</span>
+      <span class="badge bfs">Retrieval-Augmented</span>
+      <span class="badge ucs">Lean / mathlib</span>
+      <span class="badge ids">NeurIPS 2023</span>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+
+  <a class="back-link" href="../labs/lab02-informed-search.html#research">← Back to Lab 02: Research Connections</a>
+
+  <!-- ===== TL;DR ===== -->
+  <section class="block" style="padding-top:0;">
+    <p class="eyebrow">TL;DR</p>
+    <h2 class="section-title">Search, applied to mathematics instead of mazes</h2>
+    <p class="section-lede">
+      LeanDojo is two things: a toolkit that turns Lean's <code>mathlib</code> library into 98,734 machine-readable theorems and proofs, and ReProver — a language model that proves new theorems by proposing one proof step at a time and searching over the results with <b>best-first search</b>, the same family of algorithm as Greedy in <a href="../labs/lab02-informed-search.html#playground">Lab 02</a>.
+    </p>
+    <p class="section-lede">
+      The problem it targets: prior LLM theorem provers were mostly closed (private code, data, compute) and bad at picking the right lemma out of a huge math library. LeanDojo open-sources the whole pipeline and adds <b>retrieval</b> to fix that second problem.
+    </p>
+  </section>
+
+  <!-- ===== REFRAMING ===== -->
+  <section class="block">
+    <p class="eyebrow">Same three ingredients</p>
+    <h2 class="section-title">From grids to proofs</h2>
+    <p class="section-lede">Every search algorithm in Lab 01 &amp; 02 needs the same three things: a <b>node</b>, an <b>action</b>, and something ranking the <b>frontier</b>. LeanDojo swaps out what fills each slot — the algorithm doesn't change.</p>
+
+    <div class="table-wrap">
+      <table class="summary">
+        <thead><tr><th>Search concept</th><th>Grid / graph search (Lab 01–02)</th><th>LeanDojo / ReProver</th></tr></thead>
+        <tbody>
+          <tr><td>Search node</td><td>A state — a square, a puzzle configuration</td><td>A <b>proof state</b>: the current goal(s) + hypotheses in Lean, e.g. <code>n : ℕ ⊢ gcd n n = n</code></td></tr>
+          <tr><td>Action</td><td>A move — go left, slide a tile</td><td>A <b>tactic</b>: a Lean command that transforms the goal, e.g. <code>simp [gcd]</code> or <code>rw [gcd_comm]</code></td></tr>
+          <tr><td>Who proposes actions</td><td>The successor function (fixed, mechanical)</td><td>A language model, generating several candidate tactics per state</td></tr>
+          <tr><td>Frontier priority</td><td>h(n), or f(n)=g(n)+h(n)</td><td>The model's cumulative confidence (log-probability) in the tactic sequence so far</td></tr>
+          <tr><td>What narrows the branching factor</td><td>—</td><td><b>Premise retrieval</b>: instead of guessing a lemma name from scratch, retrieve likely-relevant ones from mathlib first</td></tr>
+          <tr><td>Goal test</td><td>Reached the goal state</td><td>No open goals remain — the proof is complete</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="caption-note">This destroys a common misconception: search isn't just for route planning. Any problem you can break into states + actions + a way to rank candidates can be searched this way.</p>
+  </section>
+
+  <!-- ===== PROOF SEARCH TREE ===== -->
+  <section class="block" id="tree-demo">
+    <p class="eyebrow">Interactive · illustrative</p>
+    <h2 class="section-title">Watch best-first search prove a theorem</h2>
+    <p class="section-lede">
+      Goal (from LeanDojo's own documentation): <code>n : ℕ ⊢ gcd n n = n</code> — "for any natural number n, gcd(n,n) = n."
+      The tree below is a <b>simplified example we built</b> to show the mechanism — the real candidate tactics, scores, and branches a trained ReProver model would generate for this goal aren't published in the paper. The goal statement and the two example tactics (<code>simp [gcd]</code>, <code>rw [gcd_comm]</code>) are real, taken from ReProver's own README.
+    </p>
+
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="play-btns" style="margin-left:0;">
+          <button class="icon-btn" id="ld-prev" title="Step back">⏮</button>
+          <button class="icon-btn" id="ld-play" title="Play / pause">▶</button>
+          <button class="icon-btn" id="ld-next" title="Step forward">⏭</button>
+          <button class="icon-btn" id="ld-reset" title="Reset">↺</button>
+        </div>
+      </div>
+
+      <div class="pg-grid">
+        <svg id="proof-tree" viewBox="0 0 660 340" xmlns="http://www.w3.org/2000/svg"></svg>
+        <div>
+          <div class="frontier-box">
+            <h5>Frontier (priority queue, ranked by model confidence)</h5>
+            <div class="chip-row" id="ld-frontier-chips"></div>
+          </div>
+          <div class="frontier-box">
+            <h5>Search log</h5>
+            <div class="log-box" id="ld-log"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="caption-note">Notice: the search briefly explores <code>induction n</code> (a reasonable-looking candidate) before backtracking to the shorter, higher-confidence <code>simp [gcd]</code> proof — because best-first search compares the <i>whole</i> frontier every step, not just the most recent branch. That's the same property that makes A* (not Hill Climbing) resistant to misleading first impressions in Lab 02.</p>
+  </section>
+
+  <!-- ===== RETRIEVAL ===== -->
+  <section class="block" id="retrieval">
+    <p class="eyebrow">Why retrieval matters</p>
+    <h2 class="section-title">Narrowing the branching factor</h2>
+    <p class="section-lede">
+      mathlib has <b>130,262 premises</b> (definitions, lemmas, theorems) available to cite. Most aren't relevant, or aren't even in scope, for a given goal — on average, <b>33,160</b> are "accessible" per theorem. Asking a language model to guess the right one from scratch is like Greedy search with an enormous branching factor <b>b</b>. ReProver's retriever narrows that down to the top 100 likely-relevant premises before the tactic generator even runs.
+    </p>
+    <div class="sim-panel">
+      <div class="funnel">
+        <div class="funnel-row"><span class="label">Premises in mathlib</span><div class="bar-track"><div class="bar-fill" style="background:var(--coral); width:100%"></div></div><span class="num">130,262</span></div>
+        <div class="funnel-row"><span class="label">Accessible for this goal (avg)</span><div class="bar-track"><div class="bar-fill" style="background:var(--amber); width:26%"></div></div><span class="num">≈33,160</span></div>
+        <div class="funnel-row"><span class="label">Retrieved by ReProver</span><div class="bar-track"><div class="bar-fill" style="background:var(--bfs); width:2%"></div></div><span class="num">100</span></div>
+        <div class="funnel-row"><span class="label">Used in the generated tactic</span><div class="bar-track"><div class="bar-fill" style="background:var(--indigo); width:0.5%"></div></div><span class="num">1–2</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== RESULTS ===== -->
+  <section class="block" id="results">
+    <p class="eyebrow">Does it work?</p>
+    <h2 class="section-title">Pass@1 on the LeanDojo Benchmark</h2>
+    <p class="section-lede">Two test splits: <b>random</b> (ordinary held-out theorems) and <b>novel_premises</b> (theorems needing at least one premise never seen in that combination during training — the harder generalization test).</p>
+
+    <div class="sim-panel">
+      <h4 style="margin:0 0 0.6rem;">Random split</h4>
+      <div class="bars" id="bars-random"></div>
+      <h4 style="margin:1.3rem 0 0.6rem;">Novel-premises split</h4>
+      <div class="bars" id="bars-novel"></div>
+      <p class="caption-note">Retrieval's contribution is the gap between the two ReProver bars: +3.6pp on the easy split, +3.1pp on the hard one — small in absolute terms, but note how much further ahead ReProver already is of GPT-4 used zero-shot, especially on novel_premises (26.3% vs 7.4%). GPT-4 has broad math knowledge but no way to search Lean's specific proof state space; ReProver does.</p>
+    </div>
+  </section>
+
+  <!-- ===== WRAP UP ===== -->
+  <section class="block">
+    <p class="eyebrow">Back to the lecture</p>
+    <h2 class="section-title">Why this belongs in Lab 02</h2>
+    <p class="section-lede">
+      Nothing about the search algorithm changed to make this work on mathematics instead of a grid. What changed is what fills in <b>state</b>, <b>action</b>, and <b>frontier priority</b> — and, because the branching factor here is enormous (thousands of possible lemmas per step), retrieval had to be added just to make search tractable at all. That's the same lesson as choosing a good heuristic in Lab 02: a better priority function means less wasted search.
+    </p>
+    <a class="back-link" href="../labs/lab02-informed-search.html#research">← Back to Lab 02: Research Connections</a>
+  </section>
+
+</div>
+
+<footer>Class notes by Elitsa Yotkova · Paper deep dive · built with plain HTML, CSS &amp; JS</footer>
+
+<script src="leandojo.js"></script>
+</body>
+</html>
