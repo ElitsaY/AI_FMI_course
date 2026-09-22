@@ -303,7 +303,7 @@ input[type="range"] { width: 100%; accent-color: var(--indigo); }
 .log-box p.current { background: color-mix(in srgb, var(--amber) 20%, transparent); font-weight: 700; }
 .log-box p.win { background: color-mix(in srgb, var(--teal) 20%, transparent); font-weight: 800; }
 
-.node.visited circle { fill: #e4defa; }
+.node.visited circle { fill: color-mix(in srgb, var(--indigo) 14%, #fff); }
 .node.current circle { fill: var(--amber); }
 .node.frontier circle { fill: #fff; stroke: var(--indigo); }
 .node.found circle { fill: var(--teal); }
@@ -342,3 +342,75 @@ table.summary tr[data-s="ids"] td:first-child { border-left: 4px solid var(--ids
 }
 
 footer { text-align: center; color: var(--ink-soft); font-size: 0.85rem; padding: 2.5rem 1.5rem 3rem; }
+
+/* ===== Lab 02 additions ===== */
+
+/* ---- 8-puzzle heuristic calculator ---- */
+.puzzle-panel {
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  box-shadow: var(--shadow-sm); padding: 1.4rem;
+}
+.puzzle-row { display: flex; flex-wrap: wrap; gap: 2rem; align-items: flex-start; margin-bottom: 1.2rem; }
+.puzzle-board { display: grid; grid-template-columns: repeat(3, 52px); grid-template-rows: repeat(3, 52px); gap: 6px; }
+.puzzle-tile {
+  display: flex; align-items: center; justify-content: center;
+  background: var(--bg); border: 1.5px solid var(--line); border-radius: 8px;
+  font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 1.2rem;
+  transition: background 0.25s ease, border-color 0.25s ease;
+}
+.puzzle-tile.blank { background: transparent; border-style: dashed; }
+.puzzle-tile.hl-misplaced { background: color-mix(in srgb, var(--coral) 25%, var(--bg)); border-color: var(--coral); }
+.puzzle-label { font-size: 0.78rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-soft); margin: 0 0 0.5rem; }
+.puzzle-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+.puzzle-table th, .puzzle-table td { padding: 0.4rem 0.5rem; text-align: center; border-bottom: 1px solid var(--line); }
+.puzzle-table th { color: var(--ink-soft); font-weight: 700; }
+.puzzle-totals { display: flex; gap: 1rem; margin-top: 1rem; flex-wrap: wrap; }
+.puzzle-total {
+  flex: 1; min-width: 160px; background: color-mix(in srgb, var(--indigo) 6%, var(--surface));
+  border: 1px dashed var(--line); border-radius: var(--radius-sm); padding: 0.8rem 1rem;
+}
+.puzzle-total .n { font-family: 'Poppins', sans-serif; font-size: 1.6rem; font-weight: 800; color: var(--indigo); }
+.puzzle-total .l { font-size: 0.78rem; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.03em; }
+
+/* ---- admissibility / consistency check card ---- */
+.check-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.8rem; margin: 1rem 0; }
+.check-card {
+  background: var(--surface); border: 1.5px solid var(--line); border-radius: var(--radius-sm);
+  padding: 0.9rem; text-align: center; cursor: pointer;
+}
+.check-card .node-id { font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 1.1rem; }
+.check-card .ineq { font-size: 0.82rem; margin-top: 0.4rem; font-variant-numeric: tabular-nums; }
+.check-card.pass { border-color: var(--bfs); background: color-mix(in srgb, var(--bfs) 10%, var(--surface)); }
+.check-card.fail { border-color: var(--coral); background: color-mix(in srgb, var(--coral) 10%, var(--surface)); }
+.check-card .verdict { font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.03em; margin-top: 0.3rem; }
+.check-card.pass .verdict { color: var(--bfs); }
+.check-card.fail .verdict { color: var(--coral); }
+
+/* ---- simulated annealing widget ---- */
+.sa-readout { display: flex; gap: 1rem; flex-wrap: wrap; margin: 1rem 0; }
+.sa-readout .stat { background: color-mix(in srgb, var(--indigo) 6%, var(--surface)); border: 1px dashed var(--line); border-radius: var(--radius-sm); padding: 0.8rem 1.1rem; flex: 1; min-width: 140px; }
+.sa-readout .stat .n { font-family: 'Poppins', sans-serif; font-size: 1.5rem; font-weight: 800; color: var(--indigo); }
+.sa-readout .stat .l { font-size: 0.78rem; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.03em; }
+.sa-bar-track { background: var(--bg); border: 1px solid var(--line); border-radius: 999px; height: 22px; overflow: hidden; }
+.sa-bar-fill { height: 100%; background: linear-gradient(90deg, var(--coral), var(--amber)); transition: width 0.3s ease; }
+
+/* ---- beam width control ---- */
+.beam-control { display: none; align-items: center; gap: 0.8rem; margin-top: 0.8rem; }
+.beam-control.show { display: flex; }
+.beam-control label { font-weight: 700; font-size: 0.85rem; }
+.beam-control input[type="range"] { flex: 1; max-width: 220px; }
+.beam-control .val { font-family: 'Poppins', sans-serif; font-weight: 800; color: var(--indigo); min-width: 1.5rem; }
+
+/* ---- research paper cards ---- */
+.paper-group { margin-bottom: 1.8rem; }
+.paper-group h3 { font-size: 1.1rem; margin: 0 0 0.7rem; display: flex; align-items: center; gap: 0.5rem; }
+.paper-card {
+  background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--indigo);
+  border-radius: var(--radius-sm); box-shadow: var(--shadow-sm); padding: 1.1rem 1.3rem; margin-bottom: 0.9rem;
+}
+.paper-card h4 { margin: 0 0 0.2rem; font-size: 1.02rem; }
+.paper-card .venue { font-size: 0.78rem; font-weight: 700; color: var(--ink-soft); margin-bottom: 0.6rem; }
+.paper-card .venue a { color: inherit; }
+.paper-card dl { margin: 0; display: grid; gap: 0.5rem; }
+.paper-card dt { font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.03em; color: var(--indigo); }
+.paper-card dd { margin: 0.1rem 0 0; font-size: 0.9rem; }
