@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lab 01 — Uninformed Search | Class Notes</title>
+<meta name="description" content="Interactive notes on state spaces and uninformed search: DFS, BFS, UCS, IDS — with a clickable search tree, complexity simulator, and algorithm playground.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+
+<header class="site-nav">
+  <span class="brand"><span class="dot"></span> Class Notes</span>
+  <nav>
+    <a href="../index.html">Home</a>
+    <a href="#quiz">Quiz</a>
+  </nav>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <p class="eyebrow">Lab 01</p>
+    <h1>Basic Definitions &amp; Uninformed Search</h1>
+    <p class="lede">States, state spaces, and the blind (uninformed) strategies that search them: Depth‑First, Breadth‑First, Uniform‑Cost, and Iterative Deepening. Click things — most of this page moves.</p>
+    <div class="badges">
+      <span class="badge dfs">DFS</span>
+      <span class="badge bfs">BFS</span>
+      <span class="badge ucs">UCS</span>
+      <span class="badge ids">IDS</span>
+    </div>
+  </div>
+</section>
+
+<div class="toc">
+  <a href="#concepts">Concepts</a>
+  <a href="#tree">Search tree</a>
+  <a href="#simulator">b·d·m simulator</a>
+  <a href="#playground">Algorithm playground</a>
+  <a href="#summary">Summary</a>
+  <a href="#quiz">Quiz</a>
+</div>
+
+<div class="wrap">
+
+  <!-- ===== CONCEPTS ===== -->
+  <section class="block" id="concepts">
+    <p class="eyebrow">Start here</p>
+    <h2 class="section-title">State space — basic concepts</h2>
+    <p class="section-lede">Click a card to flip it. These six ideas are the vocabulary the rest of the lab is written in.</p>
+
+    <div class="flip-grid" id="glossary"></div>
+  </section>
+
+  <!-- ===== TREE EXPLORER ===== -->
+  <section class="block" id="tree">
+    <p class="eyebrow">Worked example</p>
+    <h2 class="section-title">Explore the search tree</h2>
+    <p class="section-lede">This is the example tree used throughout the lab. <b>S</b> is the initial state; the dashed nodes <b>G1</b> and <b>G2</b> are goal states. Click any node to inspect it, or turn on the b / d / m overlay.</p>
+
+    <div class="toggle-row">
+      <button class="toggle-btn active" data-view="plain">Plain tree</button>
+      <button class="toggle-btn" data-view="bdm">Show b · d · m</button>
+    </div>
+
+    <div class="tree-panel">
+      <svg id="tree-explore" viewBox="0 0 640 420" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div class="node-info" id="node-info">
+        <p class="placeholder">👆 Click a node in the tree to see its depth, path, and path cost here.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== LOCAL SEARCH (brief) ===== -->
+  <section class="block">
+    <p class="eyebrow">Aside</p>
+    <h2 class="section-title">Local search, in one breath</h2>
+    <p class="section-lede">Local search doesn't build a tree at all — it moves from candidate solution to candidate solution, only caring about <i>where it ends up</i>, not the path it took. Useful when the path is irrelevant and the space is too big to search exhaustively; the strategies below are the opposite approach, where the path <i>is</i> the answer.</p>
+  </section>
+
+  <!-- ===== COMPLEXITY SIMULATOR ===== -->
+  <section class="block" id="simulator">
+    <p class="eyebrow">Interactive</p>
+    <h2 class="section-title">b · d · m complexity simulator</h2>
+    <p class="section-lede">
+      <b>b</b> = branching factor (breadth) · <b>d</b> = depth of the shallowest solution · <b>m</b> = maximum depth of the state space.
+      Drag the sliders and watch how many nodes each strategy has to generate — and how much memory it needs.
+    </p>
+
+    <div class="sim-panel">
+      <div class="sliders">
+        <div class="slider-group">
+          <label>Branching factor <span class="val" id="b-val">3</span></label>
+          <input type="range" id="b-slider" min="2" max="6" value="3" step="1">
+        </div>
+        <div class="slider-group">
+          <label>Solution depth (d) <span class="val" id="d-val">3</span></label>
+          <input type="range" id="d-slider" min="1" max="8" value="3" step="1">
+        </div>
+        <div class="slider-group">
+          <label>Max depth (m) <span class="val" id="m-val">5</span></label>
+          <input type="range" id="m-slider" min="1" max="10" value="5" step="1">
+        </div>
+      </div>
+
+      <h4 style="margin:0 0 0.6rem;">Nodes generated (time complexity)</h4>
+      <div class="bars" id="time-bars"></div>
+
+      <h4 style="margin:1.3rem 0 0.6rem;">Peak nodes in memory (space complexity)</h4>
+      <div class="bars" id="space-bars"></div>
+
+      <p style="font-size:0.8rem; color:var(--ink-soft); margin-top:1rem;">
+        UCS is drawn using <b>d</b> as a stand‑in for ⌈C*/ε⌉ (the number of "cost steps" to the optimal goal) — with unit step costs the two coincide.
+        If <b>m &lt; d</b>, DFS can't reach the solution at all.
+      </p>
+    </div>
+  </section>
+
+  <!-- ===== ALGORITHM PLAYGROUND ===== -->
+  <section class="block" id="playground">
+    <p class="eyebrow">Interactive</p>
+    <h2 class="section-title">Algorithm playground</h2>
+    <p class="section-lede">Same tree as above, now with edge costs. Pick a strategy and press play to watch it search — the frontier (its "to‑do list") is shown exactly as that strategy stores it: a stack for DFS, a queue for BFS, a priority queue for UCS.</p>
+
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="strategy-pick">
+          <button class="strat-btn active" data-s="dfs">DFS (stack)</button>
+          <button class="strat-btn" data-s="bfs">BFS (queue)</button>
+          <button class="strat-btn" data-s="ucs">UCS (priority queue)</button>
+        </div>
+        <div class="play-btns">
+          <button class="icon-btn" id="pg-prev" title="Step back">⏮</button>
+          <button class="icon-btn" id="pg-play" title="Play / pause">▶</button>
+          <button class="icon-btn" id="pg-next" title="Step forward">⏭</button>
+          <button class="icon-btn" id="pg-reset" title="Reset">↺</button>
+        </div>
+      </div>
+
+      <div class="pg-grid">
+        <svg id="tree-playground" viewBox="0 0 640 420" xmlns="http://www.w3.org/2000/svg"></svg>
+        <div>
+          <div class="frontier-box">
+            <h5 id="frontier-title">Frontier (stack — next pop from the right)</h5>
+            <div class="chip-row" id="frontier-chips"></div>
+          </div>
+          <div class="frontier-box">
+            <h5>Search log</h5>
+            <div class="log-box" id="pg-log"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SUMMARY TABLE ===== -->
+  <section class="block" id="summary">
+    <p class="eyebrow">Reference</p>
+    <h2 class="section-title">Summary of algorithms</h2>
+    <div class="table-wrap">
+      <table class="summary">
+        <thead>
+          <tr><th>Algorithm</th><th>Complete</th><th>Optimal</th><th>Time</th><th>Space</th><th>Data structure</th></tr>
+        </thead>
+        <tbody>
+          <tr data-s="dfs"><td>Depth‑First Search (DFS)</td><td>No</td><td>No</td><td>O(b^m)</td><td>O(bm)</td><td>Stack</td></tr>
+          <tr data-s="bfs"><td>Breadth‑First Search (BFS)</td><td>Yes* (b ≤ ∞)</td><td>Yes* (unit cost)</td><td>O(b^(d+1))</td><td>O(b^(d+1))</td><td>Queue</td></tr>
+          <tr data-s="ucs"><td>Uniform‑Cost Search (UCS)</td><td>Yes</td><td>Yes</td><td>O(b^⌈C*/ε⌉)</td><td>O(b^⌈C*/ε⌉)</td><td>Priority queue</td></tr>
+          <tr data-s="dls"><td>Depth‑Limited Search (DLS)</td><td>Yes* (l ≥ d)</td><td>No</td><td>O(b^l)</td><td>O(bl)</td><td>Stack</td></tr>
+          <tr data-s="ids"><td>Iterative Deepening (IDS)</td><td>Yes</td><td>Yes* (unit cost)</td><td>O(b^d)</td><td>O(bd)</td><td>Stack</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ===== QUIZ ===== -->
+  <section class="block" id="quiz">
+    <p class="eyebrow">Check yourself</p>
+    <h2 class="section-title">Quick quiz</h2>
+    <p class="section-lede">Five questions, instant feedback, no grade recorded anywhere.</p>
+    <div id="quiz-container"></div>
+  </section>
+
+</div>
+
+<footer>Class notes by Elitsa Yotkova · Lab 01 · built with plain HTML, CSS &amp; JS</footer>
+
+<script src="lab01.js"></script>
+</body>
+</html>
