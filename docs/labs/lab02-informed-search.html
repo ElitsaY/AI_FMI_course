@@ -24,7 +24,6 @@
   <div class="wrap">
     <p class="eyebrow">Lab 02</p>
     <h1>Informed Search</h1>
-    <p class="lede">Uninformed search knows nothing about where the goal is. Informed search uses a heuristic h(n) — an estimate of distance to the goal — to search smarter: Greedy, Beam Search, Hill Climbing, and A*.</p>
     <div class="badges">
       <span class="badge dfs">Greedy</span>
       <span class="badge ucs">Beam</span>
@@ -34,41 +33,562 @@
   </div>
 </section>
 
-<div class="toc">
-  <a href="#recap">Recap</a>
-  <a href="#heuristics">Heuristics</a>
-  <a href="#playground">Greedy · Beam · Hill Climbing</a>
-  <a href="#astar">A*</a>
-  <a href="#choosing">Choosing h(n)</a>
-  <a href="#ida">IDA* &amp; Annealing</a>
-  <a href="#summary">Summary</a>
-  <a href="#research">Research</a>
-  <a href="#quiz">Quiz</a>
-</div>
-
 <div class="wrap">
 
   <!-- ===== RECAP ===== -->
   <section class="block" id="recap">
-    <p class="eyebrow">Recap from Lab 01</p>
-    <h2 class="section-title">Uninformed → informed</h2>
-    <p class="section-lede">
-      <b>Uninformed search</b> uses only the problem definition — no idea where the goal is (see <a href="lab01-uninformed-search.html">Lab 01</a>).
-      <b>Informed search</b> adds a heuristic function that estimates distance to the goal, so the search can prefer states that look closer.
-      Completeness, optimality, time (b, d, m) and space still apply — informed search just uses them differently.
-    </p>
+    <h2 class="section-title">Recap from Lab 01</h2>
+
+    <h3 class="section-title" style="font-size:1.15rem;">Search strategies evaluation</h3>
+    <p class="section-lede">Strategies are evaluated along the following dimensions:</p>
+    <ul class="concept-list">
+      <li><b>Completeness</b>: does it always find a solution if one exists?</li>
+      <li><b>Optimality</b>: does it always find a least-cost solution?</li>
+      <li><b>Time complexity</b>: number of nodes generated/expanded. We are interested in the worst-case scenario.</li>
+      <li><b>Space Complexity</b>: maximum number of nodes in memory.</li>
+    </ul>
+    <p class="section-lede">Time and space complexity are measured in terms of:</p>
+    <ul class="concept-list">
+      <li><b>b</b> – maximum branching factor of the search tree</li>
+      <li><b>d</b> – depth of the least-cost solution</li>
+      <li><b>m</b> – maximum depth of the state space (may be ∞)</li>
+    </ul>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.8rem;">Uninformed vs. Informed Search</h3>
+    <ul class="concept-list">
+      <li><b>Uninformed Search</b>: uninformed strategies use only the information available in the problem definition (see <a href="lab01-uninformed-search.html">Lab 01</a>).</li>
+      <li><b>Informed Search</b>: informed strategies have information on the goal state, which helps in more efficient searching. This information is obtained by a function (<b>heuristic</b>) that estimates how close a state is to the goal state.</li>
+    </ul>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.8rem;">Informed Search Strategies</h3>
+    <ul class="concept-list">
+      <li><a href="#greedy">Greedy</a>
+        <ul class="concept-list" style="margin-top:0.6rem;">
+          <li><a href="#beam">Beam Search</a></li>
+          <li><a href="#hillclimbing">Hill Climbing</a></li>
+        </ul>
+      </li>
+      <li><a href="#astar">A*</a>
+        <ul class="concept-list" style="margin-top:0.6rem;">
+          <li><a href="#mba">Memory-Bounded A*</a></li>
+          <li><a href="#ida">Iterative Deepening A* (IDA*)</a></li>
+        </ul>
+      </li>
+    </ul>
   </section>
 
   <!-- ===== HEURISTICS ===== -->
   <section class="block" id="heuristics">
-    <p class="eyebrow">Foundation</p>
-    <h2 class="section-title">Heuristics</h2>
-    <p class="section-lede">A heuristic h(n) estimates the cost from state n to the nearest goal. It's problem-specific — computed from the state alone, with no search involved. Try two classic 8-puzzle heuristics on the same start/goal pair below.</p>
+    <h2 class="section-title">Heuristic</h2>
+
+    <div class="definition-box">
+      <div class="dbox-label">📐 Definition</div>
+      <p>A <b>heuristic h(n)</b> is a function that estimates the cost (or distance) from a given state <b>n</b> to a goal state. It provides problem-specific guidance to search algorithms to prefer more promising states and reduce the search effort.</p>
+    </div>
+
+    <ul class="concept-list">
+      <li>Heuristics are the driving force that allows estimation of distance to goal states — they're functions that take in a <b>state</b> as input and output a corresponding <b>estimate</b>.</li>
+      <li>The computation performed by such a function is <b>specific to the search problem</b> being solved.</li>
+      <li>With heuristics, it becomes very easy to implement logic in our agent that enables it to <i>“prefer”</i> expanding states that are estimated to be closer to goal states when deciding which action to perform.</li>
+    </ul>
+
+    <p class="caption-note">A concrete example — two heuristics for the 8-puzzle — follows in <a href="#choosing">Choosing a heuristic</a>.</p>
+  </section>
+
+  <!-- ===== GREEDY ===== -->
+  <section class="block algo-section dfs" id="greedy">
+    <span class="badge dfs" style="margin-bottom:0.6rem; display:inline-block;">Greedy</span>
+    <h2 class="section-title">Greedy Search</h2>
+
+    <p class="section-lede"><b>Description</b>: Greedy search is a strategy for exploration that always selects the frontier node with the <b>lowest heuristic value</b> for expansion, which corresponds to the state it believes is nearest to a goal.</p>
+    <p class="section-lede"><b>Frontier Representation</b>: Greedy search operates identically to <a href="lab01-uninformed-search.html#ucs">UCS</a>, with a <i>priority queue</i> — but the priority is the heuristic h(n) instead of the path cost.</p>
+
+    <div class="algo-stats dfs">
+      <div class="algo-stat">
+        <div class="label">Complete?</div>
+        <div class="value">No</div>
+        <div class="detail">But complete in finite space with repeated-state checking.</div>
+      </div>
+      <div class="algo-stat">
+        <div class="label">Optimal?</div>
+        <div class="value">No</div>
+      </div>
+      <div class="algo-stat">
+        <div class="label">Time complexity</div>
+        <div class="value">O(b<sup>m</sup>)</div>
+        <div class="detail">A misleading "bad" heuristic may lead us to possibly explore all nodes.</div>
+      </div>
+      <div class="algo-stat">
+        <div class="label">Space complexity</div>
+        <div class="value">O(b<sup>m</sup>)</div>
+        <div class="detail">Keeps all nodes in memory.</div>
+      </div>
+      <div class="algo-stat" style="grid-column:1 / -1;">
+        <div class="label">Data structure</div>
+        <div class="value">Priority queue (by h(n))</div>
+      </div>
+    </div>
+
+    <p class="caption-note">Greedy search is not guaranteed to find a goal state if one exists, nor is it optimal, particularly in cases where a very bad heuristic function is selected. It generally acts fairly unpredictably from scenario to scenario, and can range from going straight to a goal state to acting like a badly-guided DFS and exploring all the wrong areas.</p>
+
+    <p class="section-lede" style="margin-top:1.6rem;">Step through greedy search on the graph below — h(n) is printed under each node, edge costs on the arrows. Greedy follows the lowest h and reaches G via S → C → F → G with cost <b>26</b>, even though S → A → D → F → G costs only <b>23</b>: it never looks at the cost already paid.</p>
+
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="play-btns" style="margin-left:0;">
+          <button class="icon-btn" id="greedy-prev" title="Step back">⏮</button>
+          <button class="icon-btn" id="greedy-play" title="Play / pause">▶</button>
+          <button class="icon-btn" id="greedy-next" title="Step forward">⏭</button>
+          <button class="icon-btn" id="greedy-reset" title="Reset">↺</button>
+        </div>
+      </div>
+      <div class="pg-grid">
+        <svg id="greedy-graph" viewBox="0 0 600 590" xmlns="http://www.w3.org/2000/svg"></svg>
+        <div>
+          <div class="frontier-box">
+            <h5 id="greedy-frontier-title">Frontier</h5>
+            <div class="chip-row" id="greedy-frontier-chips"></div>
+          </div>
+          <div class="frontier-box">
+            <h5>Search log</h5>
+            <div class="log-box" id="greedy-log"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== BEAM SEARCH ===== -->
+  <section class="block algo-section ucs" id="beam">
+    <span class="badge ucs" style="margin-bottom:0.6rem; display:inline-block;">Beam</span>
+    <h2 class="section-title">Beam Search (Local Beam Search)</h2>
+
+    <p class="section-lede">= <a href="#greedy">greedy best-first search</a> with queue limit <b>l</b>, i.e., keeps only the <b>l</b> best nodes in the queue.</p>
+
+    <div class="algo-stats ucs">
+      <div class="algo-stat">
+        <div class="label">Complete?</div>
+        <div class="value">No</div>
+        <div class="detail">It is a local search — the goal can be pruned away.</div>
+      </div>
+      <div class="algo-stat">
+        <div class="label">Optimal?</div>
+        <div class="value">No</div>
+      </div>
+      <div class="algo-stat">
+        <div class="label">Time complexity</div>
+        <div class="value">O(bml)</div>
+        <div class="detail">l nodes × b successors, repeated for m levels.</div>
+      </div>
+      <div class="algo-stat">
+        <div class="label">Space complexity</div>
+        <div class="value">O(bl)</div>
+        <div class="detail">Linear space.</div>
+      </div>
+      <div class="algo-stat" style="grid-column:1 / -1;">
+        <div class="label">Data structure</div>
+        <div class="value">Limited priority queue (size l, by h(n))</div>
+      </div>
+    </div>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.8rem;">Why O(bml) time?</h3>
+    <p class="section-lede">At every level the algorithm does the following:</p>
+    <ul class="concept-list">
+      <li><b>Expansion</b>: the algorithm only expands the <b>l</b> nodes selected from the previous level.</li>
+      <li><b>Generation of Successors</b>: each of the l nodes generates <b>b</b> successors (children). The total number of new candidates generated at this level is <b>l × b</b>.</li>
+      <li><b>Heuristic Evaluation / Scoring</b>: the algorithm calculates the score h(n) for all l · b candidates. This step takes time proportional to <b>O(l · b)</b>.</li>
+      <li><b>Pruning (Selection)</b>: the algorithm selects the best <b>l</b> candidates out of the l · b total to carry forward to the next level. Sorting or selection takes time, often O(l · b log(l · b)) if sorting is done, or faster if efficient selection algorithms (like Quickselect or a min-heap) are used. In many common search contexts, <i>this selection step is often simplified or amortized, or assumed to be minor compared to the expansion cost, leading to the linear complexity.</i></li>
+    </ul>
+    <p class="caption-note"><b>Overall time complexity:</b> since the process is repeated for <b>m</b> levels, the total time complexity is <b>O(m · l · b)</b>.</p>
+
+    <p class="section-lede" style="margin-top:1.6rem;">Step through beam search on the same graph and change the beam width <b>l</b>. Every time the frontier grows beyond l nodes, the worst ones (highest h) are thrown away for good — there is no going back to them.</p>
+
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="play-btns" style="margin-left:0;">
+          <button class="icon-btn" id="beam-prev" title="Step back">⏮</button>
+          <button class="icon-btn" id="beam-play" title="Play / pause">▶</button>
+          <button class="icon-btn" id="beam-next" title="Step forward">⏭</button>
+          <button class="icon-btn" id="beam-reset" title="Reset">↺</button>
+        </div>
+      </div>
+
+      <div class="beam-control show" id="beam-beam-control">
+        <label>Beam width l</label>
+        <input type="range" id="beam-beam-slider" min="1" max="4" value="2" step="1">
+        <span class="val" id="beam-beam-val">2</span>
+      </div>
+
+      <div class="pg-grid">
+        <svg id="beam-graph" viewBox="0 0 600 590" xmlns="http://www.w3.org/2000/svg"></svg>
+        <div>
+          <div class="frontier-box">
+            <h5 id="beam-frontier-title">Frontier</h5>
+            <div class="chip-row" id="beam-frontier-chips"></div>
+          </div>
+          <div class="frontier-box">
+            <h5>Search log</h5>
+            <div class="log-box" id="beam-log"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== HILL CLIMBING ===== -->
+  <section class="block algo-section bfs" id="hillclimbing">
+    <span class="badge bfs" style="margin-bottom:0.6rem; display:inline-block;">Hill Climbing</span>
+    <h2 class="section-title">Hill Climbing</h2>
+
+    <p class="section-lede">= <a href="#greedy">greedy best-first search</a> with queue limit <b>l = 1</b>, i.e., keeps only the best node. In other words, it is <a href="#beam">beam search</a> with a beam of width 1.</p>
+
+    <div class="algo-stats bfs">
+      <div class="algo-stat">
+        <div class="label">Complete?</div>
+        <div class="value">No</div>
+      </div>
+      <div class="algo-stat">
+        <div class="label">Optimal?</div>
+        <div class="value">No</div>
+      </div>
+      <div class="algo-stat">
+        <div class="label">Time complexity</div>
+        <div class="value">O(bm)</div>
+        <div class="detail">Beam search's O(bml) with l = 1.</div>
+      </div>
+      <div class="algo-stat">
+        <div class="label">Space complexity</div>
+        <div class="value">O(b)</div>
+        <div class="detail">Beam search's O(bl) with l = 1.</div>
+      </div>
+      <div class="algo-stat" style="grid-column:1 / -1;">
+        <div class="label">Data structure</div>
+        <div class="value">Limited priority queue (size 1)</div>
+      </div>
+    </div>
+
+    <p class="caption-note"><b>Random-restart hill climbing</b> overcomes local maxima — trivially complete.</p>
+
+    <p class="section-lede" style="margin-top:1.6rem;">Step through hill climbing on the same graph. After each expansion only the single best child survives; everything else is discarded and there is no backtracking.</p>
+
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="play-btns" style="margin-left:0;">
+          <button class="icon-btn" id="hc-prev" title="Step back">⏮</button>
+          <button class="icon-btn" id="hc-play" title="Play / pause">▶</button>
+          <button class="icon-btn" id="hc-next" title="Step forward">⏭</button>
+          <button class="icon-btn" id="hc-reset" title="Reset">↺</button>
+        </div>
+      </div>
+      <div class="pg-grid">
+        <svg id="hc-graph" viewBox="0 0 600 590" xmlns="http://www.w3.org/2000/svg"></svg>
+        <div>
+          <div class="frontier-box">
+            <h5 id="hc-frontier-title">Frontier</h5>
+            <div class="chip-row" id="hc-frontier-chips"></div>
+          </div>
+          <div class="frontier-box">
+            <h5>Search log</h5>
+            <div class="log-box" id="hc-log"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:2rem;">Local maxima &amp; random restarts</h3>
+    <p class="section-lede">Seen as optimization, hill climbing keeps moving to the better neighbour until no neighbour is better. On the landscape below that often means getting stuck on a <b>local maximum</b>. Random restart simply climbs again from a new random state and keeps the best result — with enough restarts, it will eventually start on the slope of the global maximum.</p>
+
+    <div class="sim-panel">
+      <div class="toggle-row" style="margin-bottom:0.8rem;">
+        <button class="toggle-btn" id="hcl-climb">Random start &amp; climb</button>
+        <button class="toggle-btn" id="hcl-reset">Reset</button>
+      </div>
+      <svg id="hcl-svg" viewBox="0 0 640 240" xmlns="http://www.w3.org/2000/svg" style="width:100%; height:auto;"></svg>
+      <div class="sa-readout">
+        <div class="stat"><div class="n" id="hcl-restarts">0</div><div class="l">climbs (restarts)</div></div>
+        <div class="stat"><div class="n" id="hcl-last">–</div><div class="l">last climb stopped at</div></div>
+        <div class="stat"><div class="n" id="hcl-best">–</div><div class="l">best found so far</div></div>
+      </div>
+      <p id="hcl-msg" style="font-size:0.85rem; color:var(--ink-soft); margin:0;">Click “Random start &amp; climb”. The global maximum is marked with a dashed line.</p>
+    </div>
+  </section>
+
+  <!-- ===== A* ===== -->
+  <section class="block algo-section ids" id="astar">
+    <span class="badge ids" style="margin-bottom:0.6rem; display:inline-block;">A*</span>
+    <h2 class="section-title">A* and optimality of A*</h2>
+
+    <p class="section-lede"><b>Idea</b>: avoid expanding paths that are already expensive.</p>
+    <ul class="concept-list">
+      <li>Evaluation function <b>f(n) = g(n) + h(n)</b>
+        <ul class="concept-list" style="margin-top:0.6rem;">
+          <li><b>g(n)</b> = cost so far to reach n</li>
+          <li><b>h(n)</b> = estimated cost from n to goal</li>
+          <li><b>f(n)</b> = estimated total cost of path through n to goal</li>
+        </ul>
+      </li>
+    </ul>
+
+    <div class="definition-box">
+      <div class="dbox-label">📐 Admissible heuristic — A* requires it</div>
+      <p>A* search uses an <b>admissible heuristic</b>, i.e., <b>h(n) ≤ h*(n)</b>, where h*(n) is the true cost from n. (Also require h(n) ≥ 0, so h(G) = 0 for any goal G.) A heuristic h(n) is admissible if it <b>never overestimates</b> the true cost of reaching the goal state G from any node n.</p>
+      <p style="margin-top:0.5rem;">E.g., h<sub>SLD</sub> (straight-line distance) never overestimates the actual road distance.</p>
+    </div>
+
+    <p class="section-lede" style="margin-top:1.6rem;">Step through A* on the lecture graph. Each frontier entry shows <b>g</b>, <b>h</b> and <b>f = g + h</b>, and A* always expands the entry with the lowest f. Unlike greedy (cost 26), A* returns the optimal path S → A → D → F → G with cost <b>23</b>.</p>
+
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="play-btns" style="margin-left:0;">
+          <button class="icon-btn" id="astar-prev" title="Step back">⏮</button>
+          <button class="icon-btn" id="astar-play" title="Play / pause">▶</button>
+          <button class="icon-btn" id="astar-next" title="Step forward">⏭</button>
+          <button class="icon-btn" id="astar-reset" title="Reset">↺</button>
+        </div>
+      </div>
+      <div class="pg-grid">
+        <svg id="astar-graph" viewBox="0 0 600 590" xmlns="http://www.w3.org/2000/svg"></svg>
+        <div>
+          <div class="frontier-box">
+            <h5 id="astar-frontier-title">Frontier</h5>
+            <div class="chip-row" id="astar-frontier-chips"></div>
+          </div>
+          <div class="frontier-box">
+            <h5>Search log</h5>
+            <div class="log-box" id="astar-log"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <p class="caption-note"><b>Check yourself:</b> is the heuristic on this graph admissible? <b>No</b> — h(H) = 7, but the true cost H → I → G is only 1 + 5 = 6. It is not consistent either: on the edge D → F, h(D) = 5 &gt; 1 + h(F) = 4. A* happens to find the optimum here, but with this h it is not <i>guaranteed</i> to.</p>
+
+    <div class="algo-stats ids">
+      <div class="algo-stat">
+        <div class="label">Complete?</div>
+        <div class="value">Yes</div>
+      </div>
+      <div class="algo-stat">
+        <div class="label">Optimal?</div>
+        <div class="value">Yes</div>
+        <div class="detail">Cannot expand f<sub>i+1</sub> until f<sub>i</sub> is finished.</div>
+      </div>
+      <div class="algo-stat">
+        <div class="label">Time complexity</div>
+        <div class="value">O(b<sup>d</sup>)</div>
+      </div>
+      <div class="algo-stat">
+        <div class="label">Space complexity</div>
+        <div class="value">O(b<sup>d</sup>)</div>
+      </div>
+      <div class="algo-stat" style="grid-column:1 / -1;">
+        <div class="label">Data structure</div>
+        <div class="value">Priority queue (by f(n) = g(n) + h(n))</div>
+      </div>
+    </div>
+
+    <p class="section-lede">Let <b>C*</b> be the cost of the optimal solution:</p>
+    <ul class="concept-list">
+      <li>A* expands <b>all</b> nodes with f(n) &lt; C*</li>
+      <li>A* expands <b>some</b> nodes with f(n) = C*</li>
+      <li>A* expands <b>no</b> nodes with f(n) &gt; C*</li>
+    </ul>
+
+    <!-- theorem -->
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:2rem;">Theorem: A* Search is Optimal</h3>
+    <ul class="concept-list">
+      <li>If h(n) is <b>admissible</b>, A* using <b>TREE-SEARCH</b> is optimal.</li>
+      <li>If h(n) is <b>consistent</b>, A* using <b>GRAPH-SEARCH</b> is optimal.
+        <ul class="concept-list" style="margin-top:0.6rem;">
+          <li><b>Optimality:</b> a consistent heuristic guarantees that once a node is expanded, its cost will not be improved upon. Thus, the path found by A* will be the shortest possible.</li>
+          <li><b>Efficiency:</b> because consistent heuristics prevent the re-expansion of nodes, they help reduce unnecessary evaluations, leading to a more efficient search process.</li>
+        </ul>
+      </li>
+    </ul>
+    <p class="caption-note"><i>If h(n) is consistent, then it is also admissible; however, the converse is not necessarily true.</i></p>
+
+    <h4 style="margin:1.6rem 0 0.4rem;">Proof (admissible h, tree search)</h4>
+    <p class="section-lede">Suppose some suboptimal goal G<sub>2</sub> has been generated and is in the queue. Let n be an unexpanded node on a shortest path to an optimal goal G<sub>1</sub>.</p>
+
+    <div class="tree-panel">
+      <svg viewBox="0 0 560 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Start node with a path to n, which lies on the optimal path to G1, and a path to the suboptimal goal G2">
+        <line x1="300" y1="45" x2="150" y2="180" stroke-width="2.5" style="stroke:var(--ink-soft)"></line>
+        <line x1="300" y1="45" x2="470" y2="240" stroke-width="2.5" style="stroke:var(--ink-soft)"></line>
+        <path d="M120,96 q7,-6 14,0 t14,0 t14,0 t14,0 t14,0 t14,0 t14,0 t14,0 t14,0 t14,0 t14,0 t14,0 t14,0 t14,0 t14,0 t14,0 t14,0 t14,0 t14,0 t14,0 t14,0 t14,0 t14,0 t14,0 t14,0" fill="none" stroke-width="1.5" style="stroke:var(--ink-soft)"></path>
+        <path d="M120,110 q7,-6 14,0 t14,0 t14,0 t14,0 t14,0 t14,0 t14,0 t14,0 t14,0 t14,0 t14,0 t14,0 t14,0 t14,0 t14,0 t14,0 t14,0 t14,0 t14,0 t14,0 t14,0 t14,0 t14,0 t14,0 t14,0" fill="none" stroke-width="1.5" style="stroke:var(--ink-soft)"></path>
+        <circle cx="300" cy="45" r="11" style="fill:var(--ink-soft)"></circle>
+        <circle cx="150" cy="180" r="11" style="fill:var(--ink-soft)"></circle>
+        <circle cx="70" cy="240" r="11" style="fill:var(--ids)"></circle>
+        <circle cx="470" cy="240" r="11" style="fill:var(--coral)"></circle>
+        <text x="300" y="24" text-anchor="middle" font-size="22" font-style="italic" style="fill:var(--ink)">Start</text>
+        <text x="126" y="176" text-anchor="end" font-size="22" font-style="italic" style="fill:var(--ink)">n</text>
+        <text x="46" y="246" text-anchor="end" font-size="22" font-style="italic" style="fill:var(--ink)">G₁</text>
+        <text x="494" y="246" font-size="22" font-style="italic" style="fill:var(--ink)">G₂</text>
+        <text x="70" y="280" text-anchor="middle" font-size="15" font-weight="700" style="fill:var(--ids)">optimal goal</text>
+        <text x="470" y="280" text-anchor="middle" font-size="15" font-weight="700" style="fill:var(--coral)">suboptimal goal</text>
+      </svg>
+      <div class="node-info">
+        <dl>
+          <dt>1</dt><dd>f(G<sub>2</sub>) = g(G<sub>2</sub>) — the actual path to G<sub>2</sub>, since h(G<sub>2</sub>) = 0</dd>
+          <dt>2</dt><dd>f(G<sub>2</sub>) &gt; g(G<sub>1</sub>) — since G<sub>2</sub> is suboptimal</dd>
+          <dt>3</dt><dd>f(G<sub>2</sub>) &gt; g(G<sub>1</sub>) ≥ f(n) = g(n) + h(n) — since h is admissible</dd>
+          <dt>⇒</dt><dd>Since f(G<sub>2</sub>) &gt; f(n), A* will never select G<sub>2</sub> for expansion.</dd>
+        </dl>
+      </div>
+    </div>
+
+    <!-- lemma -->
+    <h4 style="margin:1.6rem 0 0.4rem;">Lemma: A* expands nodes in order of increasing f value</h4>
+    <div class="tree-panel">
+      <div>
+        <ul class="concept-list">
+          <li>A heuristic is consistent if <b>h(n) ≤ c(n, a, n′) + h(n′)</b></li>
+          <li>If h is consistent, we have:</li>
+        </ul>
+        <p class="caption-note">
+          <span style="display:block;">f(n′) = g(n′) + h(n′)</span>
+          <span style="display:block; margin-top:0.3rem;">= g(n) + c(n, a, n′) + h(n′)</span>
+          <span style="display:block; margin-top:0.3rem;">≥ g(n) + h(n) = f(n)</span>
+          <span style="display:block; margin-top:0.6rem;">hence <b>f(n) is nondecreasing along any path</b>.</span>
+        </p>
+      </div>
+      <svg viewBox="0 0 300 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Triangle inequality: n to n-prime costs c(n,a,n-prime); dashed estimates h(n) and h(n-prime) to G">
+        <defs><marker id="arr-lemma" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--ink-soft)"></path></marker></defs>
+        <line x1="100" y1="64" x2="100" y2="146" stroke-width="2.5" marker-end="url(#arr-lemma)" style="stroke:var(--ink-soft)"></line>
+        <line x1="122" y1="52" x2="224" y2="262" stroke-width="2" stroke-dasharray="7 6" marker-end="url(#arr-lemma)" style="stroke:var(--ink-soft)"></line>
+        <line x1="122" y1="182" x2="220" y2="270" stroke-width="2" stroke-dasharray="7 6" marker-end="url(#arr-lemma)" style="stroke:var(--ink-soft)"></line>
+        <circle cx="100" cy="40" r="22" stroke-width="2.5" style="fill:var(--surface); stroke:var(--ids)"></circle>
+        <circle cx="100" cy="170" r="22" stroke-width="2.5" style="fill:var(--surface); stroke:var(--ids)"></circle>
+        <circle cx="240" cy="290" r="22" stroke-width="2.5" style="fill:var(--surface); stroke:#12a894"></circle>
+        <circle cx="240" cy="290" r="17" stroke-width="1.5" style="fill:none; stroke:#12a894"></circle>
+        <text x="100" y="46" text-anchor="middle" font-size="17" font-weight="700" font-style="italic" style="fill:var(--ink)">n</text>
+        <text x="100" y="176" text-anchor="middle" font-size="17" font-weight="700" font-style="italic" style="fill:var(--ink)">n′</text>
+        <text x="240" y="296" text-anchor="middle" font-size="17" font-weight="700" style="fill:var(--ink)">G</text>
+        <text x="88" y="110" text-anchor="end" font-size="14" font-weight="700" style="fill:var(--ink)">c(n,a,n′)</text>
+        <text x="186" y="130" font-size="14" font-weight="700" style="fill:var(--ids)">h(n)</text>
+        <text x="130" y="246" text-anchor="end" font-size="14" font-weight="700" style="fill:var(--ids)">h(n′)</text>
+      </svg>
+    </div>
+
+    <!-- admissible vs consistent -->
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:2rem;">Admissible vs. consistent heuristics</h3>
+    <p class="section-lede">To summarize, a heuristic is:</p>
+    <div class="definition-box">
+      <div class="dbox-label">📐 Admissible</div>
+      <p><b>h(n) ≤ h*(n)</b> for all n, where h*(n) is the true cost from n to the goal state — it <b>never overestimates</b>.</p>
+    </div>
+    <div class="definition-box">
+      <div class="dbox-label">📐 Consistent</div>
+      <p><b>h(n) ≤ c(n, n′) + h(n′)</b> for all n and every successor n′ — the heuristic can drop by <b>at most the step cost</b>.</p>
+    </div>
+
+    <ul class="concept-list" style="margin-top:1.2rem;">
+      <li><b>Proof strategy for admissibility</b>: the most common way to prove admissibility is to construct the heuristic as the exact solution to a <b>relaxed problem</b>. A relaxed problem is one where some constraints on the actions are removed, making the path cost to the goal necessarily less than or equal to the cost in the original, more constrained problem.</li>
+    </ul>
+    <p class="caption-note">h(n) = Optimal cost in the relaxed problem ≤ Optimal cost in the original problem = h*(n)</p>
+
+    <ul class="concept-list">
+      <li>A heuristic h(n) is <b>consistent</b> if, for every node n and every successor n′ generated by an action with cost(n, n′), the estimated cost to the goal from n is no greater than the cost to get to n′ plus the estimated cost from n′. The mathematical definition is: <b>h(n) ≤ cost(n, n′) + h(n′)</b>.</li>
+      <li>Rearranging this gives the key insight that <b>the drop in the heuristic value must be less than or equal to the actual move cost</b>: h(n) − h(n′) ≤ cost(n, n′).</li>
+      <li><b>Proof strategy for consistency</b>: to prove consistency, you must check the inequality for every possible single step from any node n to its neighbor n′. This usually involves showing that the move action is constrained such that the heuristic can decrease by at most the step cost.</li>
+      <li><b>Key relationship</b>: any consistent heuristic is also admissible (assuming h(G) = 0). Proving consistency is sufficient to prove admissibility.</li>
+    </ul>
+
+    <!-- admissible but inconsistent example -->
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:2rem;">Example: admissible, but not consistent</h3>
+    <p class="section-lede">Is A* with graph search always guaranteed to find the optimal solution when using an admissible heuristic?</p>
+
+    <div class="sim-panel">
+      <svg viewBox="0 0 600 260" xmlns="http://www.w3.org/2000/svg" style="width:100%; height:auto;" role="img" aria-label="Graph: S to A cost 1, S to B cost 3, A to B cost 1, B to C cost 2; h(S)=4, h(A)=3, h(B)=0, h(C)=0">
+        <defs><marker id="arr-ex" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--ids)"></path></marker></defs>
+        <line x1="208" y1="75" x2="116" y2="186" stroke-width="2" marker-end="url(#arr-ex)" style="stroke:var(--ids)"></line>
+        <line x1="236" y1="75" x2="324" y2="186" stroke-width="2" marker-end="url(#arr-ex)" style="stroke:var(--ids)"></line>
+        <line x1="126" y1="200" x2="312" y2="200" stroke-width="2" marker-end="url(#arr-ex)" style="stroke:var(--coral)"></line>
+        <line x1="348" y1="200" x2="522" y2="200" stroke-width="2" marker-end="url(#arr-ex)" style="stroke:var(--ids)"></line>
+        <text x="150" y="130" font-size="20" font-weight="700" style="fill:var(--ink)">1</text>
+        <text x="290" y="130" font-size="20" font-weight="700" style="fill:var(--ink)">3</text>
+        <text x="220" y="192" font-size="20" font-weight="700" style="fill:var(--coral)">1</text>
+        <text x="435" y="192" font-size="20" font-weight="700" style="fill:var(--ink)">2</text>
+        <circle cx="222" cy="58" r="22" stroke-width="2.5" style="fill:var(--surface); stroke:var(--ids)"></circle>
+        <circle cx="104" cy="200" r="22" stroke-width="2.5" style="fill:var(--surface); stroke:var(--ids)"></circle>
+        <circle cx="334" cy="200" r="22" stroke-width="2.5" style="fill:var(--surface); stroke:var(--ids)"></circle>
+        <circle cx="544" cy="200" r="22" stroke-width="2.5" stroke-dasharray="4 3" style="fill:var(--surface); stroke:#12a894"></circle>
+        <text x="222" y="64" text-anchor="middle" font-size="20" font-weight="700" style="fill:var(--ink)">S</text>
+        <text x="104" y="206" text-anchor="middle" font-size="20" font-weight="700" style="fill:var(--ink)">A</text>
+        <text x="334" y="206" text-anchor="middle" font-size="20" font-weight="700" style="fill:var(--ink)">B</text>
+        <text x="544" y="206" text-anchor="middle" font-size="20" font-weight="700" style="fill:var(--ink)">C</text>
+        <text x="258" y="40" font-size="17" font-weight="700" font-style="italic" style="fill:var(--ucs)">h(S)=4</text>
+        <text x="104" y="252" text-anchor="middle" font-size="17" font-weight="700" font-style="italic" style="fill:var(--ucs)">h(A)=3</text>
+        <text x="334" y="252" text-anchor="middle" font-size="17" font-weight="700" font-style="italic" style="fill:var(--ucs)">h(B)=0</text>
+        <text x="544" y="252" text-anchor="middle" font-size="17" font-weight="700" font-style="italic" style="fill:var(--ucs)">h(C)=0</text>
+      </svg>
+
+      <p style="font-weight:700; margin:1rem 0 0;">The heuristic h is admissible — h(n) ≤ h*(n), true cost to goal C</p>
+      <div class="check-grid">
+        <div class="check-card pass"><div class="node-id">S</div><div class="ineq">h(S) = 4 ≤ 4 = 1+1+2</div><div class="verdict">admissible</div></div>
+        <div class="check-card pass"><div class="node-id">A</div><div class="ineq">h(A) = 3 ≤ 3 = 1+2</div><div class="verdict">admissible</div></div>
+        <div class="check-card pass"><div class="node-id">B</div><div class="ineq">h(B) = 0 ≤ 2</div><div class="verdict">admissible</div></div>
+        <div class="check-card pass"><div class="node-id">C</div><div class="ineq">h(C) = 0 ≤ 0</div><div class="verdict">admissible</div></div>
+      </div>
+
+      <p style="font-weight:700; margin:1.2rem 0 0;">But not consistent — h(n) ≤ c(n, n′) + h(n′) fails</p>
+      <div class="check-grid">
+        <div class="check-card pass"><div class="node-id">S → A</div><div class="ineq">h(S) = 4 ≤ 1 + 3 = 4</div><div class="verdict">consistent</div></div>
+        <div class="check-card fail"><div class="node-id">S → B</div><div class="ineq">h(S) = 4 &gt; 3 + 0 = 3</div><div class="verdict">inconsistent</div></div>
+        <div class="check-card fail"><div class="node-id">A → B</div><div class="ineq">h(A) = 3 &gt; 1 + 0 = 1</div><div class="verdict">inconsistent</div></div>
+        <div class="check-card pass"><div class="node-id">B → C</div><div class="ineq">h(B) = 0 ≤ 2 + 0 = 2</div><div class="verdict">consistent</div></div>
+      </div>
+    </div>
+
+    <p class="section-lede" style="margin-top:1.2rem;">The optimal path from S to C is <b>S–A–B–C</b> with a total cost of <b>4</b>. However, with A* graph search:</p>
+    <ul class="concept-list">
+      <li>After starting from S, the options on the frontier are S–A with a cost plus heuristic of 1 + 3 = <b>4</b>, or S–B with a cost plus heuristic of 3 + 0 = <b>3</b>. So, we choose to explore <b>S–B</b>.</li>
+      <li>Next, the options on the frontier are S–A with f = 1 + 3 = <b>4</b>, or B–C with a backward path cost of <b>5</b>. So, we choose to explore <b>S–A</b>.</li>
+      <li>We've already reached B from the earlier path, so we don't consider edge A–B. Thus, our only option is to explore B–C for a cost of 5.</li>
+      <li>So, we will choose the path <b>S–B–C</b> with a total cost of <b>5</b>, which is <b>not optimal</b>.</li>
+    </ul>
+
+    <!-- tree vs graph search -->
+    <div class="tree-panel" style="margin-top:1.6rem; grid-template-columns:1fr 1fr;">
+      <div>
+        <h4 style="margin:0 0 0.6rem;">Tree Search</h4>
+        <ul class="concept-list">
+          <li>In tree search, a closed set is not needed because nodes are not revisited; there's no way to reach the same node via multiple paths.</li>
+          <li>The heuristic must be <b>admissible</b>, ensuring that A* will find the optimal path.</li>
+        </ul>
+      </div>
+      <div>
+        <h4 style="margin:0 0 0.6rem;">Graph Search</h4>
+        <ul class="concept-list">
+          <li>In graph search, a closed set is essential to avoid revisiting nodes through different paths (e.g., due to loops).</li>
+          <li>The heuristic must be both <b>admissible and consistent</b> to guarantee that A* finds the optimal path efficiently.</li>
+          <li>A consistent heuristic guarantees an optimal path even without a closed set, but reprocessing nodes can be inefficient.</li>
+          <li>An inconsistent heuristic can lead to excessive node expansions.</li>
+          <li>Using a closed set with an inconsistent heuristic can lead to suboptimal solutions.</li>
+          <li>A* with a consistent heuristic is <b>optimally efficient</b>.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== CHOOSING A HEURISTIC ===== -->
+  <section class="block" id="choosing">
+    <h2 class="section-title">Choosing a heuristic</h2>
+
+    <p class="section-lede">E.g., for the <b>8-puzzle</b>:</p>
+    <ul class="concept-list">
+      <li><b>h<sub>1</sub>(n)</b> = number of misplaced tiles (<b>Hamming distance</b>)</li>
+      <li><b>h<sub>2</sub>(n)</b> = total <b>Manhattan distance</b> (i.e., no. of squares from desired location of each tile)
+        <ul class="concept-list" style="margin-top:0.6rem;">
+          <li><i>cellDist</i> = |x − x′| + |y − y′|</li>
+        </ul>
+      </li>
+    </ul>
 
     <div class="puzzle-panel">
       <div class="puzzle-row">
         <div>
-          <p class="puzzle-label">Start state</p>
+          <p class="puzzle-label">Current state</p>
           <div class="puzzle-board" id="puzzle-start"></div>
         </div>
         <div>
@@ -77,18 +597,27 @@
         </div>
       </div>
 
-      <button class="toggle-btn" id="puzzle-toggle">Show per-tile breakdown</button>
+      <p style="font-size:0.85rem; color:var(--ink-soft); margin:0 0 0.8rem;">Click a tile next to the blank to slide it (one move, cost 1).</p>
+      <div class="toggle-row">
+        <button class="toggle-btn" id="puzzle-toggle">Show per-tile breakdown</button>
+        <button class="toggle-btn" id="puzzle-reset">Reset to start state</button>
+      </div>
 
       <div class="puzzle-totals">
         <div class="puzzle-total">
           <div class="n" id="puzzle-h1">–</div>
-          <div class="l">h₁ — misplaced tiles (Hamming)</div>
+          <div class="l" style="text-transform:none;">h₁ — misplaced tiles (Hamming)</div>
         </div>
         <div class="puzzle-total">
           <div class="n" id="puzzle-h2">–</div>
-          <div class="l">h₂ — Manhattan distance</div>
+          <div class="l" style="text-transform:none;">h₂ — Manhattan distance</div>
+        </div>
+        <div class="puzzle-total">
+          <div class="n" id="puzzle-moves">0</div>
+          <div class="l" style="text-transform:none;">moves made</div>
         </div>
       </div>
+      <p id="puzzle-delta" style="font-size:0.88rem; margin:0.9rem 0 0; color:var(--ink-soft);">No move yet.</p>
 
       <div id="puzzle-table-wrap" style="display:none; margin-top:1rem;">
         <table class="puzzle-table">
@@ -97,113 +626,609 @@
         </table>
       </div>
     </div>
+
+    <p class="caption-note">
+      <span style="display:block;">h<sub>1</sub>(S) = 1 + 0 + 1 + 1 + 1 + 0 + 1 + 1 = <b>6</b></span>
+      <span style="display:block; margin-top:0.3rem;">h<sub>2</sub>(S) = 4 + 0 + 3 + 3 + 1 + 0 + 2 + 1 = <b>14</b></span>
+    </p>
+
+    <ul class="concept-list">
+      <li><i>Both Manhattan and Hamming heuristics are admissible and consistent.</i></li>
+      <li>If <b>h<sub>2</sub>(n) ≥ h<sub>1</sub>(n)</b> for all n (both admissible), then h<sub>2</sub> <b>dominates</b> h<sub>1</sub> and is better for search.</li>
+      <li>Given any admissible heuristics h<sub>a</sub> and h<sub>b</sub>, then <b>h(n) = max(h<sub>a</sub>(n), h<sub>b</sub>(n))</b> is admissible and dominates h<sub>a</sub>, h<sub>b</sub>.</li>
+    </ul>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:2rem;">More formally: the Manhattan distance</h3>
+    <p class="section-lede">The Manhattan distance heuristic, h<sub>M</sub>(n), is the sum of the horizontal and vertical distances of every misplaced tile from its goal position.</p>
+    <div class="definition-box">
+      <div class="dbox-label">📐 Manhattan distance</div>
+      <p>h<sub>M</sub>(n) = Σ<sub>all tiles</sub> |current row − goal row| + |current column − goal column|</p>
+    </div>
+
+    <h4 style="margin:1.6rem 0 0.4rem;">Admissibility proof for Manhattan distance</h4>
+    <p class="section-lede"><b>Relaxed problem:</b> a tile can be moved to its goal position in one step, regardless of what other tiles or the blank space are doing.</p>
+    <ol class="concept-list">
+      <li>The true cost, h*(n), is the number of moves needed to move all tiles to their correct positions without collisions.</li>
+      <li>The Manhattan distance h<sub>M</sub>(n) calculates the minimum number of unit steps required for each tile individually to reach its goal position, <b>ignoring the presence of other tiles and the constraint of the blank space</b>.</li>
+      <li>Since the true problem requires a tile to wait for the blank space and potentially move other tiles out of the way, the actual number of moves h*(n) must be greater than or equal to the total minimum unit steps of all tiles.</li>
+      <li>Therefore, h<sub>M</sub>(n) is a lower bound on h*(n):</li>
+    </ol>
+    <p class="caption-note" style="text-align:center; font-size:0.95rem;"><b>h<sub>M</sub>(n) ≤ h*(n)</b></p>
+
+    <h4 style="margin:1.6rem 0 0.4rem;">Consistency proof for Manhattan distance</h4>
+    <p class="section-lede">Assume a move from node n to n′ by sliding the blank tile, which swaps positions with an adjacent tile, <i>T</i>. The step cost is cost(n, n′) = 1.</p>
+    <ol class="concept-list">
+      <li>The heuristic value h<sub>M</sub>(n) changes only for the tile <i>T</i> that was moved. All other tiles' distances remain the same.</li>
+      <li>Since tile <i>T</i> was adjacent to the blank space, it moved one step closer to or one step farther from its goal position.</li>
+      <li><b>Best case:</b> if the move brings tile <i>T</i> one step closer to its goal, the Manhattan distance for <i>T</i> decreases by 1.
+        <span style="display:block; margin-top:0.3rem;">Δh<sub>M</sub> = −1 ⟹ h<sub>M</sub>(n) − h<sub>M</sub>(n′) = 1</span></li>
+      <li><b>Worst case:</b> if the move takes tile <i>T</i> one step farther from its goal, the Manhattan distance for <i>T</i> increases by 1.
+        <span style="display:block; margin-top:0.3rem;">Δh<sub>M</sub> = +1 ⟹ h<sub>M</sub>(n) − h<sub>M</sub>(n′) = −1</span></li>
+    </ol>
+    <p class="section-lede">In all cases, the change in the heuristic value h<sub>M</sub>(n) − h<sub>M</sub>(n′) is ≤ 1. Since cost(n, n′) = 1, the consistency inequality is satisfied: h<sub>M</sub>(n) − h<sub>M</sub>(n′) ≤ 1 = cost(n, n′).</p>
+    <p class="caption-note" style="text-align:center; font-size:0.95rem;"><b>h<sub>M</sub>(n) ≤ cost(n, n′) + h<sub>M</sub>(n′)</b></p>
+    <p class="section-lede">You can check this in the puzzle above: every slide changes h₂ by exactly ±1.</p>
   </section>
 
-  <!-- ===== GREEDY / BEAM / HILL CLIMBING + PLAYGROUND ===== -->
-  <section class="block" id="playground">
-    <p class="eyebrow">One idea, three sizes of frontier</p>
-    <h2 class="section-title">Greedy · Beam Search · Hill Climbing</h2>
-    <p class="section-lede">
-      All three rank the frontier by h(n) alone (ignoring cost paid so far) — they only differ in how much of the frontier they keep:
-    </p>
-    <ul>
-      <li><b>Greedy best-first</b>: priority queue by h(n), no size limit. Complete/optimal: <b>No</b>. Time/space: O(b<sup>m</sup>).</li>
-      <li><b>Beam search</b>: greedy, but only the best <b>l</b> nodes survive each round. Complete/optimal: <b>No</b>. Time: O(bml). Space: O(bl).</li>
-      <li><b>Hill climbing</b>: beam search with l = 1 — keep only the single best node, no backtracking. Complete/optimal: <b>No</b> (random-restart hill climbing overcomes local maxima — trivially complete). Time: O(bm). Space: O(b).</li>
+  <!-- ===== MEMORY-BOUNDED A* ===== -->
+  <section class="block" id="mba">
+    <h2 class="section-title">Memory-Bounded A*</h2>
+    <div class="definition-box">
+      <div class="dbox-label">📐 Definition</div>
+      <p>= combination between <a href="#astar">A*</a> and <a href="#beam">beam search</a>, i.e., keeps only <b>l</b> nodes in the queue.</p>
+    </div>
+  </section>
+
+  <!-- ===== IDA* ===== -->
+  <section class="block algo-section dls" id="ida">
+    <span class="badge dls" style="margin-bottom:0.6rem; display:inline-block;">IDA*</span>
+    <h2 class="section-title">IDA* — Iterative Deepening A*</h2>
+    <p class="section-lede">= combination between <a href="#astar">A*</a> and <a href="lab01-uninformed-search.html#ids">iterative deepening search</a>, i.e., uses the A* evaluation function <b>f(n) = g(n) + h(n)</b> as a <b>threshold</b> and runs <a href="lab01-uninformed-search.html#dls">DLS</a>.</p>
+    <ul class="concept-list">
+      <li>Each iteration is a depth-first search that <b>prunes</b> every node with f(n) &gt; threshold.</li>
+      <li>The next threshold is the <b>smallest f-value that was pruned</b> in the previous iteration.</li>
     </ul>
-    <p class="section-lede">Beam search and hill climbing suit <b>optimization</b> (iteratively improve one solution) more than pathfinding; beam search shows up constantly in NLP (machine translation, summarization) picking the most probable sequence of words.</p>
 
-    <p class="section-lede">Try it on the graph below (h(n) is printed under each node). Watch how greedy, beam, and hill climbing all get pulled toward the same low-h dead end — that's the point of the next section.</p>
+    <div class="algo-stats dls">
+      <div class="algo-stat">
+        <div class="label">Complete?</div>
+        <div class="value">Yes</div>
+      </div>
+      <div class="algo-stat">
+        <div class="label">Optimal?</div>
+        <div class="value">Yes</div>
+      </div>
+      <div class="algo-stat">
+        <div class="label">Time complexity</div>
+        <div class="value">O(b<sup>d</sup>)</div>
+      </div>
+      <div class="algo-stat">
+        <div class="label">Space complexity</div>
+        <div class="value">O(bd)</div>
+        <div class="detail">It's a DFS underneath.</div>
+      </div>
+      <div class="algo-stat" style="grid-column:1 / -1;">
+        <div class="label">Data structure</div>
+        <div class="value">Stack</div>
+      </div>
+    </div>
 
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:2rem;">Example of the IDA* algorithm</h3>
+    <p class="section-lede">In the tree below, the <b>f score</b> is written inside each node (it is already computed). The start node is <b>2</b> and the goal node is <b>15</b>. Nodes visited in the current iteration are coloured green.</p>
+    <div class="ida-legend">
+      <span class="lg-visited">visited this iteration</span>
+      <span class="lg-pruned">pruned (f &gt; threshold)</span>
+      <span class="lg-goal">goal</span>
+    </div>
+
+    <div class="sim-panel">
+      <div class="ida-iter">
+        <h4>Iteration 1 — threshold = 2</h4>
+        <svg class="ida-tree" viewBox="0 0 720 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="IDA* example tree, iteration 1, threshold 2">
+        <line class="ida-edge" x1="359.5" y1="48" x2="179.5" y2="110"></line>
+        <line class="ida-edge" x1="359.5" y1="48" x2="539.5" y2="110"></line>
+        <line class="ida-edge" x1="179.5" y1="110" x2="89.5" y2="172"></line>
+        <line class="ida-edge" x1="179.5" y1="110" x2="269.5" y2="172"></line>
+        <line class="ida-edge" x1="539.5" y1="110" x2="449.5" y2="172"></line>
+        <line class="ida-edge" x1="539.5" y1="110" x2="629.5" y2="172"></line>
+        <line class="ida-edge" x1="89.5" y1="172" x2="44.5" y2="234"></line>
+        <line class="ida-edge" x1="89.5" y1="172" x2="134.5" y2="234"></line>
+        <line class="ida-edge" x1="269.5" y1="172" x2="224.5" y2="234"></line>
+        <line class="ida-edge" x1="269.5" y1="172" x2="314.5" y2="234"></line>
+        <line class="ida-edge" x1="449.5" y1="172" x2="404.5" y2="234"></line>
+        <line class="ida-edge" x1="449.5" y1="172" x2="494.5" y2="234"></line>
+        <line class="ida-edge" x1="629.5" y1="172" x2="584.5" y2="234"></line>
+        <line class="ida-edge" x1="629.5" y1="172" x2="674.5" y2="234"></line>
+        <line class="ida-edge" x1="44.5" y1="234" x2="22.0" y2="296"></line>
+        <line class="ida-edge" x1="44.5" y1="234" x2="67.0" y2="296"></line>
+        <line class="ida-edge" x1="134.5" y1="234" x2="112.0" y2="296"></line>
+        <line class="ida-edge" x1="134.5" y1="234" x2="157.0" y2="296"></line>
+        <line class="ida-edge" x1="224.5" y1="234" x2="202.0" y2="296"></line>
+        <line class="ida-edge" x1="224.5" y1="234" x2="247.0" y2="296"></line>
+        <line class="ida-edge" x1="314.5" y1="234" x2="292.0" y2="296"></line>
+        <line class="ida-edge" x1="314.5" y1="234" x2="337.0" y2="296"></line>
+        <line class="ida-edge" x1="404.5" y1="234" x2="382.0" y2="296"></line>
+        <line class="ida-edge" x1="404.5" y1="234" x2="427.0" y2="296"></line>
+        <line class="ida-edge" x1="494.5" y1="234" x2="472.0" y2="296"></line>
+        <line class="ida-edge" x1="494.5" y1="234" x2="517.0" y2="296"></line>
+        <line class="ida-edge" x1="584.5" y1="234" x2="562.0" y2="296"></line>
+        <line class="ida-edge" x1="584.5" y1="234" x2="607.0" y2="296"></line>
+        <line class="ida-edge" x1="674.5" y1="234" x2="652.0" y2="296"></line>
+        <line class="ida-edge" x1="674.5" y1="234" x2="697.0" y2="296"></line>
+        <text class="ida-label" x="10" y="20">Threshold = 2</text>
+        <text class="ida-label" x="10" y="38">Pruned: 4, 5</text>
+        <text class="ida-label" x="359.5" y="26" text-anchor="middle">Start</text>
+        <g class="ida-node visited"><circle cx="359.5" cy="48" r="15"></circle><text x="359.5" y="48">2</text></g>
+        <g class="ida-node visited pruned"><circle cx="179.5" cy="110" r="15"></circle><text x="179.5" y="110">4</text></g>
+        <g class="ida-node visited pruned"><circle cx="539.5" cy="110" r="15"></circle><text x="539.5" y="110">5</text></g>
+        <g class="ida-node"><circle cx="89.5" cy="172" r="15"></circle><text x="89.5" y="172">5</text></g>
+        <g class="ida-node"><circle cx="269.5" cy="172" r="15"></circle><text x="269.5" y="172">4</text></g>
+        <g class="ida-node"><circle cx="449.5" cy="172" r="15"></circle><text x="449.5" y="172">6</text></g>
+        <g class="ida-node"><circle cx="629.5" cy="172" r="15"></circle><text x="629.5" y="172">6</text></g>
+        <g class="ida-node"><circle cx="44.5" cy="234" r="15"></circle><text x="44.5" y="234">7</text></g>
+        <g class="ida-node"><circle cx="134.5" cy="234" r="15"></circle><text x="134.5" y="234">8</text></g>
+        <g class="ida-node"><circle cx="224.5" cy="234" r="15"></circle><text x="224.5" y="234">8</text></g>
+        <g class="ida-node"><circle cx="314.5" cy="234" r="15"></circle><text x="314.5" y="234">7</text></g>
+        <g class="ida-node"><circle cx="404.5" cy="234" r="15"></circle><text x="404.5" y="234">6</text></g>
+        <g class="ida-node"><circle cx="494.5" cy="234" r="15"></circle><text x="494.5" y="234">8</text></g>
+        <g class="ida-node"><circle cx="584.5" cy="234" r="15"></circle><text x="584.5" y="234">7</text></g>
+        <g class="ida-node"><circle cx="674.5" cy="234" r="15"></circle><text x="674.5" y="234">9</text></g>
+        <g class="ida-node"><circle cx="22.0" cy="296" r="15"></circle><text x="22.0" y="296">12</text></g>
+        <g class="ida-node"><circle cx="67.0" cy="296" r="15"></circle><text x="67.0" y="296">14</text></g>
+        <g class="ida-node"><circle cx="112.0" cy="296" r="15"></circle><text x="112.0" y="296">16</text></g>
+        <g class="ida-node"><circle cx="157.0" cy="296" r="15"></circle><text x="157.0" y="296">15</text></g>
+        <g class="ida-node"><circle cx="202.0" cy="296" r="15"></circle><text x="202.0" y="296">12</text></g>
+        <g class="ida-node"><circle cx="247.0" cy="296" r="15"></circle><text x="247.0" y="296">9</text></g>
+        <g class="ida-node"><circle cx="292.0" cy="296" r="15"></circle><text x="292.0" y="296">13</text></g>
+        <g class="ida-node"><circle cx="337.0" cy="296" r="15"></circle><text x="337.0" y="296">8</text></g>
+        <g class="ida-node"><circle cx="382.0" cy="296" r="15"></circle><text x="382.0" y="296">13</text></g>
+        <g class="ida-node"><circle cx="427.0" cy="296" r="15"></circle><text x="427.0" y="296">7</text></g>
+        <g class="ida-node goal"><circle cx="472.0" cy="296" r="15"></circle><text x="472.0" y="296">15</text></g>
+        <g class="ida-node"><circle cx="517.0" cy="296" r="15"></circle><text x="517.0" y="296">16</text></g>
+        <g class="ida-node"><circle cx="562.0" cy="296" r="15"></circle><text x="562.0" y="296">8</text></g>
+        <g class="ida-node"><circle cx="607.0" cy="296" r="15"></circle><text x="607.0" y="296">14</text></g>
+        <g class="ida-node"><circle cx="652.0" cy="296" r="15"></circle><text x="652.0" y="296">16</text></g>
+        <g class="ida-node"><circle cx="697.0" cy="296" r="15"></circle><text x="697.0" y="296">10</text></g>
+        <text class="ida-label" x="472.0" y="326" text-anchor="middle">Goal</text>
+        </svg>
+        <ul class="concept-list" style="margin-top:0.8rem;">
+          <li>Root node as current node, i.e. 2.</li>
+          <li>Threshold = current node value (2 = 2). So explore its children.</li>
+          <li>4 &gt; threshold &amp; 5 &gt; threshold. So, this iteration is over and the pruned values are <b>4 and 5</b>.</li>
+        </ul>
+      </div>
+      <div class="ida-iter">
+        <h4>Iteration 2 — threshold = 4</h4>
+        <svg class="ida-tree" viewBox="0 0 720 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="IDA* example tree, iteration 2, threshold 4">
+        <line class="ida-edge" x1="359.5" y1="48" x2="179.5" y2="110"></line>
+        <line class="ida-edge" x1="359.5" y1="48" x2="539.5" y2="110"></line>
+        <line class="ida-edge" x1="179.5" y1="110" x2="89.5" y2="172"></line>
+        <line class="ida-edge" x1="179.5" y1="110" x2="269.5" y2="172"></line>
+        <line class="ida-edge" x1="539.5" y1="110" x2="449.5" y2="172"></line>
+        <line class="ida-edge" x1="539.5" y1="110" x2="629.5" y2="172"></line>
+        <line class="ida-edge" x1="89.5" y1="172" x2="44.5" y2="234"></line>
+        <line class="ida-edge" x1="89.5" y1="172" x2="134.5" y2="234"></line>
+        <line class="ida-edge" x1="269.5" y1="172" x2="224.5" y2="234"></line>
+        <line class="ida-edge" x1="269.5" y1="172" x2="314.5" y2="234"></line>
+        <line class="ida-edge" x1="449.5" y1="172" x2="404.5" y2="234"></line>
+        <line class="ida-edge" x1="449.5" y1="172" x2="494.5" y2="234"></line>
+        <line class="ida-edge" x1="629.5" y1="172" x2="584.5" y2="234"></line>
+        <line class="ida-edge" x1="629.5" y1="172" x2="674.5" y2="234"></line>
+        <line class="ida-edge" x1="44.5" y1="234" x2="22.0" y2="296"></line>
+        <line class="ida-edge" x1="44.5" y1="234" x2="67.0" y2="296"></line>
+        <line class="ida-edge" x1="134.5" y1="234" x2="112.0" y2="296"></line>
+        <line class="ida-edge" x1="134.5" y1="234" x2="157.0" y2="296"></line>
+        <line class="ida-edge" x1="224.5" y1="234" x2="202.0" y2="296"></line>
+        <line class="ida-edge" x1="224.5" y1="234" x2="247.0" y2="296"></line>
+        <line class="ida-edge" x1="314.5" y1="234" x2="292.0" y2="296"></line>
+        <line class="ida-edge" x1="314.5" y1="234" x2="337.0" y2="296"></line>
+        <line class="ida-edge" x1="404.5" y1="234" x2="382.0" y2="296"></line>
+        <line class="ida-edge" x1="404.5" y1="234" x2="427.0" y2="296"></line>
+        <line class="ida-edge" x1="494.5" y1="234" x2="472.0" y2="296"></line>
+        <line class="ida-edge" x1="494.5" y1="234" x2="517.0" y2="296"></line>
+        <line class="ida-edge" x1="584.5" y1="234" x2="562.0" y2="296"></line>
+        <line class="ida-edge" x1="584.5" y1="234" x2="607.0" y2="296"></line>
+        <line class="ida-edge" x1="674.5" y1="234" x2="652.0" y2="296"></line>
+        <line class="ida-edge" x1="674.5" y1="234" x2="697.0" y2="296"></line>
+        <text class="ida-label" x="10" y="20">Threshold = 4</text>
+        <text class="ida-label" x="10" y="38">Pruned: 5, 8, 7, 5</text>
+        <text class="ida-label" x="359.5" y="26" text-anchor="middle">Start</text>
+        <g class="ida-node visited"><circle cx="359.5" cy="48" r="15"></circle><text x="359.5" y="48">2</text></g>
+        <g class="ida-node visited"><circle cx="179.5" cy="110" r="15"></circle><text x="179.5" y="110">4</text></g>
+        <g class="ida-node visited pruned"><circle cx="539.5" cy="110" r="15"></circle><text x="539.5" y="110">5</text></g>
+        <g class="ida-node visited pruned"><circle cx="89.5" cy="172" r="15"></circle><text x="89.5" y="172">5</text></g>
+        <g class="ida-node visited"><circle cx="269.5" cy="172" r="15"></circle><text x="269.5" y="172">4</text></g>
+        <g class="ida-node"><circle cx="449.5" cy="172" r="15"></circle><text x="449.5" y="172">6</text></g>
+        <g class="ida-node"><circle cx="629.5" cy="172" r="15"></circle><text x="629.5" y="172">6</text></g>
+        <g class="ida-node"><circle cx="44.5" cy="234" r="15"></circle><text x="44.5" y="234">7</text></g>
+        <g class="ida-node"><circle cx="134.5" cy="234" r="15"></circle><text x="134.5" y="234">8</text></g>
+        <g class="ida-node visited pruned"><circle cx="224.5" cy="234" r="15"></circle><text x="224.5" y="234">8</text></g>
+        <g class="ida-node visited pruned"><circle cx="314.5" cy="234" r="15"></circle><text x="314.5" y="234">7</text></g>
+        <g class="ida-node"><circle cx="404.5" cy="234" r="15"></circle><text x="404.5" y="234">6</text></g>
+        <g class="ida-node"><circle cx="494.5" cy="234" r="15"></circle><text x="494.5" y="234">8</text></g>
+        <g class="ida-node"><circle cx="584.5" cy="234" r="15"></circle><text x="584.5" y="234">7</text></g>
+        <g class="ida-node"><circle cx="674.5" cy="234" r="15"></circle><text x="674.5" y="234">9</text></g>
+        <g class="ida-node"><circle cx="22.0" cy="296" r="15"></circle><text x="22.0" y="296">12</text></g>
+        <g class="ida-node"><circle cx="67.0" cy="296" r="15"></circle><text x="67.0" y="296">14</text></g>
+        <g class="ida-node"><circle cx="112.0" cy="296" r="15"></circle><text x="112.0" y="296">16</text></g>
+        <g class="ida-node"><circle cx="157.0" cy="296" r="15"></circle><text x="157.0" y="296">15</text></g>
+        <g class="ida-node"><circle cx="202.0" cy="296" r="15"></circle><text x="202.0" y="296">12</text></g>
+        <g class="ida-node"><circle cx="247.0" cy="296" r="15"></circle><text x="247.0" y="296">9</text></g>
+        <g class="ida-node"><circle cx="292.0" cy="296" r="15"></circle><text x="292.0" y="296">13</text></g>
+        <g class="ida-node"><circle cx="337.0" cy="296" r="15"></circle><text x="337.0" y="296">8</text></g>
+        <g class="ida-node"><circle cx="382.0" cy="296" r="15"></circle><text x="382.0" y="296">13</text></g>
+        <g class="ida-node"><circle cx="427.0" cy="296" r="15"></circle><text x="427.0" y="296">7</text></g>
+        <g class="ida-node goal"><circle cx="472.0" cy="296" r="15"></circle><text x="472.0" y="296">15</text></g>
+        <g class="ida-node"><circle cx="517.0" cy="296" r="15"></circle><text x="517.0" y="296">16</text></g>
+        <g class="ida-node"><circle cx="562.0" cy="296" r="15"></circle><text x="562.0" y="296">8</text></g>
+        <g class="ida-node"><circle cx="607.0" cy="296" r="15"></circle><text x="607.0" y="296">14</text></g>
+        <g class="ida-node"><circle cx="652.0" cy="296" r="15"></circle><text x="652.0" y="296">16</text></g>
+        <g class="ida-node"><circle cx="697.0" cy="296" r="15"></circle><text x="697.0" y="296">10</text></g>
+        <text class="ida-label" x="472.0" y="326" text-anchor="middle">Goal</text>
+        </svg>
+        <ul class="concept-list" style="margin-top:0.8rem;">
+          <li>In pruned values, the least is 4, so threshold = 4.</li>
+          <li>Current node = 2 and 2 &lt; threshold, so explore its children one by one.</li>
+          <li>First child 4: set current node = 4, equal to the threshold, so explore its children 5 and 4. 5 &gt; threshold, so prune it; the second child 4 = threshold, so explore its children 8 &amp; 7 — both &gt; threshold, so prune them.</li>
+          <li>Similarly, explore the second child of the root, 5: 5 &gt; threshold, so prune it.</li>
+          <li>So, our pruned values are <b>5, 8, 7</b> (and 5).</li>
+        </ul>
+      </div>
+      <div class="ida-iter">
+        <h4>Iteration 3 — threshold = 5</h4>
+        <svg class="ida-tree" viewBox="0 0 720 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="IDA* example tree, iteration 3, threshold 5">
+        <line class="ida-edge" x1="359.5" y1="48" x2="179.5" y2="110"></line>
+        <line class="ida-edge" x1="359.5" y1="48" x2="539.5" y2="110"></line>
+        <line class="ida-edge" x1="179.5" y1="110" x2="89.5" y2="172"></line>
+        <line class="ida-edge" x1="179.5" y1="110" x2="269.5" y2="172"></line>
+        <line class="ida-edge" x1="539.5" y1="110" x2="449.5" y2="172"></line>
+        <line class="ida-edge" x1="539.5" y1="110" x2="629.5" y2="172"></line>
+        <line class="ida-edge" x1="89.5" y1="172" x2="44.5" y2="234"></line>
+        <line class="ida-edge" x1="89.5" y1="172" x2="134.5" y2="234"></line>
+        <line class="ida-edge" x1="269.5" y1="172" x2="224.5" y2="234"></line>
+        <line class="ida-edge" x1="269.5" y1="172" x2="314.5" y2="234"></line>
+        <line class="ida-edge" x1="449.5" y1="172" x2="404.5" y2="234"></line>
+        <line class="ida-edge" x1="449.5" y1="172" x2="494.5" y2="234"></line>
+        <line class="ida-edge" x1="629.5" y1="172" x2="584.5" y2="234"></line>
+        <line class="ida-edge" x1="629.5" y1="172" x2="674.5" y2="234"></line>
+        <line class="ida-edge" x1="44.5" y1="234" x2="22.0" y2="296"></line>
+        <line class="ida-edge" x1="44.5" y1="234" x2="67.0" y2="296"></line>
+        <line class="ida-edge" x1="134.5" y1="234" x2="112.0" y2="296"></line>
+        <line class="ida-edge" x1="134.5" y1="234" x2="157.0" y2="296"></line>
+        <line class="ida-edge" x1="224.5" y1="234" x2="202.0" y2="296"></line>
+        <line class="ida-edge" x1="224.5" y1="234" x2="247.0" y2="296"></line>
+        <line class="ida-edge" x1="314.5" y1="234" x2="292.0" y2="296"></line>
+        <line class="ida-edge" x1="314.5" y1="234" x2="337.0" y2="296"></line>
+        <line class="ida-edge" x1="404.5" y1="234" x2="382.0" y2="296"></line>
+        <line class="ida-edge" x1="404.5" y1="234" x2="427.0" y2="296"></line>
+        <line class="ida-edge" x1="494.5" y1="234" x2="472.0" y2="296"></line>
+        <line class="ida-edge" x1="494.5" y1="234" x2="517.0" y2="296"></line>
+        <line class="ida-edge" x1="584.5" y1="234" x2="562.0" y2="296"></line>
+        <line class="ida-edge" x1="584.5" y1="234" x2="607.0" y2="296"></line>
+        <line class="ida-edge" x1="674.5" y1="234" x2="652.0" y2="296"></line>
+        <line class="ida-edge" x1="674.5" y1="234" x2="697.0" y2="296"></line>
+        <text class="ida-label" x="10" y="20">Threshold = 5</text>
+        <text class="ida-label" x="10" y="38">Pruned: 7, 8, 8, 7, 6, 6</text>
+        <text class="ida-label" x="359.5" y="26" text-anchor="middle">Start</text>
+        <g class="ida-node visited"><circle cx="359.5" cy="48" r="15"></circle><text x="359.5" y="48">2</text></g>
+        <g class="ida-node visited"><circle cx="179.5" cy="110" r="15"></circle><text x="179.5" y="110">4</text></g>
+        <g class="ida-node visited"><circle cx="539.5" cy="110" r="15"></circle><text x="539.5" y="110">5</text></g>
+        <g class="ida-node visited"><circle cx="89.5" cy="172" r="15"></circle><text x="89.5" y="172">5</text></g>
+        <g class="ida-node visited"><circle cx="269.5" cy="172" r="15"></circle><text x="269.5" y="172">4</text></g>
+        <g class="ida-node visited pruned"><circle cx="449.5" cy="172" r="15"></circle><text x="449.5" y="172">6</text></g>
+        <g class="ida-node visited pruned"><circle cx="629.5" cy="172" r="15"></circle><text x="629.5" y="172">6</text></g>
+        <g class="ida-node visited pruned"><circle cx="44.5" cy="234" r="15"></circle><text x="44.5" y="234">7</text></g>
+        <g class="ida-node visited pruned"><circle cx="134.5" cy="234" r="15"></circle><text x="134.5" y="234">8</text></g>
+        <g class="ida-node visited pruned"><circle cx="224.5" cy="234" r="15"></circle><text x="224.5" y="234">8</text></g>
+        <g class="ida-node visited pruned"><circle cx="314.5" cy="234" r="15"></circle><text x="314.5" y="234">7</text></g>
+        <g class="ida-node"><circle cx="404.5" cy="234" r="15"></circle><text x="404.5" y="234">6</text></g>
+        <g class="ida-node"><circle cx="494.5" cy="234" r="15"></circle><text x="494.5" y="234">8</text></g>
+        <g class="ida-node"><circle cx="584.5" cy="234" r="15"></circle><text x="584.5" y="234">7</text></g>
+        <g class="ida-node"><circle cx="674.5" cy="234" r="15"></circle><text x="674.5" y="234">9</text></g>
+        <g class="ida-node"><circle cx="22.0" cy="296" r="15"></circle><text x="22.0" y="296">12</text></g>
+        <g class="ida-node"><circle cx="67.0" cy="296" r="15"></circle><text x="67.0" y="296">14</text></g>
+        <g class="ida-node"><circle cx="112.0" cy="296" r="15"></circle><text x="112.0" y="296">16</text></g>
+        <g class="ida-node"><circle cx="157.0" cy="296" r="15"></circle><text x="157.0" y="296">15</text></g>
+        <g class="ida-node"><circle cx="202.0" cy="296" r="15"></circle><text x="202.0" y="296">12</text></g>
+        <g class="ida-node"><circle cx="247.0" cy="296" r="15"></circle><text x="247.0" y="296">9</text></g>
+        <g class="ida-node"><circle cx="292.0" cy="296" r="15"></circle><text x="292.0" y="296">13</text></g>
+        <g class="ida-node"><circle cx="337.0" cy="296" r="15"></circle><text x="337.0" y="296">8</text></g>
+        <g class="ida-node"><circle cx="382.0" cy="296" r="15"></circle><text x="382.0" y="296">13</text></g>
+        <g class="ida-node"><circle cx="427.0" cy="296" r="15"></circle><text x="427.0" y="296">7</text></g>
+        <g class="ida-node goal"><circle cx="472.0" cy="296" r="15"></circle><text x="472.0" y="296">15</text></g>
+        <g class="ida-node"><circle cx="517.0" cy="296" r="15"></circle><text x="517.0" y="296">16</text></g>
+        <g class="ida-node"><circle cx="562.0" cy="296" r="15"></circle><text x="562.0" y="296">8</text></g>
+        <g class="ida-node"><circle cx="607.0" cy="296" r="15"></circle><text x="607.0" y="296">14</text></g>
+        <g class="ida-node"><circle cx="652.0" cy="296" r="15"></circle><text x="652.0" y="296">16</text></g>
+        <g class="ida-node"><circle cx="697.0" cy="296" r="15"></circle><text x="697.0" y="296">10</text></g>
+        <text class="ida-label" x="472.0" y="326" text-anchor="middle">Goal</text>
+        </svg>
+        <ul class="concept-list" style="margin-top:0.8rem;">
+          <li>In pruned values, the least is 5, so threshold = 5.</li>
+          <li>Current node = root = 2 &lt; threshold, so explore its children one by one.</li>
+          <li>First child 4 &lt; threshold: explore its children 5 and 4. 5 = threshold, so explore its children 7 &amp; 8 — both &gt; threshold, pruned. The second child 4 &lt; threshold: explore its children 8 &amp; 7 — both &gt; threshold, pruned. Pruned so far: 7 &amp; 8.</li>
+          <li>Explore the second child of the root, 5 = threshold, so explore its children 6 &amp; 6 — both &gt; threshold, pruned.</li>
+          <li>So, our pruned values are <b>7, 8 &amp; 6</b>.</li>
+        </ul>
+      </div>
+      <div class="ida-iter">
+        <h4>Iteration 4 — threshold = 6</h4>
+        <svg class="ida-tree" viewBox="0 0 720 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="IDA* example tree, iteration 4, threshold 6">
+        <line class="ida-edge" x1="359.5" y1="48" x2="179.5" y2="110"></line>
+        <line class="ida-edge" x1="359.5" y1="48" x2="539.5" y2="110"></line>
+        <line class="ida-edge" x1="179.5" y1="110" x2="89.5" y2="172"></line>
+        <line class="ida-edge" x1="179.5" y1="110" x2="269.5" y2="172"></line>
+        <line class="ida-edge" x1="539.5" y1="110" x2="449.5" y2="172"></line>
+        <line class="ida-edge" x1="539.5" y1="110" x2="629.5" y2="172"></line>
+        <line class="ida-edge" x1="89.5" y1="172" x2="44.5" y2="234"></line>
+        <line class="ida-edge" x1="89.5" y1="172" x2="134.5" y2="234"></line>
+        <line class="ida-edge" x1="269.5" y1="172" x2="224.5" y2="234"></line>
+        <line class="ida-edge" x1="269.5" y1="172" x2="314.5" y2="234"></line>
+        <line class="ida-edge" x1="449.5" y1="172" x2="404.5" y2="234"></line>
+        <line class="ida-edge" x1="449.5" y1="172" x2="494.5" y2="234"></line>
+        <line class="ida-edge" x1="629.5" y1="172" x2="584.5" y2="234"></line>
+        <line class="ida-edge" x1="629.5" y1="172" x2="674.5" y2="234"></line>
+        <line class="ida-edge" x1="44.5" y1="234" x2="22.0" y2="296"></line>
+        <line class="ida-edge" x1="44.5" y1="234" x2="67.0" y2="296"></line>
+        <line class="ida-edge" x1="134.5" y1="234" x2="112.0" y2="296"></line>
+        <line class="ida-edge" x1="134.5" y1="234" x2="157.0" y2="296"></line>
+        <line class="ida-edge" x1="224.5" y1="234" x2="202.0" y2="296"></line>
+        <line class="ida-edge" x1="224.5" y1="234" x2="247.0" y2="296"></line>
+        <line class="ida-edge" x1="314.5" y1="234" x2="292.0" y2="296"></line>
+        <line class="ida-edge" x1="314.5" y1="234" x2="337.0" y2="296"></line>
+        <line class="ida-edge" x1="404.5" y1="234" x2="382.0" y2="296"></line>
+        <line class="ida-edge" x1="404.5" y1="234" x2="427.0" y2="296"></line>
+        <line class="ida-edge" x1="494.5" y1="234" x2="472.0" y2="296"></line>
+        <line class="ida-edge" x1="494.5" y1="234" x2="517.0" y2="296"></line>
+        <line class="ida-edge" x1="584.5" y1="234" x2="562.0" y2="296"></line>
+        <line class="ida-edge" x1="584.5" y1="234" x2="607.0" y2="296"></line>
+        <line class="ida-edge" x1="674.5" y1="234" x2="652.0" y2="296"></line>
+        <line class="ida-edge" x1="674.5" y1="234" x2="697.0" y2="296"></line>
+        <text class="ida-label" x="10" y="20">Threshold = 6</text>
+        <text class="ida-label" x="10" y="38">Pruned: 7, 8, 8, 7, 13, 7, 8, 7, 9</text>
+        <text class="ida-label" x="359.5" y="26" text-anchor="middle">Start</text>
+        <g class="ida-node visited"><circle cx="359.5" cy="48" r="15"></circle><text x="359.5" y="48">2</text></g>
+        <g class="ida-node visited"><circle cx="179.5" cy="110" r="15"></circle><text x="179.5" y="110">4</text></g>
+        <g class="ida-node visited"><circle cx="539.5" cy="110" r="15"></circle><text x="539.5" y="110">5</text></g>
+        <g class="ida-node visited"><circle cx="89.5" cy="172" r="15"></circle><text x="89.5" y="172">5</text></g>
+        <g class="ida-node visited"><circle cx="269.5" cy="172" r="15"></circle><text x="269.5" y="172">4</text></g>
+        <g class="ida-node visited"><circle cx="449.5" cy="172" r="15"></circle><text x="449.5" y="172">6</text></g>
+        <g class="ida-node visited"><circle cx="629.5" cy="172" r="15"></circle><text x="629.5" y="172">6</text></g>
+        <g class="ida-node visited pruned"><circle cx="44.5" cy="234" r="15"></circle><text x="44.5" y="234">7</text></g>
+        <g class="ida-node visited pruned"><circle cx="134.5" cy="234" r="15"></circle><text x="134.5" y="234">8</text></g>
+        <g class="ida-node visited pruned"><circle cx="224.5" cy="234" r="15"></circle><text x="224.5" y="234">8</text></g>
+        <g class="ida-node visited pruned"><circle cx="314.5" cy="234" r="15"></circle><text x="314.5" y="234">7</text></g>
+        <g class="ida-node visited"><circle cx="404.5" cy="234" r="15"></circle><text x="404.5" y="234">6</text></g>
+        <g class="ida-node visited pruned"><circle cx="494.5" cy="234" r="15"></circle><text x="494.5" y="234">8</text></g>
+        <g class="ida-node visited pruned"><circle cx="584.5" cy="234" r="15"></circle><text x="584.5" y="234">7</text></g>
+        <g class="ida-node visited pruned"><circle cx="674.5" cy="234" r="15"></circle><text x="674.5" y="234">9</text></g>
+        <g class="ida-node"><circle cx="22.0" cy="296" r="15"></circle><text x="22.0" y="296">12</text></g>
+        <g class="ida-node"><circle cx="67.0" cy="296" r="15"></circle><text x="67.0" y="296">14</text></g>
+        <g class="ida-node"><circle cx="112.0" cy="296" r="15"></circle><text x="112.0" y="296">16</text></g>
+        <g class="ida-node"><circle cx="157.0" cy="296" r="15"></circle><text x="157.0" y="296">15</text></g>
+        <g class="ida-node"><circle cx="202.0" cy="296" r="15"></circle><text x="202.0" y="296">12</text></g>
+        <g class="ida-node"><circle cx="247.0" cy="296" r="15"></circle><text x="247.0" y="296">9</text></g>
+        <g class="ida-node"><circle cx="292.0" cy="296" r="15"></circle><text x="292.0" y="296">13</text></g>
+        <g class="ida-node"><circle cx="337.0" cy="296" r="15"></circle><text x="337.0" y="296">8</text></g>
+        <g class="ida-node visited pruned"><circle cx="382.0" cy="296" r="15"></circle><text x="382.0" y="296">13</text></g>
+        <g class="ida-node visited pruned"><circle cx="427.0" cy="296" r="15"></circle><text x="427.0" y="296">7</text></g>
+        <g class="ida-node goal"><circle cx="472.0" cy="296" r="15"></circle><text x="472.0" y="296">15</text></g>
+        <g class="ida-node"><circle cx="517.0" cy="296" r="15"></circle><text x="517.0" y="296">16</text></g>
+        <g class="ida-node"><circle cx="562.0" cy="296" r="15"></circle><text x="562.0" y="296">8</text></g>
+        <g class="ida-node"><circle cx="607.0" cy="296" r="15"></circle><text x="607.0" y="296">14</text></g>
+        <g class="ida-node"><circle cx="652.0" cy="296" r="15"></circle><text x="652.0" y="296">16</text></g>
+        <g class="ida-node"><circle cx="697.0" cy="296" r="15"></circle><text x="697.0" y="296">10</text></g>
+        <text class="ida-label" x="472.0" y="326" text-anchor="middle">Goal</text>
+        </svg>
+        <ul class="concept-list" style="margin-top:0.8rem;">
+          <li>In pruned values, the least is 6, so threshold = 6.</li>
+          <li>Left subtree as before: 4 → 5 → 7 &amp; 8 pruned; 4 → 8 &amp; 7 pruned. Pruned so far: 7 &amp; 8.</li>
+          <li>Second child of the root, 5 &lt; threshold: explore its children 6 &amp; 6, both = threshold, so explore them one by one.</li>
+          <li>The first 6 has children 6 &amp; 8. 6 = threshold, so explore its children 13 &amp; 7 — both &gt; threshold, pruned. 8 &gt; threshold, pruned. Pruned at this stage: 13, 7 &amp; 8.</li>
+          <li>The second 6 = threshold: explore its children 7 &amp; 9 — both &gt; threshold, pruned.</li>
+          <li>So, our pruned values are <b>13, 7, 8 &amp; 9</b>.</li>
+        </ul>
+      </div>
+      <div class="ida-iter">
+        <h4>Iteration 5 — threshold = 7</h4>
+        <svg class="ida-tree" viewBox="0 0 720 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="IDA* example tree, iteration 5, threshold 7">
+        <line class="ida-edge" x1="359.5" y1="48" x2="179.5" y2="110"></line>
+        <line class="ida-edge" x1="359.5" y1="48" x2="539.5" y2="110"></line>
+        <line class="ida-edge" x1="179.5" y1="110" x2="89.5" y2="172"></line>
+        <line class="ida-edge" x1="179.5" y1="110" x2="269.5" y2="172"></line>
+        <line class="ida-edge" x1="539.5" y1="110" x2="449.5" y2="172"></line>
+        <line class="ida-edge" x1="539.5" y1="110" x2="629.5" y2="172"></line>
+        <line class="ida-edge" x1="89.5" y1="172" x2="44.5" y2="234"></line>
+        <line class="ida-edge" x1="89.5" y1="172" x2="134.5" y2="234"></line>
+        <line class="ida-edge" x1="269.5" y1="172" x2="224.5" y2="234"></line>
+        <line class="ida-edge" x1="269.5" y1="172" x2="314.5" y2="234"></line>
+        <line class="ida-edge" x1="449.5" y1="172" x2="404.5" y2="234"></line>
+        <line class="ida-edge" x1="449.5" y1="172" x2="494.5" y2="234"></line>
+        <line class="ida-edge" x1="629.5" y1="172" x2="584.5" y2="234"></line>
+        <line class="ida-edge" x1="629.5" y1="172" x2="674.5" y2="234"></line>
+        <line class="ida-edge" x1="44.5" y1="234" x2="22.0" y2="296"></line>
+        <line class="ida-edge" x1="44.5" y1="234" x2="67.0" y2="296"></line>
+        <line class="ida-edge" x1="134.5" y1="234" x2="112.0" y2="296"></line>
+        <line class="ida-edge" x1="134.5" y1="234" x2="157.0" y2="296"></line>
+        <line class="ida-edge" x1="224.5" y1="234" x2="202.0" y2="296"></line>
+        <line class="ida-edge" x1="224.5" y1="234" x2="247.0" y2="296"></line>
+        <line class="ida-edge" x1="314.5" y1="234" x2="292.0" y2="296"></line>
+        <line class="ida-edge" x1="314.5" y1="234" x2="337.0" y2="296"></line>
+        <line class="ida-edge" x1="404.5" y1="234" x2="382.0" y2="296"></line>
+        <line class="ida-edge" x1="404.5" y1="234" x2="427.0" y2="296"></line>
+        <line class="ida-edge" x1="494.5" y1="234" x2="472.0" y2="296"></line>
+        <line class="ida-edge" x1="494.5" y1="234" x2="517.0" y2="296"></line>
+        <line class="ida-edge" x1="584.5" y1="234" x2="562.0" y2="296"></line>
+        <line class="ida-edge" x1="584.5" y1="234" x2="607.0" y2="296"></line>
+        <line class="ida-edge" x1="674.5" y1="234" x2="652.0" y2="296"></line>
+        <line class="ida-edge" x1="674.5" y1="234" x2="697.0" y2="296"></line>
+        <text class="ida-label" x="10" y="20">Threshold = 7</text>
+        <text class="ida-label" x="10" y="38">Pruned: 12, 14, 8, 8, 13, 8, 13, 8, 8, 14, 9</text>
+        <text class="ida-label" x="359.5" y="26" text-anchor="middle">Start</text>
+        <g class="ida-node visited"><circle cx="359.5" cy="48" r="15"></circle><text x="359.5" y="48">2</text></g>
+        <g class="ida-node visited"><circle cx="179.5" cy="110" r="15"></circle><text x="179.5" y="110">4</text></g>
+        <g class="ida-node visited"><circle cx="539.5" cy="110" r="15"></circle><text x="539.5" y="110">5</text></g>
+        <g class="ida-node visited"><circle cx="89.5" cy="172" r="15"></circle><text x="89.5" y="172">5</text></g>
+        <g class="ida-node visited"><circle cx="269.5" cy="172" r="15"></circle><text x="269.5" y="172">4</text></g>
+        <g class="ida-node visited"><circle cx="449.5" cy="172" r="15"></circle><text x="449.5" y="172">6</text></g>
+        <g class="ida-node visited"><circle cx="629.5" cy="172" r="15"></circle><text x="629.5" y="172">6</text></g>
+        <g class="ida-node visited"><circle cx="44.5" cy="234" r="15"></circle><text x="44.5" y="234">7</text></g>
+        <g class="ida-node visited pruned"><circle cx="134.5" cy="234" r="15"></circle><text x="134.5" y="234">8</text></g>
+        <g class="ida-node visited pruned"><circle cx="224.5" cy="234" r="15"></circle><text x="224.5" y="234">8</text></g>
+        <g class="ida-node visited"><circle cx="314.5" cy="234" r="15"></circle><text x="314.5" y="234">7</text></g>
+        <g class="ida-node visited"><circle cx="404.5" cy="234" r="15"></circle><text x="404.5" y="234">6</text></g>
+        <g class="ida-node visited pruned"><circle cx="494.5" cy="234" r="15"></circle><text x="494.5" y="234">8</text></g>
+        <g class="ida-node visited"><circle cx="584.5" cy="234" r="15"></circle><text x="584.5" y="234">7</text></g>
+        <g class="ida-node visited pruned"><circle cx="674.5" cy="234" r="15"></circle><text x="674.5" y="234">9</text></g>
+        <g class="ida-node visited pruned"><circle cx="22.0" cy="296" r="15"></circle><text x="22.0" y="296">12</text></g>
+        <g class="ida-node visited pruned"><circle cx="67.0" cy="296" r="15"></circle><text x="67.0" y="296">14</text></g>
+        <g class="ida-node"><circle cx="112.0" cy="296" r="15"></circle><text x="112.0" y="296">16</text></g>
+        <g class="ida-node"><circle cx="157.0" cy="296" r="15"></circle><text x="157.0" y="296">15</text></g>
+        <g class="ida-node"><circle cx="202.0" cy="296" r="15"></circle><text x="202.0" y="296">12</text></g>
+        <g class="ida-node"><circle cx="247.0" cy="296" r="15"></circle><text x="247.0" y="296">9</text></g>
+        <g class="ida-node visited pruned"><circle cx="292.0" cy="296" r="15"></circle><text x="292.0" y="296">13</text></g>
+        <g class="ida-node visited pruned"><circle cx="337.0" cy="296" r="15"></circle><text x="337.0" y="296">8</text></g>
+        <g class="ida-node visited pruned"><circle cx="382.0" cy="296" r="15"></circle><text x="382.0" y="296">13</text></g>
+        <g class="ida-node visited"><circle cx="427.0" cy="296" r="15"></circle><text x="427.0" y="296">7</text></g>
+        <g class="ida-node goal"><circle cx="472.0" cy="296" r="15"></circle><text x="472.0" y="296">15</text></g>
+        <g class="ida-node"><circle cx="517.0" cy="296" r="15"></circle><text x="517.0" y="296">16</text></g>
+        <g class="ida-node visited pruned"><circle cx="562.0" cy="296" r="15"></circle><text x="562.0" y="296">8</text></g>
+        <g class="ida-node visited pruned"><circle cx="607.0" cy="296" r="15"></circle><text x="607.0" y="296">14</text></g>
+        <g class="ida-node"><circle cx="652.0" cy="296" r="15"></circle><text x="652.0" y="296">16</text></g>
+        <g class="ida-node"><circle cx="697.0" cy="296" r="15"></circle><text x="697.0" y="296">10</text></g>
+        <text class="ida-label" x="472.0" y="326" text-anchor="middle">Goal</text>
+        </svg>
+        <ul class="concept-list" style="margin-top:0.8rem;">
+          <li>In pruned values, the least is 7, so threshold = 7.</li>
+          <li>First child 4 &lt; threshold: its first child 5 &lt; threshold, explore 7 &amp; 8. 7 = threshold, so explore its children 12 &amp; 14 — both &gt; threshold, pruned. 8 &gt; threshold, pruned.</li>
+          <li>Second child of 4, i.e. 4 &lt; threshold: children 8 &amp; 7. 8 &gt; threshold, pruned; 7 = threshold, so explore its children 13 &amp; 8 — both &gt; threshold, pruned. Pruned so far: 12, 14, 8 &amp; 13.</li>
+          <li>Second child of the root, 5 &lt; threshold: explore 6 &amp; 6. The first 6 has children 6 &amp; 8; 6 &lt; threshold, explore its children 13 &amp; 7: 13 &gt; threshold, pruned; 7 = threshold and it has no children. Then 8 &gt; threshold, pruned.</li>
+          <li>The second 6 &lt; threshold: explore 7 &amp; 9. 7 = threshold, so explore its children 8 &amp; 14 — both &gt; threshold, pruned. 9 &gt; threshold, pruned.</li>
+          <li>So, our pruned values are <b>12, 14, 8, 13 &amp; 9</b>.</li>
+        </ul>
+      </div>
+      <div class="ida-iter">
+        <h4>Iteration 6 — threshold = 8</h4>
+        <svg class="ida-tree" viewBox="0 0 720 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="IDA* example tree, iteration 6, threshold 8">
+        <line class="ida-edge" x1="359.5" y1="48" x2="179.5" y2="110"></line>
+        <line class="ida-edge" x1="359.5" y1="48" x2="539.5" y2="110"></line>
+        <line class="ida-edge" x1="179.5" y1="110" x2="89.5" y2="172"></line>
+        <line class="ida-edge" x1="179.5" y1="110" x2="269.5" y2="172"></line>
+        <line class="ida-edge" x1="539.5" y1="110" x2="449.5" y2="172"></line>
+        <line class="ida-edge" x1="539.5" y1="110" x2="629.5" y2="172"></line>
+        <line class="ida-edge" x1="89.5" y1="172" x2="44.5" y2="234"></line>
+        <line class="ida-edge" x1="89.5" y1="172" x2="134.5" y2="234"></line>
+        <line class="ida-edge" x1="269.5" y1="172" x2="224.5" y2="234"></line>
+        <line class="ida-edge" x1="269.5" y1="172" x2="314.5" y2="234"></line>
+        <line class="ida-edge" x1="449.5" y1="172" x2="404.5" y2="234"></line>
+        <line class="ida-edge" x1="449.5" y1="172" x2="494.5" y2="234"></line>
+        <line class="ida-edge" x1="629.5" y1="172" x2="584.5" y2="234"></line>
+        <line class="ida-edge" x1="629.5" y1="172" x2="674.5" y2="234"></line>
+        <line class="ida-edge" x1="44.5" y1="234" x2="22.0" y2="296"></line>
+        <line class="ida-edge" x1="44.5" y1="234" x2="67.0" y2="296"></line>
+        <line class="ida-edge" x1="134.5" y1="234" x2="112.0" y2="296"></line>
+        <line class="ida-edge" x1="134.5" y1="234" x2="157.0" y2="296"></line>
+        <line class="ida-edge" x1="224.5" y1="234" x2="202.0" y2="296"></line>
+        <line class="ida-edge" x1="224.5" y1="234" x2="247.0" y2="296"></line>
+        <line class="ida-edge" x1="314.5" y1="234" x2="292.0" y2="296"></line>
+        <line class="ida-edge" x1="314.5" y1="234" x2="337.0" y2="296"></line>
+        <line class="ida-edge" x1="404.5" y1="234" x2="382.0" y2="296"></line>
+        <line class="ida-edge" x1="404.5" y1="234" x2="427.0" y2="296"></line>
+        <line class="ida-edge" x1="494.5" y1="234" x2="472.0" y2="296"></line>
+        <line class="ida-edge" x1="494.5" y1="234" x2="517.0" y2="296"></line>
+        <line class="ida-edge" x1="584.5" y1="234" x2="562.0" y2="296"></line>
+        <line class="ida-edge" x1="584.5" y1="234" x2="607.0" y2="296"></line>
+        <line class="ida-edge" x1="674.5" y1="234" x2="652.0" y2="296"></line>
+        <line class="ida-edge" x1="674.5" y1="234" x2="697.0" y2="296"></line>
+        <text class="ida-label" x="10" y="20">Threshold = 8</text>
+        <text class="ida-label" x="10" y="38">Goal found</text>
+        <text class="ida-label" x="359.5" y="26" text-anchor="middle">Start</text>
+        <g class="ida-node visited"><circle cx="359.5" cy="48" r="15"></circle><text x="359.5" y="48">2</text></g>
+        <g class="ida-node visited"><circle cx="179.5" cy="110" r="15"></circle><text x="179.5" y="110">4</text></g>
+        <g class="ida-node visited"><circle cx="539.5" cy="110" r="15"></circle><text x="539.5" y="110">5</text></g>
+        <g class="ida-node visited"><circle cx="89.5" cy="172" r="15"></circle><text x="89.5" y="172">5</text></g>
+        <g class="ida-node visited"><circle cx="269.5" cy="172" r="15"></circle><text x="269.5" y="172">4</text></g>
+        <g class="ida-node visited"><circle cx="449.5" cy="172" r="15"></circle><text x="449.5" y="172">6</text></g>
+        <g class="ida-node"><circle cx="629.5" cy="172" r="15"></circle><text x="629.5" y="172">6</text></g>
+        <g class="ida-node visited"><circle cx="44.5" cy="234" r="15"></circle><text x="44.5" y="234">7</text></g>
+        <g class="ida-node visited"><circle cx="134.5" cy="234" r="15"></circle><text x="134.5" y="234">8</text></g>
+        <g class="ida-node visited"><circle cx="224.5" cy="234" r="15"></circle><text x="224.5" y="234">8</text></g>
+        <g class="ida-node visited"><circle cx="314.5" cy="234" r="15"></circle><text x="314.5" y="234">7</text></g>
+        <g class="ida-node visited"><circle cx="404.5" cy="234" r="15"></circle><text x="404.5" y="234">6</text></g>
+        <g class="ida-node visited"><circle cx="494.5" cy="234" r="15"></circle><text x="494.5" y="234">8</text></g>
+        <g class="ida-node"><circle cx="584.5" cy="234" r="15"></circle><text x="584.5" y="234">7</text></g>
+        <g class="ida-node"><circle cx="674.5" cy="234" r="15"></circle><text x="674.5" y="234">9</text></g>
+        <g class="ida-node visited pruned"><circle cx="22.0" cy="296" r="15"></circle><text x="22.0" y="296">12</text></g>
+        <g class="ida-node visited pruned"><circle cx="67.0" cy="296" r="15"></circle><text x="67.0" y="296">14</text></g>
+        <g class="ida-node visited pruned"><circle cx="112.0" cy="296" r="15"></circle><text x="112.0" y="296">16</text></g>
+        <g class="ida-node visited pruned"><circle cx="157.0" cy="296" r="15"></circle><text x="157.0" y="296">15</text></g>
+        <g class="ida-node visited pruned"><circle cx="202.0" cy="296" r="15"></circle><text x="202.0" y="296">12</text></g>
+        <g class="ida-node visited pruned"><circle cx="247.0" cy="296" r="15"></circle><text x="247.0" y="296">9</text></g>
+        <g class="ida-node visited pruned"><circle cx="292.0" cy="296" r="15"></circle><text x="292.0" y="296">13</text></g>
+        <g class="ida-node visited"><circle cx="337.0" cy="296" r="15"></circle><text x="337.0" y="296">8</text></g>
+        <g class="ida-node visited pruned"><circle cx="382.0" cy="296" r="15"></circle><text x="382.0" y="296">13</text></g>
+        <g class="ida-node visited"><circle cx="427.0" cy="296" r="15"></circle><text x="427.0" y="296">7</text></g>
+        <g class="ida-node goal"><circle cx="472.0" cy="296" r="15"></circle><text x="472.0" y="296">15</text></g>
+        <g class="ida-node"><circle cx="517.0" cy="296" r="15"></circle><text x="517.0" y="296">16</text></g>
+        <g class="ida-node"><circle cx="562.0" cy="296" r="15"></circle><text x="562.0" y="296">8</text></g>
+        <g class="ida-node"><circle cx="607.0" cy="296" r="15"></circle><text x="607.0" y="296">14</text></g>
+        <g class="ida-node"><circle cx="652.0" cy="296" r="15"></circle><text x="652.0" y="296">16</text></g>
+        <g class="ida-node"><circle cx="697.0" cy="296" r="15"></circle><text x="697.0" y="296">10</text></g>
+        <text class="ida-label" x="472.0" y="326" text-anchor="middle">found</text>
+        </svg>
+        <ul class="concept-list" style="margin-top:0.8rem;">
+          <li>In pruned values, the least is 8, so threshold = 8.</li>
+          <li>Left subtree: 4 → 5 → 7 &lt; threshold, explore 12 &amp; 14 — pruned. 8 = threshold, explore 16 &amp; 15 — pruned. Pruned so far: 12, 14, 16 &amp; 15.</li>
+          <li>4 → 8 = threshold, explore 12 &amp; 9 — pruned. 7 &lt; threshold, explore 13 &amp; 8: 13 pruned; 8 = threshold and it has no children. Pruned so far: 12, 14, 16, 15, 9 and 13.</li>
+          <li>Second child of the root, 5 &lt; threshold: explore 6 &amp; 6 one by one. The first 6 has children 6 &amp; 8; 6 &lt; threshold, explore 13 &amp; 7: 13 pruned, 7 &lt; threshold with no children.</li>
+          <li>Next sub-child of 6 is 8 = threshold, so explore its children: <b>15 is the goal — found!</b> The search stops; the second 6 is never visited.</li>
+        </ul>
+      </div>
+    </div>
+
+    <p class="caption-note"><b>Note on the goal test:</b> in this example the goal is reported as soon as it is <i>generated</i> (as a child of the f = 8 node at threshold 8). Textbook IDA* applies the goal test when a node is <i>expanded</i>, which requires f(goal) = 15 ≤ threshold — so it would keep iterating until the threshold reaches 15. You can compare both in the interactive version below.</p>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:2rem;">Step through IDA* yourself</h3>
     <div class="playground">
       <div class="pg-controls">
         <div class="strategy-pick">
-          <button class="strat-btn sp-strat-btn active" data-s="greedy">Greedy</button>
-          <button class="strat-btn sp-strat-btn" data-s="beam">Beam</button>
-          <button class="strat-btn sp-strat-btn" data-s="hillclimbing">Hill Climbing</button>
-          <button class="strat-btn sp-strat-btn" data-s="astar">A*</button>
+          <button class="strat-btn ida-mode-btn active" data-mode="generate">Goal test on generation (example)</button>
+          <button class="strat-btn ida-mode-btn" data-mode="expand">Goal test on expansion (textbook)</button>
         </div>
         <div class="play-btns">
-          <button class="icon-btn" id="sp-prev" title="Step back">⏮</button>
-          <button class="icon-btn" id="sp-play" title="Play / pause">▶</button>
-          <button class="icon-btn" id="sp-next" title="Step forward">⏭</button>
-          <button class="icon-btn" id="sp-reset" title="Reset">↺</button>
+          <button class="icon-btn" id="ida-prev" title="Step back">⏮</button>
+          <button class="icon-btn" id="ida-play" title="Play / pause">▶</button>
+          <button class="icon-btn" id="ida-next" title="Step forward">⏭</button>
+          <button class="icon-btn" id="ida-iter" title="Jump to next iteration">⏩</button>
+          <button class="icon-btn" id="ida-reset" title="Reset">↺</button>
         </div>
       </div>
-
-      <div class="beam-control" id="sp-beam-control">
-        <label>Beam width l</label>
-        <input type="range" id="sp-beam-slider" min="2" max="4" value="2" step="1">
-        <span class="val" id="sp-beam-val">2</span>
+      <span class="ids-readout">Threshold = <span id="ida-t-val">2</span></span>
+      <div class="ida-legend">
+        <span class="lg-current">current</span>
+        <span class="lg-visited">visited this iteration</span>
+        <span class="lg-pruned">pruned</span>
+        <span class="lg-goal">goal</span>
       </div>
-
-      <div class="pg-grid">
-        <svg id="graph-playground" viewBox="0 0 660 470" xmlns="http://www.w3.org/2000/svg"></svg>
-        <div>
-          <div class="frontier-box">
-            <h5 id="sp-frontier-title">Frontier</h5>
-            <div class="chip-row" id="sp-frontier-chips"></div>
-          </div>
-          <div class="frontier-box">
-            <h5>Search log</h5>
-            <div class="log-box" id="sp-log"></div>
-          </div>
+      <svg id="ida-tree" class="ida-tree" viewBox="0 0 720 330" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div class="pg-grid" style="grid-template-columns:1fr 1.4fr; margin-top:1rem;">
+        <div class="frontier-box">
+          <h5>Pruned f-values (this iteration)</h5>
+          <div class="chip-row" id="ida-pruned-chips"></div>
+        </div>
+        <div class="frontier-box">
+          <h5>Search log</h5>
+          <div class="log-box" id="ida-log"></div>
         </div>
       </div>
     </div>
+
+    <p style="font-size:0.8rem; color:var(--ink-soft); margin-top:1rem;">Example adapted from <a href="https://www.geeksforgeeks.org/artificial-intelligence/iterative-deepening-a-algorithm-ida-artificial-intelligence/" target="_blank" rel="noopener">GeeksforGeeks — Iterative Deepening A* algorithm (IDA*)</a>.</p>
   </section>
 
-  <!-- ===== A* ===== -->
-  <section class="block" id="astar">
-    <p class="eyebrow">Cost so far + cost to go</p>
-    <h2 class="section-title">A* and its optimality</h2>
-    <p class="section-lede">
-      A* avoids expanding paths that are already expensive by scoring nodes with <b>f(n) = g(n) + h(n)</b>: cost so far, plus estimated cost to the goal.
-      Switch the playground above to <b>A*</b> — on this graph, greedy/beam/hill-climbing all get lured toward G through a node with tempting low h but a costly edge; A* isn't fooled, because it also accounts for g(n).
-    </p>
-    <ul>
-      <li>Complete: <b>Yes</b>. Optimal: <b>Yes</b> — A* never expands a node with f(n) &gt; C*.</li>
-      <li>Time/space: O(b<sup>d</sup>), using a priority queue.</li>
-    </ul>
-
-    <h3 class="section-title" style="font-size:1.2rem;">Admissible vs. consistent</h3>
-    <p class="section-lede">
-      <b>Admissible</b>: h(n) ≤ h*(n) — never overestimates the true remaining cost.
-      <b>Consistent</b>: h(n) ≤ cost(n, n') + h(n') for every neighbor n' — the heuristic can't drop by more than the actual step cost.
-      Consistent ⟹ admissible, but not the other way round. <b>Tree-search</b> only needs admissibility to be optimal; <b>graph-search</b> needs consistency (otherwise a cheaper path to an already-expanded node can be missed).
-    </p>
-    <p class="section-lede">Click the cards: this h is admissible everywhere, but fails consistency on one edge.</p>
-
-    <div class="sim-panel">
-      <p class="puzzle-label">Admissibility — h(n) vs. true cost h*(n) to goal C</p>
-      <div class="check-grid" id="admiss-grid"></div>
-      <p class="puzzle-label" style="margin-top:1.2rem;">Consistency — h(n) vs. cost(n,n′) + h(n′), per edge</p>
-      <div class="check-grid" id="consist-grid"></div>
-    </div>
-  </section>
-
-  <!-- ===== CHOOSING A HEURISTIC ===== -->
-  <section class="block" id="choosing">
-    <p class="eyebrow">Not all admissible heuristics are equal</p>
-    <h2 class="section-title">Choosing a heuristic</h2>
-    <p class="section-lede">
-      Back to the puzzle: h₁ (misplaced tiles) and h₂ (Manhattan distance) are both admissible and consistent — but h₂(n) ≥ h₁(n) for this state (14 ≥ 6), so h₂ <b>dominates</b> h₁ and guides A* with fewer node expansions.
-      Given any two admissible heuristics h<sub>a</sub>, h<sub>b</sub>, their max — h(n) = max(h<sub>a</sub>(n), h<sub>b</sub>(n)) — is also admissible, and dominates both.
-    </p>
-    <p class="section-lede">
-      <b>Proof strategy for admissibility:</b> build h(n) as the exact cost of a <i>relaxed</i> version of the problem (fewer constraints on actions). A relaxed problem's optimal cost is always ≤ the real problem's, so h(n) ≤ h*(n) for free.
-      Manhattan distance is exactly this: it relaxes "a tile can only move into the blank" to "a tile can move straight to its goal cell," ignoring collisions.
-    </p>
-  </section>
-
-  <!-- ===== IDA* + SIMULATED ANNEALING ===== -->
-  <section class="block" id="ida">
-    <p class="eyebrow">Bounded memory</p>
-    <h2 class="section-title">IDA* &amp; Simulated Annealing</h2>
-    <p class="section-lede">
-      <b>IDA*</b> = Iterative Deepening + A*'s evaluation function as the depth-limit threshold: run a depth-limited search with the cutoff on f(n) instead of depth, increasing the threshold each iteration. Complete &amp; optimal (unit cost), but O(b<sup>d</sup>) time with only O(bd) space — a DFS-shaped A*.
-      <b>Memory-bounded A*</b> is the equivalent idea combined with beam search: keep only l nodes in the queue.
-    </p>
+  <!-- ===== SIMULATED ANNEALING ===== -->
+  <section class="block" id="annealing">
+    <h2 class="section-title">Simulated Annealing</h2>
     <p class="section-lede">
       <b>Simulated annealing</b> escapes local maxima the opposite way hill climbing gets stuck: it allows some "bad" moves, accepted with probability exp(−Δ/T), and gradually cools T so bad moves become rarer over time.
     </p>

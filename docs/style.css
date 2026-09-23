@@ -526,3 +526,25 @@ footer { text-align: center; color: var(--ink-soft); font-size: 0.85rem; padding
 .b2b-track.right { display: flex; justify-content: flex-start; }
 .b2b-fill { height: 100%; border-radius: 6px; }
 .b2b-center { width: 3px; align-self: stretch; background: var(--ink-soft); border-radius: 2px; }
+
+/* ---- IDA* example tree ---- */
+.ida-tree { width: 100%; height: auto; display: block; }
+.ida-tree .ida-edge { stroke: var(--ink-soft); stroke-width: 1.3; opacity: 0.55; }
+.ida-node circle { fill: var(--surface); stroke: var(--ink-soft); stroke-width: 1.5; transition: all 0.2s ease; }
+.ida-node text { font-family: 'Inter', sans-serif; font-weight: 700; font-size: 12px; fill: var(--ink); text-anchor: middle; dominant-baseline: central; }
+.ida-node.visited circle { fill: var(--bfs); stroke: var(--bfs); }
+.ida-node.visited text { fill: #fff; }
+.ida-node.pruned circle { stroke: var(--coral); stroke-width: 2.5; stroke-dasharray: 3 2; }
+.ida-node.goal circle { fill: #d9546e; stroke: #d9546e; }
+.ida-node.goal text { fill: #fff; }
+.ida-node.current circle { stroke: var(--ink); stroke-width: 3; stroke-dasharray: none; }
+.ida-label { font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 700; fill: var(--ink-soft); }
+.ida-legend { display: flex; flex-wrap: wrap; gap: 1rem; font-size: 0.8rem; color: var(--ink-soft); margin: 0.4rem 0 1rem; }
+.ida-legend span::before { content: ''; display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 0.35rem; vertical-align: -1px; border: 1.5px solid var(--ink-soft); background: var(--surface); }
+.ida-legend .lg-visited::before { background: var(--bfs); border-color: var(--bfs); }
+.ida-legend .lg-pruned::before { background: var(--bfs); border: 2px dashed var(--coral); }
+.ida-legend .lg-goal::before { background: #d9546e; border-color: #d9546e; }
+.ida-legend .lg-current::before { border: 3px solid var(--ink); }
+.ida-iter { border-top: 1px solid var(--line); padding-top: 1.2rem; margin-top: 1.4rem; }
+.ida-iter h4 { margin: 0 0 0.5rem; }
+.strat-btn.ida-mode-btn.active { background: var(--pink); border-color: var(--pink); color: #fff; }

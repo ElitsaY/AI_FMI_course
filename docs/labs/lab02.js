@@ -26,29 +26,63 @@ function initPuzzle() {
   const tbody = document.getElementById('puzzle-table-body');
   const h1Out = document.getElementById('puzzle-h1');
   const h2Out = document.getElementById('puzzle-h2');
+  const movesOut = document.getElementById('puzzle-moves');
+  const deltaOut = document.getElementById('puzzle-delta');
 
   renderPuzzleBoard(goalEl, PUZZLE_GOAL, false);
 
+  let board = [...PUZZLE_START];
+  let moves = 0;
   let showWork = false;
 
-  function render() {
-    renderPuzzleBoard(startEl, PUZZLE_START, showWork);
+  function heuristics(b) {
     let h1 = 0, h2 = 0;
-    tbody.innerHTML = '';
+    const rows = [];
     for (let tile = 1; tile <= 8; tile++) {
-      const s = posOf(PUZZLE_START, tile);
+      const s = posOf(b, tile);
       const g = posOf(PUZZLE_GOAL, tile);
       const misplaced = (s.row !== g.row || s.col !== g.col);
       const manhattan = Math.abs(s.row - g.row) + Math.abs(s.col - g.col);
       h1 += misplaced ? 1 : 0;
       h2 += manhattan;
-      const tr = document.createElement('tr');
-      tr.innerHTML = `<td>${tile}</td><td>${misplaced ? '1' : '0'}</td><td>${manhattan}</td>`;
-      tbody.appendChild(tr);
+      rows.push([tile, misplaced ? 1 : 0, manhattan]);
     }
+    return { h1, h2, rows };
+  }
+
+  function isAdjacentToBlank(i) {
+    const b = board.indexOf(0);
+    return Math.abs(Math.floor(i / 3) - Math.floor(b / 3)) + Math.abs(i % 3 - b % 3) === 1;
+  }
+
+  function render() {
+    renderPuzzleBoard(startEl, board, showWork);
+    [...startEl.children].forEach((tileEl, i) => {
+      if (isAdjacentToBlank(i)) { tileEl.style.cursor = 'pointer'; tileEl.title = 'Slide this tile'; }
+    });
+    const { h1, h2, rows } = heuristics(board);
+    tbody.innerHTML = rows.map(([t, m, d]) => `<tr><td>${t}</td><td>${m}</td><td>${d}</td></tr>`).join('');
     h1Out.textContent = h1;
     h2Out.textContent = h2;
+    movesOut.textContent = moves;
   }
+
+  startEl.addEventListener('click', (e) => {
+    const i = [...startEl.children].indexOf(e.target);
+    if (i < 0 || board[i] === 0 || !isAdjacentToBlank(i)) return;
+    const before = heuristics(board);
+    const tile = board[i];
+    const blank = board.indexOf(0);
+    board[blank] = tile; board[i] = 0;
+    moves++;
+    const after = heuristics(board);
+    const d2 = after.h2 - before.h2, d1 = after.h1 - before.h1;
+    const sign = (d) => (d > 0 ? '+' : d < 0 ? '−' : '') + Math.abs(d);
+    deltaOut.innerHTML = `Moved tile <b>${tile}</b> (cost 1): Δh₂ = <b>${sign(d2)}</b>, Δh₁ = <b>${sign(d1)}</b> — ` +
+      `h₂(n) − h₂(n′) = ${-d2 < 0 ? '−' + d2 : -d2} ≤ 1 = cost(n, n′) ✓` +
+      (after.h2 === 0 ? ' — 🎯 goal reached!' : '');
+    render();
+  });
 
   document.getElementById('puzzle-toggle').addEventListener('click', (e) => {
     showWork = !showWork;
@@ -57,66 +91,39 @@ function initPuzzle() {
     render();
   });
 
+  document.getElementById('puzzle-reset').addEventListener('click', () => {
+    board = [...PUZZLE_START];
+    moves = 0;
+    deltaOut.textContent = 'No move yet.';
+    render();
+  });
+
   render();
-}
-
-/* ---------- admissibility / consistency example (S-A-B-C) ---------- */
-const AC_NODES = { S: { h: 4 }, A: { h: 3 }, B: { h: 0 }, C: { h: 0 } };
-const AC_EDGES = [['S', 'A', 1], ['A', 'B', 1], ['B', 'C', 2]];
-// true cost-to-goal (C) from each node, along the only path
-const AC_TRUE = { C: 0, B: 2, A: 3, S: 4 };
-
-function initAdmissibility() {
-  const admissGrid = document.getElementById('admiss-grid');
-  const consistGrid = document.getElementById('consist-grid');
-
-  Object.keys(AC_NODES).forEach(id => {
-    const h = AC_NODES[id].h;
-    const hstar = AC_TRUE[id];
-    const pass = h <= hstar;
-    const card = document.createElement('div');
-    card.className = 'check-card ' + (pass ? 'pass' : 'fail');
-    card.innerHTML = `<div class="node-id">${id}</div>
-      <div class="ineq">h(${id})=${h} ${pass ? '≤' : '>'} h*(${id})=${hstar}</div>
-      <div class="verdict">${pass ? 'admissible' : 'violates admissibility'}</div>`;
-    admissGrid.appendChild(card);
-  });
-
-  AC_EDGES.forEach(([n, np, cost]) => {
-    const hn = AC_NODES[n].h, hnp = AC_NODES[np].h;
-    const pass = hn <= cost + hnp;
-    const card = document.createElement('div');
-    card.className = 'check-card ' + (pass ? 'pass' : 'fail');
-    card.innerHTML = `<div class="node-id">${n} → ${np}</div>
-      <div class="ineq">h(${n})=${hn} ${pass ? '≤' : '>'} ${cost}+h(${np})=${cost + hnp}</div>
-      <div class="verdict">${pass ? 'consistent' : 'inconsistent here'}</div>`;
-    consistGrid.appendChild(card);
-  });
 }
 
 /* ---------- main search graph (Greedy / Beam / Hill Climbing / A*) ---------- */
 const GRAPH = {
-  S: { h: 7, x: 330, y: 34 },
-  A: { h: 8, x: 120, y: 130 },
-  B: { h: 6, x: 330, y: 130 },
-  C: { h: 5, x: 540, y: 130 },
-  D: { h: 5, x: 150, y: 230 },
-  F: { h: 3, x: 400, y: 230 },
-  E: { h: 3, x: 580, y: 230 },
-  H: { h: 7, x: 60, y: 330 },
-  I: { h: 4, x: 250, y: 330 },
-  J: { h: 5, x: 60, y: 430 },
-  K: { h: 3, x: 240, y: 430 },
-  G: { h: 0, x: 500, y: 430, goal: true },
+  S: { h: 7, x: 290, y: 40 },
+  A: { h: 8, x: 110, y: 130 },
+  B: { h: 6, x: 265, y: 205 },
+  C: { h: 5, x: 410, y: 175 },
+  D: { h: 5, x: 200, y: 310 },
+  E: { h: 3, x: 465, y: 280 },
+  F: { h: 3, x: 365, y: 370 },
+  H: { h: 7, x: 90, y: 370 },
+  I: { h: 4, x: 240, y: 425 },
+  G: { h: 0, x: 510, y: 455, goal: true },
+  J: { h: 5, x: 185, y: 545 },
+  K: { h: 3, x: 345, y: 545 },
 };
 const GRAPH_EDGES = [
   ['S', 'A', 4], ['S', 'B', 10], ['S', 'C', 11],
   ['A', 'B', 8], ['A', 'D', 5],
   ['B', 'D', 15],
-  ['C', 'D', 8], ['C', 'E', 2],
+  ['C', 'D', 8], ['C', 'F', 2], ['C', 'E', 20],
   ['D', 'H', 16], ['D', 'I', 20], ['D', 'F', 1],
   ['H', 'I', 1], ['H', 'J', 2],
-  ['I', 'K', 13], ['I', 'G', 5],
+  ['I', 'J', 5], ['I', 'K', 13], ['I', 'G', 5],
   ['E', 'G', 19],
   ['F', 'G', 13],
   ['J', 'K', 7],
@@ -141,8 +148,8 @@ function renderGraphSVG(svgEl) {
     const dx = b.x - a.x, dy = b.y - a.y;
     const len = Math.sqrt(dx * dx + dy * dy);
     const ux = dx / len, uy = dy / len;
-    const x1 = a.x + ux * 24, y1 = a.y + uy * 24;
-    const x2 = b.x - ux * 26, y2 = b.y - uy * 26;
+    const x1 = a.x + ux * 28, y1 = a.y + uy * 28;
+    const x2 = b.x - ux * 30, y2 = b.y - uy * 30;
 
     const line = document.createElementNS(ns, 'line');
     line.setAttribute('class', 'edge');
@@ -165,19 +172,19 @@ function renderGraphSVG(svgEl) {
     g.setAttribute('data-id', id);
 
     const circle = document.createElementNS(ns, 'circle');
-    circle.setAttribute('cx', node.x); circle.setAttribute('cy', node.y); circle.setAttribute('r', 22);
+    circle.setAttribute('cx', node.x); circle.setAttribute('cy', node.y); circle.setAttribute('r', 26);
     circle.setAttribute('fill', '#fff');
     circle.setAttribute('stroke', node.goal ? '#12a894' : 'var(--indigo)');
     g.appendChild(circle);
 
     const text = document.createElementNS(ns, 'text');
-    text.setAttribute('x', node.x); text.setAttribute('y', node.y + 4);
+    text.setAttribute('x', node.x); text.setAttribute('y', node.y + 1);
     text.setAttribute('text-anchor', 'middle');
     text.textContent = id;
     g.appendChild(text);
 
     const hLabel = document.createElementNS(ns, 'text');
-    hLabel.setAttribute('x', node.x); hLabel.setAttribute('y', node.y + 36);
+    hLabel.setAttribute('x', node.x); hLabel.setAttribute('y', node.y + 15);
     hLabel.setAttribute('text-anchor', 'middle');
     hLabel.setAttribute('font-size', '10'); hLabel.setAttribute('font-weight', '800');
     hLabel.setAttribute('fill', 'var(--ucs)');
@@ -221,14 +228,14 @@ function buildSearchSteps(strategy, beamWidth) {
     let capNote = '';
     if (isFinite(cap) && frontier.length > cap) {
       frontier.sort((a, b) => priority(a) - priority(b));
-      frontier.length = cap;
-      capNote = ` Frontier capped to the best ${cap}.`;
+      const pruned = frontier.splice(cap).map(e => e.state);
+      capNote = ` Frontier capped to the best ${cap} — pruned ${pruned.join(', ')}.`;
     }
 
     steps.push({
       frontier: [...frontier], current, expandedStates: new Set(expandedStates),
       message: outs.length
-        ? `Expand ${current.state} (g=${current.g}) → generate ${outs.map(o => o[0]).join(', ')}.${capNote}`
+        ? `Expand ${current.state} (g=${current.g}${strategy === 'astar' ? `, f=${current.g + GRAPH[current.state].h}` : ''}) → generate ${outs.map(o => o[0]).join(', ')}.${capNote}`
         : `Expand ${current.state} → dead end, nothing to generate.`,
       win: false,
     });
@@ -245,18 +252,19 @@ function buildSearchSteps(strategy, beamWidth) {
   return steps;
 }
 
-function initSearchPlayground() {
-  const svg = document.getElementById('graph-playground');
-  const frontierChips = document.getElementById('sp-frontier-chips');
-  const frontierTitle = document.getElementById('sp-frontier-title');
-  const log = document.getElementById('sp-log');
-  const playBtn = document.getElementById('sp-play');
-  const beamControl = document.getElementById('sp-beam-control');
-  const beamSlider = document.getElementById('sp-beam-slider');
-  const beamVal = document.getElementById('sp-beam-val');
+// prefix: id prefix of the playground's controls; strategy: the algorithm it starts on
+function initSearchPlayground(prefix, svgId, strategy = 'greedy') {
+  const $ = (id) => document.getElementById(`${prefix}-${id}`);
+  const svg = document.getElementById(svgId);
+  const frontierChips = $('frontier-chips');
+  const frontierTitle = $('frontier-title');
+  const log = $('log');
+  const playBtn = $('play');
+  const beamControl = $('beam-control');
+  const beamSlider = $('beam-slider');
+  const beamVal = $('beam-val');
 
-  let strategy = 'greedy';
-  let beamWidth = +beamSlider.value;
+  let beamWidth = beamSlider ? +beamSlider.value : 2;
   let steps = buildSearchSteps(strategy, beamWidth);
   let idx = 0;
   let timer = null;
@@ -301,8 +309,8 @@ function initSearchPlayground() {
     log.scrollTop = log.scrollHeight;
 
     playBtn.textContent = idx >= steps.length - 1 ? '↺' : (timer ? '⏸' : '▶');
-    document.getElementById('sp-prev').disabled = idx === 0;
-    document.getElementById('sp-next').disabled = idx >= steps.length - 1;
+    $('prev').disabled = idx === 0;
+    $('next').disabled = idx >= steps.length - 1;
   }
 
   function stop() { clearInterval(timer); timer = null; }
@@ -314,9 +322,10 @@ function initSearchPlayground() {
     render();
   }
 
-  document.querySelectorAll('.sp-strat-btn').forEach(btn => {
+  const stratBtns = document.querySelectorAll(`.${prefix}-strat-btn`);
+  stratBtns.forEach(btn => {
     btn.addEventListener('click', () => {
-      document.querySelectorAll('.sp-strat-btn').forEach(b => b.classList.remove('active'));
+      stratBtns.forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       strategy = btn.dataset.s;
       beamControl.classList.toggle('show', strategy === 'beam');
@@ -324,16 +333,16 @@ function initSearchPlayground() {
     });
   });
 
-  beamSlider.addEventListener('input', () => {
+  if (beamSlider) beamSlider.addEventListener('input', () => {
     beamWidth = +beamSlider.value;
     beamVal.textContent = beamWidth;
     titles.beam = `Frontier (priority queue, ranked by h(n) — capped at ${beamWidth})`;
     reset();
   });
 
-  document.getElementById('sp-next').addEventListener('click', () => { if (idx < steps.length - 1) { idx++; render(); } });
-  document.getElementById('sp-prev').addEventListener('click', () => { stop(); if (idx > 0) { idx--; render(); } });
-  document.getElementById('sp-reset').addEventListener('click', reset);
+  $('next').addEventListener('click', () => { if (idx < steps.length - 1) { idx++; render(); } });
+  $('prev').addEventListener('click', () => { stop(); if (idx > 0) { idx--; render(); } });
+  $('reset').addEventListener('click', reset);
   playBtn.addEventListener('click', () => {
     if (idx >= steps.length - 1) { reset(); return; }
     if (timer) { stop(); render(); return; }
@@ -341,6 +350,257 @@ function initSearchPlayground() {
       if (idx >= steps.length - 1) { stop(); render(); return; }
       idx++; render();
     }, 1100);
+    render();
+  });
+
+  render();
+}
+
+/* ---------- hill climbing landscape (local maxima + random restart) ---------- */
+const HC_LAND = [3, 5, 8, 6, 4, 7, 10, 9, 6, 5, 8, 12, 15, 17, 14, 11, 9, 12, 13, 10, 7, 4, 6, 5];
+
+function climbFrom(i) {
+  const path = [i];
+  while (true) {
+    const nbrs = [i - 1, i + 1].filter(j => j >= 0 && j < HC_LAND.length);
+    const best = nbrs.reduce((a, b) => HC_LAND[b] > HC_LAND[a] ? b : a);
+    if (HC_LAND[best] <= HC_LAND[i]) return path;
+    i = best;
+    path.push(i);
+  }
+}
+
+function initHillLandscape() {
+  const svg = document.getElementById('hcl-svg');
+  const ns = 'http://www.w3.org/2000/svg';
+  const W = 640, H = 240, pad = 20;
+  const maxV = Math.max(...HC_LAND);
+  const globalIdx = HC_LAND.indexOf(maxV);
+  const step = (W - 2 * pad) / (HC_LAND.length - 1);
+  const X = (i) => pad + i * step;
+  const Y = (v) => H - pad - (v / maxV) * (H - 2 * pad - 10);
+
+  let climbs = 0, best = null, timer = null;
+
+  function el(tag, attrs) {
+    const e = document.createElementNS(ns, tag);
+    Object.entries(attrs).forEach(([k, v]) => e.setAttribute(k, v));
+    svg.appendChild(e);
+    return e;
+  }
+
+  function drawBase() {
+    svg.innerHTML = '';
+    const pts = HC_LAND.map((v, i) => `${X(i)},${Y(v)}`).join(' ');
+    el('polygon', { points: `${X(0)},${H - pad} ${pts} ${X(HC_LAND.length - 1)},${H - pad}`, fill: 'color-mix(in srgb, var(--bfs) 14%, transparent)' });
+    el('polyline', { points: pts, fill: 'none', stroke: 'var(--bfs)', 'stroke-width': 2.5 });
+    el('line', { x1: pad, x2: W - pad, y1: Y(maxV), y2: Y(maxV), stroke: 'var(--ink-soft)', 'stroke-dasharray': '4 4', 'stroke-width': 1 });
+    const t = el('text', { x: W - pad, y: Y(maxV) - 6, 'text-anchor': 'end', 'font-size': 11, 'font-weight': 700, fill: 'var(--ink-soft)' });
+    t.textContent = 'global maximum';
+    HC_LAND.forEach((v, i) => el('circle', { cx: X(i), cy: Y(v), r: 3, fill: 'var(--surface)', stroke: 'var(--bfs)', 'stroke-width': 1.5 }));
+  }
+
+  function drawPath(path, upto) {
+    drawBase();
+    const shown = path.slice(0, upto + 1);
+    if (shown.length > 1) {
+      el('polyline', { points: shown.map(i => `${X(i)},${Y(HC_LAND[i]) - 8}`).join(' '), fill: 'none', stroke: 'var(--dfs)', 'stroke-width': 2.5 });
+    }
+    el('circle', { cx: X(path[0]), cy: Y(HC_LAND[path[0]]), r: 6, fill: 'var(--surface)', stroke: 'var(--dfs)', 'stroke-width': 2.5 });
+    const cur = shown[shown.length - 1];
+    el('circle', { cx: X(cur), cy: Y(HC_LAND[cur]), r: 7, fill: 'var(--dfs)' });
+  }
+
+  function render(msg) {
+    document.getElementById('hcl-restarts').textContent = climbs;
+    document.getElementById('hcl-best').textContent = best === null ? '–' : HC_LAND[best];
+    if (msg) document.getElementById('hcl-msg').textContent = msg;
+  }
+
+  document.getElementById('hcl-climb').addEventListener('click', () => {
+    clearInterval(timer);
+    const start = Math.floor(Math.random() * HC_LAND.length);
+    const path = climbFrom(start);
+    let k = 0;
+    drawPath(path, 0);
+    timer = setInterval(() => {
+      if (++k >= path.length) {
+        clearInterval(timer);
+        const end = path[path.length - 1];
+        climbs++;
+        if (best === null || HC_LAND[end] > HC_LAND[best]) best = end;
+        document.getElementById('hcl-last').textContent = HC_LAND[end];
+        render(end === globalIdx
+          ? `Reached the global maximum (${maxV}) after ${climbs} climb${climbs === 1 ? '' : 's'}.`
+          : `Stuck on a local maximum (${HC_LAND[end]}) — no neighbour is better. Try a random restart.`);
+        return;
+      }
+      drawPath(path, k);
+    }, 250);
+  });
+
+  document.getElementById('hcl-reset').addEventListener('click', () => {
+    clearInterval(timer);
+    climbs = 0; best = null;
+    document.getElementById('hcl-last').textContent = '–';
+    drawBase();
+    render('Click “Random start & climb”. The global maximum is marked with a dashed line.');
+  });
+
+  drawBase();
+  render();
+}
+
+/* ---------- IDA* example tree (f-values in heap order; children of i are 2i+1, 2i+2) ---------- */
+const IDA_F = [2, 4, 5, 5, 4, 6, 6, 7, 8, 8, 7, 6, 8, 7, 9, 12, 14, 16, 15, 12, 9, 13, 8, 13, 7, 15, 16, 8, 14, 16, 10];
+const IDA_GOAL = 25;
+
+function idaKids(i) {
+  return [2 * i + 1, 2 * i + 2].filter(k => k < IDA_F.length);
+}
+
+// mode 'generate': goal reported when generated (as in the worked example)
+// mode 'expand': goal reported only when visited with f <= threshold (textbook IDA*)
+function buildIDAStarSteps(mode) {
+  const steps = [];
+  let T = IDA_F[0];
+  for (let iter = 1; iter <= 20; iter++) {
+    const visited = new Set(), pruned = [];
+    let found = false;
+    const snap = (current, message, extra = {}) => steps.push({
+      iter, T, current, visited: new Set(visited), pruned: [...pruned], message, ...extra,
+    });
+    snap(null, `── Iteration ${iter}: threshold = ${T} ──`, { header: true });
+
+    const dfs = (i) => {
+      if (found) return;
+      visited.add(i);
+      const f = IDA_F[i];
+      if (f > T) {
+        pruned.push(i);
+        snap(i, `Visit ${f}: f = ${f} > ${T} → prune.`);
+        return;
+      }
+      if (mode === 'expand' && i === IDA_GOAL) {
+        found = true;
+        snap(i, `Visit ${f}: f = ${f} ≤ ${T} and it is the goal → 🎯 found!`, { win: true });
+        return;
+      }
+      const kids = idaKids(i);
+      snap(i, kids.length
+        ? `Visit ${f}: f = ${f} ≤ ${T} → explore its children ${kids.map(k => IDA_F[k]).join(' & ')}.`
+        : `Visit ${f}: f = ${f} ≤ ${T}, but it has no children.`);
+      for (const k of kids) {
+        if (found) return;
+        if (mode === 'generate' && k === IDA_GOAL) {
+          visited.add(k);
+          found = true;
+          snap(k, `Generate ${IDA_F[k]}: it is the goal → 🎯 found!`, { win: true });
+          return;
+        }
+        dfs(k);
+      }
+    };
+    dfs(0);
+    if (found) break;
+    const next = Math.min(...pruned.map(i => IDA_F[i]));
+    snap(null, `Iteration over. Pruned: ${pruned.map(i => IDA_F[i]).join(', ')} → next threshold = min = ${next}.`, { end: true });
+    T = next;
+  }
+  return steps;
+}
+
+function initIDAStar() {
+  const svg = document.getElementById('ida-tree');
+  const ns = 'http://www.w3.org/2000/svg';
+  const log = document.getElementById('ida-log');
+  const chips = document.getElementById('ida-pruned-chips');
+  const tVal = document.getElementById('ida-t-val');
+  const playBtn = document.getElementById('ida-play');
+
+  const level = (i) => Math.floor(Math.log2(i + 1));
+  const X = [], Y = (i) => 48 + level(i) * 62;
+  for (let j = 0; j < 16; j++) X[15 + j] = 22 + j * 45;
+  for (let i = 14; i >= 0; i--) X[i] = (X[2 * i + 1] + X[2 * i + 2]) / 2;
+
+  let mode = 'generate';
+  let steps = buildIDAStarSteps(mode);
+  let idx = 0, timer = null;
+
+  function draw(step) {
+    svg.innerHTML = '';
+    for (let i = 1; i < IDA_F.length; i++) {
+      const p = (i - 1) >> 1;
+      const line = document.createElementNS(ns, 'line');
+      line.setAttribute('class', 'ida-edge');
+      line.setAttribute('x1', X[p]); line.setAttribute('y1', Y(p));
+      line.setAttribute('x2', X[i]); line.setAttribute('y2', Y(i));
+      svg.appendChild(line);
+    }
+    IDA_F.forEach((f, i) => {
+      const g = document.createElementNS(ns, 'g');
+      const cls = ['ida-node'];
+      if (i === IDA_GOAL) cls.push('goal');
+      else if (step.visited.has(i)) cls.push('visited');
+      if (step.pruned.includes(i)) cls.push('pruned');
+      if (step.current === i) cls.push('current');
+      g.setAttribute('class', cls.join(' '));
+      g.innerHTML = `<circle cx="${X[i]}" cy="${Y(i)}" r="15"></circle><text x="${X[i]}" y="${Y(i)}">${f}</text>`;
+      svg.appendChild(g);
+    });
+    const label = document.createElementNS(ns, 'text');
+    label.setAttribute('class', 'ida-label');
+    label.setAttribute('x', X[IDA_GOAL]); label.setAttribute('y', Y(IDA_GOAL) + 30);
+    label.setAttribute('text-anchor', 'middle');
+    label.textContent = step.win ? 'found' : 'Goal';
+    svg.appendChild(label);
+  }
+
+  function render() {
+    const step = steps[idx];
+    draw(step);
+    tVal.textContent = step.T;
+    chips.innerHTML = step.pruned.length
+      ? step.pruned.map(i => `<span class="chip">${IDA_F[i]}</span>`).join('')
+      : '<span style="color:var(--ink-soft); font-size:0.85rem;">none yet</span>';
+    log.innerHTML = steps.slice(0, idx + 1).map((s, i) => {
+      if (s.header) return `<p class="iter">${s.message}</p>`;
+      const cls = i === idx ? (s.win ? 'win' : 'current') : '';
+      return `<p class="${cls}">${s.message}</p>`;
+    }).join('');
+    log.scrollTop = log.scrollHeight;
+    playBtn.textContent = idx >= steps.length - 1 ? '↺' : (timer ? '⏸' : '▶');
+    document.getElementById('ida-prev').disabled = idx === 0;
+    document.getElementById('ida-next').disabled = idx >= steps.length - 1;
+    document.getElementById('ida-iter').disabled = idx >= steps.length - 1;
+  }
+
+  function stop() { clearInterval(timer); timer = null; }
+  function reset() { stop(); steps = buildIDAStarSteps(mode); idx = 0; render(); }
+
+  document.querySelectorAll('.ida-mode-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.ida-mode-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      mode = btn.dataset.mode;
+      reset();
+    });
+  });
+  document.getElementById('ida-next').addEventListener('click', () => { if (idx < steps.length - 1) { idx++; render(); } });
+  document.getElementById('ida-prev').addEventListener('click', () => { stop(); if (idx > 0) { idx--; render(); } });
+  document.getElementById('ida-iter').addEventListener('click', () => {
+    stop();
+    while (idx < steps.length - 1) { idx++; if (steps[idx].end || steps[idx].win) break; }
+    render();
+  });
+  document.getElementById('ida-reset').addEventListener('click', reset);
+  playBtn.addEventListener('click', () => {
+    if (idx >= steps.length - 1) { reset(); return; }
+    if (timer) { stop(); render(); return; }
+    timer = setInterval(() => {
+      if (idx >= steps.length - 1) { stop(); render(); return; }
+      idx++; render();
+    }, 700);
     render();
   });
 
@@ -437,8 +697,12 @@ function initQuiz() {
 /* ---------- init ---------- */
 document.addEventListener('DOMContentLoaded', () => {
   initPuzzle();
-  initAdmissibility();
-  initSearchPlayground();
+  initSearchPlayground('greedy', 'greedy-graph', 'greedy');
+  initSearchPlayground('beam', 'beam-graph', 'beam');
+  initSearchPlayground('hc', 'hc-graph', 'hillclimbing');
+  initSearchPlayground('astar', 'astar-graph', 'astar');
+  initHillLandscape();
+  initIDAStar();
   initSA();
   initQuiz();
 });
