@@ -110,6 +110,7 @@ a:hover { text-decoration: underline; }
 .badge.bfs { background: var(--bfs); }
 .badge.ucs { background: var(--ucs); }
 .badge.ids { background: var(--ids); }
+.badge.dls { background: var(--pink); }
 .badge.neutral { background: var(--indigo); }
 
 /* ---- course cards (home page) ---- */
@@ -166,6 +167,19 @@ h2.section-title { font-size: 1.7rem; margin: 0 0 0.6rem; }
   background: var(--surface);
 }
 .toc a:hover { color: var(--indigo); text-decoration: none; border-color: var(--indigo); }
+
+/* ---- concept bullet list ---- */
+.concept-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.9rem; }
+.concept-list li {
+  position: relative; padding-left: 1.4rem; color: var(--ink-soft); line-height: 1.55;
+}
+.concept-list li::before {
+  content: '';
+  position: absolute; left: 0; top: 0.5em;
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--indigo);
+}
+.concept-list li b { color: var(--ink); }
 
 /* ---- flip glossary cards ---- */
 .flip-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 1rem; }
@@ -302,6 +316,8 @@ input[type="range"] { width: 100%; accent-color: var(--indigo); }
 .log-box p { margin: 0.2rem 0; padding: 0.3rem 0.5rem; border-radius: 6px; }
 .log-box p.current { background: color-mix(in srgb, var(--amber) 20%, transparent); font-weight: 700; }
 .log-box p.win { background: color-mix(in srgb, var(--teal) 20%, transparent); font-weight: 800; }
+.log-box p.iter { text-align: center; font-weight: 800; color: var(--ids); background: none; margin: 0.7rem 0 0.3rem; padding: 0; }
+.ids-readout { display: inline-flex; align-items: center; gap: 0.5rem; background: color-mix(in srgb, var(--ids) 10%, var(--surface)); border: 1px solid var(--ids); border-radius: 999px; padding: 0.4rem 0.9rem; font-weight: 800; font-size: 0.88rem; color: var(--ids); margin-bottom: 0.8rem; }
 
 .node.visited circle, .node.visited rect { fill: color-mix(in srgb, var(--indigo) 14%, #fff); }
 .node.current circle, .node.current rect { fill: var(--amber); }
@@ -425,6 +441,21 @@ footer { text-align: center; color: var(--ink-soft); font-size: 0.85rem; padding
 }
 .fail-badge b { color: var(--coral); }
 .caption-note { font-size: 0.82rem; color: var(--ink-soft); background: color-mix(in srgb, var(--amber) 10%, var(--surface)); border: 1px dashed var(--line); border-radius: var(--radius-sm); padding: 0.7rem 0.9rem; margin: 0.8rem 0; }
+
+/* ---- definition box: for terms used right after (more prominent than a caption-note) ---- */
+.definition-box {
+  background: color-mix(in srgb, var(--indigo) 8%, var(--surface));
+  border: 1.5px solid var(--indigo);
+  border-left: 5px solid var(--indigo);
+  border-radius: var(--radius-sm);
+  padding: 1rem 1.2rem;
+  margin: 1.2rem 0;
+}
+.definition-box .dbox-label {
+  font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--indigo); margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.4rem;
+}
+.definition-box p { margin: 0; font-size: 0.98rem; color: var(--ink); line-height: 1.5; }
 .stat-strip { display: flex; flex-wrap: wrap; gap: 0.8rem; margin: 1.2rem 0; }
 .stat-strip .stat { flex: 1; min-width: 130px; background: color-mix(in srgb, var(--indigo) 6%, var(--surface)); border: 1px dashed var(--line); border-radius: var(--radius-sm); padding: 0.9rem 1rem; text-align: center; }
 .stat-strip .stat .n { font-family: 'Poppins', sans-serif; font-size: 1.4rem; font-weight: 800; color: var(--indigo); display: block; }
@@ -434,3 +465,53 @@ footer { text-align: center; color: var(--ink-soft); font-size: 0.85rem; padding
 .funnel-row .label { font-weight: 700; }
 .funnel-row .num { text-align: right; font-variant-numeric: tabular-nums; color: var(--ink-soft); }
 .back-link { display: inline-block; margin-bottom: 1rem; font-weight: 700; font-size: 0.88rem; }
+
+/* ---- per-algorithm stat card (Complete / Optimal / Time / Space) ---- */
+.algo-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  margin: 1.2rem 0;
+}
+.algo-stats.dfs { border-top: 3px solid var(--dfs); }
+.algo-stats.bfs { border-top: 3px solid var(--bfs); }
+.algo-stats.ucs { border-top: 3px solid var(--ucs); }
+.algo-stats.ids { border-top: 3px solid var(--ids); }
+.algo-stats.dls { border-top: 3px solid var(--pink); }
+.algo-stat { background: var(--surface); padding: 1rem 1.1rem; }
+.algo-stat .label { font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-soft); margin-bottom: 0.35rem; }
+.algo-stat .value { font-family: 'Poppins', sans-serif; font-size: 1.05rem; font-weight: 700; color: var(--ink); }
+.algo-stat .detail { font-size: 0.8rem; color: var(--ink-soft); margin-top: 0.35rem; line-height: 1.5; }
+
+/* ---- static depth-limit diagram (DLS) ---- */
+.dl-diagram { width: 100%; height: auto; }
+.dl-diagram .lvl-line { stroke: #e3e7ea; stroke-width: 1; stroke-dasharray: 3 4; }
+.dl-diagram .lvl-label { font-size: 12px; font-weight: 800; fill: var(--ink-soft); }
+.dl-diagram .edge { stroke: #c9c1da; stroke-width: 2; }
+.dl-diagram .edge.beyond { stroke: #d8d3e0; stroke-width: 1.5; stroke-dasharray: 3 3; }
+.dl-diagram circle.node-circle { fill: #fff; stroke: var(--pink); stroke-width: 2.5; }
+.dl-diagram circle.node-circle.beyond { stroke: #cfd3d6; stroke-dasharray: 3 3; fill: color-mix(in srgb, var(--ink-soft) 6%, #fff); }
+.dl-diagram text.node-label { font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 14px; fill: var(--ink); text-anchor: middle; }
+.dl-diagram text.node-label.beyond { fill: var(--ink-soft); }
+.dl-diagram .limit-line { stroke: var(--pink); stroke-width: 2.5; stroke-dasharray: 7 5; }
+.dl-diagram .limit-label { font-family: 'Poppins', sans-serif; font-size: 13px; font-weight: 800; fill: var(--pink); }
+
+/* ---- back-to-back comparison bars (e.g. IDS vs BFS) ---- */
+.b2b-header { display: grid; grid-template-columns: 90px 1fr 3px 1fr 90px; gap: 0.6rem; margin-bottom: 0.5rem; }
+.b2b-header .side-label { font-weight: 800; font-family: 'Poppins', sans-serif; font-size: 0.9rem; text-align: center; grid-column: span 1; }
+.b2b-header .side-label.left { grid-column: 2; color: var(--ids); }
+.b2b-header .side-label.right { grid-column: 4; color: var(--bfs); }
+.b2b-chart { display: grid; grid-template-columns: 90px 1fr 3px 1fr 90px; align-items: center; gap: 0.6rem; }
+.b2b-value { font-weight: 800; font-family: 'Poppins', sans-serif; font-size: 0.95rem; }
+.b2b-value.left { text-align: right; }
+.b2b-value.right { text-align: left; }
+.b2b-track { height: 26px; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.b2b-track.left { display: flex; justify-content: flex-end; }
+.b2b-track.right { display: flex; justify-content: flex-start; }
+.b2b-fill { height: 100%; border-radius: 6px; }
+.b2b-center { width: 3px; align-self: stretch; background: var(--ink-soft); border-radius: 2px; }

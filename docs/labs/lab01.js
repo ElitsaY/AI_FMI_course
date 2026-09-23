@@ -103,34 +103,6 @@ function renderTreeSVG(svgEl, { showBdm = false } = {}) {
   });
 }
 
-/* ---------- Glossary flip cards ---------- */
-const GLOSSARY = [
-  ['State', 'S', 'A representation of the task at some point in solving it. The initial state is <b>S</b>; goal states are <b>G</b>, <b>G1</b>, <b>G2</b>… any other capital letter is an intermediate state.'],
-  ['Successor function', 'ƒ', 'Also called the <b>operator</b>. It takes one state and produces the next — the rule that turns a state into its children in the search tree.'],
-  ['Path cost', '+', 'Additive cost of a solution path — e.g. total distance travelled, or simply the number of actions taken to get there.'],
-  ['State space', '❗', 'The totality of every state reachable from the initial state. When we draw it as a graph or tree, it becomes a <b>search tree</b>.'],
-  ['Search tree', '🌳', 'A tree representation of the state space: the initial state is the <b>root</b>; terminal and goal states are <b>leaves</b>.'],
-  ['b · d · m', '📏', '<b>b</b> = branching factor (breadth) · <b>d</b> = depth of the shallowest solution · <b>m</b> = maximum depth of the state space (can be ∞).'],
-];
-
-function buildGlossary() {
-  const wrap = document.getElementById('glossary');
-  GLOSSARY.forEach(([title, icon, def]) => {
-    const card = document.createElement('div');
-    card.className = 'flip-card';
-    card.innerHTML = `
-      <div class="flip-inner">
-        <div class="flip-face flip-front">
-          <h4>${icon} &nbsp;${title}</h4>
-          <p class="hint">click to reveal definition</p>
-        </div>
-        <div class="flip-face flip-back">${def}</div>
-      </div>`;
-    card.addEventListener('click', () => card.classList.toggle('flipped'));
-    wrap.appendChild(card);
-  });
-}
-
 /* ---------- Tree explorer (click for info) ---------- */
 function initExplorer() {
   const svg = document.getElementById('tree-explore');
@@ -315,34 +287,95 @@ function buildSteps(strategy) {
   return steps;
 }
 
-function initPlayground() {
-  const svg = document.getElementById('tree-playground');
-  const frontierChips = document.getElementById('frontier-chips');
-  const frontierTitle = document.getElementById('frontier-title');
-  const log = document.getElementById('pg-log');
-  const playBtn = document.getElementById('pg-play');
+/* ---------- IDS: iterative deepening over DLS ---------- */
+function buildIDSSteps() {
+  const steps = [];
+  const MAX_L = 3; // deepest real node (G1) sits at depth 3
 
-  let strategy = 'dfs';
-  let steps = buildSteps(strategy);
+  for (let l = 0; l <= MAX_L; l++) {
+    steps.push({ iter: true, l, frontier: [], current: null, expandedSet: new Set(), message: `── Iteration l = ${l} ──` });
+
+    let stack = [{ id: ROOT, depth: 0 }];
+    const expanded = new Set();
+    let found = false;
+
+    while (stack.length) {
+      const cur = stack.pop();
+      expanded.add(cur.id);
+      const isGoal = !!TREE[cur.id].goal;
+
+      if (isGoal) {
+        steps.push({
+          l, frontier: stack.map(s => s.id), current: cur.id, expandedSet: new Set(expanded),
+          message: `Expand ${cur.id} (depth ${cur.depth}) → 🎯 goal test passes! Found at l = ${l}.`,
+          win: true,
+        });
+        found = true;
+        break;
+      }
+
+      if (cur.depth >= l) {
+        steps.push({
+          l, frontier: stack.map(s => s.id), current: cur.id, expandedSet: new Set(expanded),
+          message: `Expand ${cur.id} (depth ${cur.depth}) → depth limit reached, no successors generated.`,
+        });
+        continue;
+      }
+
+      const kids = TREE[cur.id].children;
+      [...kids].reverse().forEach(k => stack.push({ id: k, depth: cur.depth + 1 }));
+      steps.push({
+        l, frontier: stack.map(s => s.id), current: cur.id, expandedSet: new Set(expanded),
+        message: kids.length
+          ? `Expand ${cur.id} (depth ${cur.depth}) → generate ${kids.join(', ')}.`
+          : `Expand ${cur.id} (depth ${cur.depth}) → leaf, nothing to generate.`,
+      });
+    }
+
+    if (found) break;
+    steps.push({ l, frontier: [], current: null, expandedSet: new Set(), message: `l = ${l}: goal not found — increase the limit and restart from the root.` });
+  }
+
+  return steps;
+}
+
+function initIDSDemo() {
+  const svg = document.getElementById('ids-tree');
+  const chips = document.getElementById('ids-stack-chips');
+  const log = document.getElementById('ids-log');
+  const lVal = document.getElementById('ids-l-val');
+  const playBtn = document.getElementById('ids-play');
+
+  const steps = buildIDSSteps();
   let idx = 0;
   let timer = null;
 
-  const titles = {
-    dfs: 'Frontier (stack — next pop from the right)',
-    bfs: 'Frontier (queue — next pop from the left)',
-    ucs: 'Frontier (priority queue — next pop = lowest cost)',
-  };
+  const DEPTH_Y = [40, 160, 280, 400]; // matches TREE's y per depth level
 
-  function costLabel(id) {
-    return strategy === 'ucs' ? ` (cost ${costOf(id)})` : '';
+  function drawLimitLine(l) {
+    if (l == null || l >= DEPTH_Y.length - 1) return; // nothing deeper to cut off
+    const ns = 'http://www.w3.org/2000/svg';
+    const y = (DEPTH_Y[l] + DEPTH_Y[l + 1]) / 2;
+
+    const line = document.createElementNS(ns, 'line');
+    line.setAttribute('class', 'limit-line');
+    line.setAttribute('x1', 10); line.setAttribute('y1', y);
+    line.setAttribute('x2', 630); line.setAttribute('y2', y);
+    svg.appendChild(line);
+
+    const label = document.createElementNS(ns, 'text');
+    label.setAttribute('class', 'limit-label');
+    label.setAttribute('x', 560); label.setAttribute('y', y - 8);
+    label.textContent = `l = ${l}`;
+    svg.appendChild(label);
   }
 
   function render() {
     renderTreeSVG(svg, { showBdm: false });
     const step = steps[idx];
     const expandedSet = step.expandedSet || new Set();
+    drawLimitLine(step.l);
 
-    // node classes
     svg.querySelectorAll('.node').forEach(g => {
       const id = g.getAttribute('data-id');
       g.classList.remove('visited', 'current', 'frontier', 'found');
@@ -352,13 +385,70 @@ function initPlayground() {
       else if (step.frontier.includes(id)) g.classList.add('frontier');
     });
 
-    // frontier chips
-    frontierTitle.textContent = titles[strategy];
-    frontierChips.innerHTML = step.frontier.length
-      ? step.frontier.map(id => `<span class="chip">${id}${costLabel(id)}</span>`).join('')
+    lVal.textContent = step.l;
+
+    chips.innerHTML = step.frontier.length
+      ? step.frontier.map(id => `<span class="chip">${id}</span>`).join('')
       : '<span style="color:var(--ink-soft); font-size:0.85rem;">empty</span>';
 
-    // log
+    log.innerHTML = steps.slice(0, idx + 1).map((s, i) => {
+      const cls = i === idx ? (s.win ? 'win' : s.iter ? 'iter' : 'current') : (s.iter ? 'iter' : '');
+      return `<p class="${cls}">${s.iter ? s.message : `${i}. ${s.message}`}</p>`;
+    }).join('');
+    log.scrollTop = log.scrollHeight;
+
+    playBtn.textContent = idx >= steps.length - 1 ? '↺' : (timer ? '⏸' : '▶');
+    document.getElementById('ids-prev').disabled = idx === 0;
+    document.getElementById('ids-next').disabled = idx >= steps.length - 1;
+  }
+
+  function stop() { clearInterval(timer); timer = null; }
+
+  document.getElementById('ids-next').addEventListener('click', () => { if (idx < steps.length - 1) { idx++; render(); } });
+  document.getElementById('ids-prev').addEventListener('click', () => { stop(); if (idx > 0) { idx--; render(); } });
+  document.getElementById('ids-reset').addEventListener('click', () => { stop(); idx = 0; render(); });
+  playBtn.addEventListener('click', () => {
+    if (idx >= steps.length - 1) { stop(); idx = 0; render(); return; }
+    if (timer) { stop(); render(); return; }
+    timer = setInterval(() => {
+      if (idx >= steps.length - 1) { stop(); render(); return; }
+      idx++; render();
+    }, 950);
+    render();
+  });
+
+  render();
+}
+
+/* ---------- Single-strategy demo (reused by DFS, BFS, ...) ---------- */
+function initStrategyDemo(strategy, idPrefix) {
+  const svg = document.getElementById(`${idPrefix}-tree`);
+  const chips = document.getElementById(`${idPrefix}-queue-chips`) || document.getElementById(`${idPrefix}-stack-chips`) || document.getElementById(`${idPrefix}-pq-chips`);
+  const log = document.getElementById(`${idPrefix}-log`);
+  const playBtn = document.getElementById(`${idPrefix}-play`);
+
+  const steps = buildSteps(strategy);
+  let idx = 0;
+  let timer = null;
+
+  function render() {
+    renderTreeSVG(svg, { showBdm: false });
+    const step = steps[idx];
+    const expandedSet = step.expandedSet || new Set();
+
+    svg.querySelectorAll('.node').forEach(g => {
+      const id = g.getAttribute('data-id');
+      g.classList.remove('visited', 'current', 'frontier', 'found');
+      if (step.win && id === step.current) g.classList.add('found');
+      else if (id === step.current) g.classList.add('current');
+      else if (expandedSet.has(id)) g.classList.add('visited');
+      else if (step.frontier.includes(id)) g.classList.add('frontier');
+    });
+
+    chips.innerHTML = step.frontier.length
+      ? step.frontier.map(id => `<span class="chip">${id}${strategy === 'ucs' ? ` (cost ${costOf(id)})` : ''}</span>`).join('')
+      : '<span style="color:var(--ink-soft); font-size:0.85rem;">empty</span>';
+
     log.innerHTML = steps.slice(0, idx + 1).map((s, i) => {
       const cls = i === idx ? (s.win ? 'win' : 'current') : '';
       return `<p class="${cls}">${i}. ${s.message}</p>`;
@@ -366,39 +456,17 @@ function initPlayground() {
     log.scrollTop = log.scrollHeight;
 
     playBtn.textContent = idx >= steps.length - 1 ? '↺' : (timer ? '⏸' : '▶');
-    document.getElementById('pg-prev').disabled = idx === 0;
-    document.getElementById('pg-next').disabled = idx >= steps.length - 1;
+    document.getElementById(`${idPrefix}-prev`).disabled = idx === 0;
+    document.getElementById(`${idPrefix}-next`).disabled = idx >= steps.length - 1;
   }
 
   function stop() { clearInterval(timer); timer = null; }
 
-  function reset(newStrategy) {
-    stop();
-    strategy = newStrategy;
-    steps = buildSteps(strategy);
-    idx = 0;
-    render();
-  }
-
-  document.querySelectorAll('.strat-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.strat-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      reset(btn.dataset.s);
-    });
-  });
-
-  document.getElementById('pg-next').addEventListener('click', () => {
-    if (idx < steps.length - 1) { idx++; render(); }
-  });
-  document.getElementById('pg-prev').addEventListener('click', () => {
-    stop();
-    if (idx > 0) { idx--; render(); }
-  });
-  document.getElementById('pg-reset').addEventListener('click', () => reset(strategy));
-
+  document.getElementById(`${idPrefix}-next`).addEventListener('click', () => { if (idx < steps.length - 1) { idx++; render(); } });
+  document.getElementById(`${idPrefix}-prev`).addEventListener('click', () => { stop(); if (idx > 0) { idx--; render(); } });
+  document.getElementById(`${idPrefix}-reset`).addEventListener('click', () => { stop(); idx = 0; render(); });
   playBtn.addEventListener('click', () => {
-    if (idx >= steps.length - 1) { reset(strategy); return; }
+    if (idx >= steps.length - 1) { stop(); idx = 0; render(); return; }
     if (timer) { stop(); render(); return; }
     timer = setInterval(() => {
       if (idx >= steps.length - 1) { stop(); render(); return; }
@@ -410,86 +478,12 @@ function initPlayground() {
   render();
 }
 
-/* ---------- Quiz ---------- */
-const QUIZ = [
-  {
-    q: 'In the search tree S → A,B,C, what is the branching factor of the root?',
-    opts: ['1', '2', '3', 'It has no branching factor'],
-    correct: 2,
-  },
-  {
-    q: 'Which data structure does Breadth-First Search use for its frontier?',
-    opts: ['Stack', 'Queue', 'Priority queue', 'Linked list'],
-    correct: 1,
-  },
-  {
-    q: 'Why can plain DFS fail to be complete?',
-    opts: [
-      'It always finds the most expensive path',
-      'It can get stuck exploring an infinite-depth branch and never backtrack to the goal',
-      'It requires a heuristic function it doesn\'t have',
-      'It can only be used on trees, not graphs',
-    ],
-    correct: 1,
-  },
-  {
-    q: 'Uniform-Cost Search always expands the node with the...',
-    opts: ['Greatest depth', 'Most children', 'Lowest path cost from the start', 'Alphabetically first name'],
-    correct: 2,
-  },
-  {
-    q: 'What does Iterative Deepening Search combine?',
-    opts: [
-      'BFS\'s memory use with DFS\'s completeness',
-      'DFS\'s low memory use with BFS\'s level-by-level completeness',
-      'UCS\'s cost tracking with a random restart',
-      'Two parallel breadth-first searches',
-    ],
-    correct: 1,
-  },
-];
-
-function initQuiz() {
-  const container = document.getElementById('quiz-container');
-  let score = 0;
-  let answered = 0;
-
-  const scoreBar = document.createElement('div');
-  scoreBar.className = 'quiz-score';
-  scoreBar.innerHTML = `<span>Score</span><span id="quiz-score-val">0 / ${QUIZ.length}</span>`;
-
-  QUIZ.forEach((item, qi) => {
-    const card = document.createElement('div');
-    card.className = 'quiz-card';
-    card.innerHTML = `<p class="q">${qi + 1}. ${item.q}</p>
-      <div class="quiz-opts">
-        ${item.opts.map((o, oi) => `<button class="quiz-opt" data-oi="${oi}">${o}</button>`).join('')}
-      </div>`;
-    card.querySelectorAll('.quiz-opt').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const oi = +btn.dataset.oi;
-        card.querySelectorAll('.quiz-opt').forEach(b => b.disabled = true);
-        if (oi === item.correct) {
-          btn.classList.add('correct');
-          score++;
-        } else {
-          btn.classList.add('wrong');
-          card.querySelector(`[data-oi="${item.correct}"]`).classList.add('correct');
-        }
-        answered++;
-        document.getElementById('quiz-score-val').textContent = `${score} / ${QUIZ.length}`;
-      });
-    });
-    container.appendChild(card);
-  });
-  container.appendChild(scoreBar);
-}
-
 /* ---------- init ---------- */
 document.addEventListener('DOMContentLoaded', () => {
-  buildGlossary();
   initExplorer();
+  initStrategyDemo('dfs', 'dfs');
+  initStrategyDemo('bfs', 'bfs');
+  initStrategyDemo('ucs', 'ucs');
+  initIDSDemo();
   initSimulator();
-  initPlayground();
-  initQuiz();
 });

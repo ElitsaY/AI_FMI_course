@@ -15,7 +15,6 @@
   <span class="brand"><span class="dot"></span> Class Notes</span>
   <nav>
     <a href="../index.html">Home</a>
-    <a href="#quiz">Quiz</a>
   </nav>
 </header>
 
@@ -23,7 +22,7 @@
   <div class="wrap">
     <p class="eyebrow">Lab 01</p>
     <h1>Basic Definitions &amp; Uninformed Search</h1>
-    <p class="lede">States, state spaces, and the blind (uninformed) strategies that search them: Depth‑First, Breadth‑First, Uniform‑Cost, and Iterative Deepening. Click things — most of this page moves.</p>
+    <p class="lede">In this lab we will explore basic concepts of AI such state, state space and other. Following that Uninformed search strategies will be discussed.</p>
     <div class="badges">
       <span class="badge dfs">DFS</span>
       <span class="badge bfs">BFS</span>
@@ -33,29 +32,52 @@
   </div>
 </section>
 
-<div class="toc">
-  <a href="#concepts">Concepts</a>
-  <a href="#tree">Search tree</a>
-  <a href="#simulator">b·d·m simulator</a>
-  <a href="#playground">Algorithm playground</a>
-  <a href="#summary">Summary</a>
-  <a href="#quiz">Quiz</a>
-</div>
-
 <div class="wrap">
 
   <!-- ===== CONCEPTS ===== -->
   <section class="block" id="concepts">
-    <p class="eyebrow">Start here</p>
     <h2 class="section-title">State space — basic concepts</h2>
-    <p class="section-lede">Click a card to flip it. These six ideas are the vocabulary the rest of the lab is written in.</p>
 
-    <div class="flip-grid" id="glossary"></div>
+    <h3 class="section-title" style="font-size:1.15rem;">State space</h3>
+    <ul class="concept-list">
+      <li><b>State</b>: a representation (formulation) of the task in the process of its solution.
+        <ul class="concept-list" style="margin-top:0.6rem;">
+          <li><i>Initial State</i> — presented with <b>S</b></li>
+          <li><i>Intermediate State</i> — presented with any capital letter except S and G, any state in between</li>
+          <li><i>Goal State</i> — presented with <b>G</b>, if there are more: <b>G1</b>, <b>G2</b> etc.</li>
+        </ul>
+      </li>
+      <li><b>Successor Function</b> (Operator): obtaining one state from another</li>
+      <li><b>Path Cost</b>: additive; e.g., sum of distances, number of actions executed, etc.</li>
+      <li>❗<b>State Space</b>: the totality of all possible states that can be obtained from a given initial state.</li>
+    </ul>
+    <p class="caption-note">A solution is a sequence of actions leading from the initial state to a goal state.</p>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.8rem;">Representation of the State Space</h3>
+    <p class="section-lede">The representation of the state space is a graph or a tree, where each state is represented as a node and the successor function is represented as an edge. When the state space is represented as a tree, it is called a <b>Search Tree</b>.</p>
+    <ul class="concept-list">
+      <li>The <b>initial state</b> is the <b>root</b> of the tree</li>
+      <li>The <b>terminal states</b> and the <b>goal state</b> are represented with <b>leaves</b></li>
+    </ul>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.8rem;">Search strategies evaluation</h3>
+    <p class="section-lede">Strategies are evaluated along the following dimensions:</p>
+    <ul class="concept-list">
+      <li><b>Completeness</b>: does it always find a solution if one exists?</li>
+      <li><b>Optimality</b>: does it always find a least-cost solution?</li>
+      <li><b>Time complexity</b>: number of nodes generated/expanded. We are interested in the worst-case scenario.</li>
+      <li><b>Space Complexity</b>: maximum number of nodes in memory.</li>
+    </ul>
+    <p class="section-lede">Time and space complexity are measured in terms of:</p>
+    <ul class="concept-list">
+      <li><b>b</b> – maximum branching factor of the search tree</li>
+      <li><b>d</b> – depth of the least-cost solution</li>
+      <li><b>m</b> – maximum depth of the state space (may be ∞)</li>
+    </ul>
   </section>
 
   <!-- ===== TREE EXPLORER ===== -->
   <section class="block" id="tree">
-    <p class="eyebrow">Worked example</p>
     <h2 class="section-title">Explore the search tree</h2>
     <p class="section-lede">This is the example tree used throughout the lab. <b>S</b> is the initial state; the dashed nodes <b>G1</b> and <b>G2</b> are goal states. Click any node to inspect it, or turn on the b / d / m overlay.</p>
 
@@ -66,27 +88,424 @@
 
     <div class="tree-panel">
       <svg id="tree-explore" viewBox="0 0 640 420" xmlns="http://www.w3.org/2000/svg"></svg>
-      <div class="node-info" id="node-info">
-        <p class="placeholder">👆 Click a node in the tree to see its depth, path, and path cost here.</p>
+      <div class="node-info" id="node-info"></div>
+    </div>
+  </section>
+
+  <!-- ===== GLOBAL VS LOCAL SEARCH ===== -->
+  <section class="block">
+    <h2 class="section-title">Global search vs. local search</h2>
+
+    <h3 class="section-title" style="font-size:1.15rem;">Global Search vs Local Search</h3>
+    <ul class="concept-list">
+      <li><b>Global Search</b>: search strategies that look all over the state space. If necessary, all states will be traversed.</li>
+      <li><b>Local Search</b>: they only look at the local area, so they can only look at states in this area. If the solution is outside of it, they will not be able to find it.</li>
+    </ul>
+    <p class="caption-note">Generally, Local Search is not used for finding a path from state A to state B.</p>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.8rem;">Local Search</h3>
+    <ul class="concept-list">
+      <li>Local Search in Artificial Intelligence is an optimizing algorithm to find the optimal solution more quickly.</li>
+      <li>Local search algorithms are used when we care only about a solution but not the path to a solution.</li>
+      <li>Local search is a heuristic method for solving computationally hard optimization problems.</li>
+      <li>Local search can be used on problems that can be formulated as finding a solution maximizing a criterion among a number of candidate solutions.</li>
+      <li>Local search algorithms move from solution to solution in the space of candidate solutions (the search space) by applying local changes, until a solution deemed optimal is found or a time bound is elapsed.</li>
+    </ul>
+  </section>
+
+  <!-- ===== UNINFORMED STRATEGIES ===== -->
+  <section class="block" id="strategies">
+    <h2 class="section-title">Uninformed (Blind) Search</h2>
+
+    <h3 class="section-title" style="font-size:1.15rem;">Uninformed Search Strategies</h3>
+    <p class="section-lede">Uninformed strategies use only the information available in the problem definition. They have no information where the goal state might be (if one exists).</p>
+    <ul class="concept-list">
+      <li>Uninformed Search Strategies:
+        <ul class="concept-list" style="margin-top:0.6rem;">
+          <li>Depth-First Search (DFS)</li>
+          <li>Breadth-First Search (BFS)</li>
+          <li>Uniform-Cost Search (UCS)</li>
+          <li>Depth-Limited Search (DLS)</li>
+          <li>Iterative Deepening Search (IDS)</li>
+        </ul>
+      </li>
+    </ul>
+  </section>
+
+  <!-- ===== DFS ===== -->
+  <section class="block" id="dfs">
+    <span class="badge dfs" style="margin-bottom:0.6rem; display:inline-block;">DFS</span>
+    <h2 class="section-title">DFS — Depth-First Search</h2>
+    <p class="section-lede"><b>Go Deep First</b>: DFS explores as far as possible down one branch of a tree or graph before it backtracks. It's like exploring a maze by always choosing the first available path until you hit a dead end.</p>
+
+    <div class="algo-stats dfs">
+      <div class="algo-stat">
+        <div class="label">Complete?</div>
+        <div class="value">No</div>
+        <div class="detail">Fails in infinite-depth spaces, but complete in finite spaces.</div>
+      </div>
+      <div class="algo-stat">
+        <div class="label">Optimal?</div>
+        <div class="value">No</div>
+      </div>
+      <div class="algo-stat">
+        <div class="label">Time complexity</div>
+        <div class="value">O(b<sup>m</sup>)</div>
+        <div class="detail">The last node to visit is the goal state.</div>
+      </div>
+      <div class="algo-stat">
+        <div class="label">Space complexity</div>
+        <div class="value">O(bm)</div>
+        <div class="detail">O(m) for the current path + O(bm) for the frontier.</div>
+      </div>
+      <div class="algo-stat" style="grid-column:1 / -1;">
+        <div class="label">Data structure</div>
+        <div class="value">Stack</div>
+      </div>
+    </div>
+
+    <p class="caption-note">
+      <b>Example of an infinite space:</b> find a sequence of actions to transform an initial positive integer N into a target integer T, using only:
+      <ul class="concept-list" style="margin-top:0.6rem;">
+        <li>Operation A: "Subtract 1" (x → x−1)</li>
+        <li>Operation B: "Multiply by 2" (x → 2x)</li>
+        <li>Start node (N): 5 — Target node (T): 10</li>
+      </ul>
+      <span style="display:block; margin-top:0.6rem;"><b>Trap:</b> 5 →(×2)→ 10 →(×2)→ 20 → ... → 60 →(×2)→ 120 → ...</span>
+      <span style="display:block; margin-top:0.3rem;"><b>Solution:</b> if the current value exceeds the target value, return (backtrack).</span>
+    </p>
+
+    <ul class="concept-list">
+      <li><b>Why O(bm) space?</b> The storage for the current path, at most m: O(m).</li>
+      <li>Whenever we visit a node we generate its neighbours, which are at most b. So for each of the at most m nodes on the path, we've generated at most b nodes — so we keep at most b·m nodes in memory.</li>
+    </ul>
+
+    <div class="playground" style="margin-top:1.6rem;">
+      <div class="pg-controls">
+        <div class="play-btns" style="margin-left:0;">
+          <button class="icon-btn" id="dfs-prev" title="Step back">⏮</button>
+          <button class="icon-btn" id="dfs-play" title="Play / pause">▶</button>
+          <button class="icon-btn" id="dfs-next" title="Step forward">⏭</button>
+          <button class="icon-btn" id="dfs-reset" title="Reset">↺</button>
+        </div>
+      </div>
+      <div class="pg-grid">
+        <svg id="dfs-tree" viewBox="0 0 640 420" xmlns="http://www.w3.org/2000/svg"></svg>
+        <div>
+          <div class="frontier-box">
+            <h5>Stack (next pop from the right)</h5>
+            <div class="chip-row" id="dfs-stack-chips"></div>
+          </div>
+          <div class="frontier-box">
+            <h5>Search log</h5>
+            <div class="log-box" id="dfs-log"></div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- ===== LOCAL SEARCH (brief) ===== -->
-  <section class="block">
-    <p class="eyebrow">Aside</p>
-    <h2 class="section-title">Local search, in one breath</h2>
-    <p class="section-lede">Local search doesn't build a tree at all — it moves from candidate solution to candidate solution, only caring about <i>where it ends up</i>, not the path it took. Useful when the path is irrelevant and the space is too big to search exhaustively; the strategies below are the opposite approach, where the path <i>is</i> the answer.</p>
+  <!-- ===== BFS ===== -->
+  <section class="block" id="bfs">
+    <span class="badge bfs" style="margin-bottom:0.6rem; display:inline-block;">BFS</span>
+    <h2 class="section-title">BFS — Breadth-First Search</h2>
+
+    <div class="algo-stats bfs">
+      <div class="algo-stat">
+        <div class="label">Complete?</div>
+        <div class="value">Yes</div>
+        <div class="detail">If b &lt; ∞.</div>
+      </div>
+      <div class="algo-stat">
+        <div class="label">Optimal?</div>
+        <div class="value">Yes*</div>
+        <div class="detail">If cost = 1 per step; not optimal in general.</div>
+      </div>
+      <div class="algo-stat">
+        <div class="label">Time complexity</div>
+        <div class="value">O(b<sup>d+1</sup>)</div>
+      </div>
+      <div class="algo-stat">
+        <div class="label">Space complexity</div>
+        <div class="value">O(b<sup>d+1</sup>)</div>
+      </div>
+      <div class="algo-stat" style="grid-column:1 / -1;">
+        <div class="label">Data structure</div>
+        <div class="value">Queue</div>
+      </div>
+    </div>
+
+    <p class="caption-note">
+      b<sup>0</sup> + b<sup>1</sup> + ... + b<sup>d</sup> + b(b<sup>d</sup> − 1) = O(b<sup>d+1</sup>)
+      <span style="display:block; margin-top:0.5rem;">If the goal state is the last one at level d, we would visit all nodes up to level d and would generate at most b children of each node of level d, except for the goal state.</span>
+    </p>
+
+    <div class="playground" style="margin-top:1.6rem;">
+      <div class="pg-controls">
+        <div class="play-btns" style="margin-left:0;">
+          <button class="icon-btn" id="bfs-prev" title="Step back">⏮</button>
+          <button class="icon-btn" id="bfs-play" title="Play / pause">▶</button>
+          <button class="icon-btn" id="bfs-next" title="Step forward">⏭</button>
+          <button class="icon-btn" id="bfs-reset" title="Reset">↺</button>
+        </div>
+      </div>
+      <div class="pg-grid">
+        <svg id="bfs-tree" viewBox="0 0 640 420" xmlns="http://www.w3.org/2000/svg"></svg>
+        <div>
+          <div class="frontier-box">
+            <h5>Queue (next pop from the left)</h5>
+            <div class="chip-row" id="bfs-queue-chips"></div>
+          </div>
+          <div class="frontier-box">
+            <h5>Search log</h5>
+            <div class="log-box" id="bfs-log"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== UCS ===== -->
+  <section class="block" id="ucs">
+    <span class="badge ucs" style="margin-bottom:0.6rem; display:inline-block;">UCS</span>
+    <h2 class="section-title">UCS — Uniform-Cost Search</h2>
+
+    <p class="section-lede"><b>Description</b>: Uniform cost search (UCS) is a strategy for exploration that always selects the lowest-cost frontier node from the start node for expansion.</p>
+    <p class="section-lede"><b>Frontier Representation</b>: the choice is usually a <i>heap-based priority queue</i>, where the priority for a given enqueued node v is the path cost from the start node to v. A priority queue built this way simply reshuffles itself to maintain the desired ordering by path cost as we remove the current minimum-cost path and replace it with its children.</p>
+
+    <div class="definition-box">
+      <div class="dbox-label">📐 Key definitions — used below</div>
+      <p>Let us define the <b>optimal path cost</b> as <b>C*</b>, and the <b>minimal cost between two nodes</b> in the state space graph as <b>ε</b>.</p>
+    </div>
+
+    <div class="algo-stats ucs">
+      <div class="algo-stat">
+        <div class="label">Complete?</div>
+        <div class="value">Yes</div>
+        <div class="detail">If a goal state exists, it has some finite-length shortest path, so UCS eventually finds it.</div>
+      </div>
+      <div class="algo-stat">
+        <div class="label">Optimal?</div>
+        <div class="value">Yes</div>
+        <div class="detail">If all edge costs are nonnegative.</div>
+      </div>
+      <div class="algo-stat">
+        <div class="label">Time complexity</div>
+        <div class="value">O(b<sup>⌈C*/ε⌉</sup>)</div>
+        <div class="detail">Explores roughly all nodes at depths ranging from 1 to ⌈C*/ε⌉.</div>
+      </div>
+      <div class="algo-stat">
+        <div class="label">Space complexity</div>
+        <div class="value">O(b<sup>⌈C*/ε⌉</sup>)</div>
+      </div>
+      <div class="algo-stat" style="grid-column:1 / -1;">
+        <div class="label">Data structure</div>
+        <div class="value">Priority queue</div>
+      </div>
+    </div>
+
+    <p class="caption-note">Since we explore nodes in order of increasing path cost, we're guaranteed to find the lowest-cost path to a goal state. The strategy behind UCS is identical to Dijkstra's algorithm — the main difference is that UCS terminates as soon as it finds a solution state, instead of finding the shortest path to all states.</p>
+
+    <div class="playground" style="margin-top:1.6rem;">
+      <div class="pg-controls">
+        <div class="play-btns" style="margin-left:0;">
+          <button class="icon-btn" id="ucs-prev" title="Step back">⏮</button>
+          <button class="icon-btn" id="ucs-play" title="Play / pause">▶</button>
+          <button class="icon-btn" id="ucs-next" title="Step forward">⏭</button>
+          <button class="icon-btn" id="ucs-reset" title="Reset">↺</button>
+        </div>
+      </div>
+      <div class="pg-grid">
+        <svg id="ucs-tree" viewBox="0 0 640 420" xmlns="http://www.w3.org/2000/svg"></svg>
+        <div>
+          <div class="frontier-box">
+            <h5>Priority queue (next pop = lowest cost)</h5>
+            <div class="chip-row" id="ucs-pq-chips"></div>
+          </div>
+          <div class="frontier-box">
+            <h5>Search log</h5>
+            <div class="log-box" id="ucs-log"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== DLS ===== -->
+  <section class="block" id="dls">
+    <span class="badge dls" style="margin-bottom:0.6rem; display:inline-block;">DLS</span>
+    <h2 class="section-title">DLS — Depth-Limited Search</h2>
+    <p class="section-lede">= depth-first search with a depth limit <b>l</b> — nodes at depth level l have no successors. It's DFS with a fence: once a branch reaches depth l, DLS stops digging there and backtracks, whether or not that's actually the bottom of the real tree.</p>
+
+    <div class="tree-panel" style="grid-template-columns: 1fr;">
+      <svg class="dl-diagram" viewBox="0 0 680 350" xmlns="http://www.w3.org/2000/svg">
+        <!-- level guide lines -->
+        <line class="lvl-line" x1="26" y1="40" x2="316" y2="40"></line>
+        <text class="lvl-label" x="6" y="44">0</text>
+        <line class="lvl-line" x1="26" y1="130" x2="156" y2="130"></line>
+        <text class="lvl-label" x="6" y="134">1</text>
+        <line class="lvl-line" x1="26" y1="220" x2="76" y2="220"></line>
+        <text class="lvl-label" x="6" y="224">2</text>
+        <text class="lvl-label" x="6" y="314">3</text>
+
+        <!-- normal edges (levels 0-2) -->
+        <line class="edge" x1="340" y1="55" x2="185" y2="118"></line>
+        <line class="edge" x1="340" y1="55" x2="495" y2="118"></line>
+        <line class="edge" x1="180" y1="145" x2="105" y2="208"></line>
+        <line class="edge" x1="180" y1="145" x2="255" y2="208"></line>
+        <line class="edge" x1="500" y1="145" x2="425" y2="208"></line>
+        <line class="edge" x1="500" y1="145" x2="575" y2="208"></line>
+
+        <!-- beyond-limit edges (level 2 -> 3) -->
+        <line class="edge beyond" x1="100" y1="235" x2="63" y2="298"></line>
+        <line class="edge beyond" x1="100" y1="235" x2="137" y2="298"></line>
+        <line class="edge beyond" x1="260" y1="235" x2="223" y2="298"></line>
+        <line class="edge beyond" x1="260" y1="235" x2="297" y2="298"></line>
+        <line class="edge beyond" x1="420" y1="235" x2="383" y2="298"></line>
+        <line class="edge beyond" x1="420" y1="235" x2="457" y2="298"></line>
+        <line class="edge beyond" x1="580" y1="235" x2="543" y2="298"></line>
+        <line class="edge beyond" x1="580" y1="235" x2="617" y2="298"></line>
+
+        <!-- the depth-limit cutoff -->
+        <line class="limit-line" x1="10" y1="268" x2="670" y2="268"></line>
+        <text class="limit-label" x="600" y="26">l = 2</text>
+
+        <!-- level 0 -->
+        <circle class="node-circle" cx="340" cy="40" r="18"></circle>
+        <text class="node-label" x="340" y="45">S</text>
+
+        <!-- level 1 -->
+        <circle class="node-circle" cx="180" cy="130" r="18"></circle>
+        <text class="node-label" x="180" y="135">A</text>
+        <circle class="node-circle" cx="500" cy="130" r="18"></circle>
+        <text class="node-label" x="500" y="135">B</text>
+
+        <!-- level 2 -->
+        <circle class="node-circle" cx="100" cy="220" r="18"></circle>
+        <text class="node-label" x="100" y="225">C</text>
+        <circle class="node-circle" cx="260" cy="220" r="18"></circle>
+        <text class="node-label" x="260" y="225">D</text>
+        <circle class="node-circle" cx="420" cy="220" r="18"></circle>
+        <text class="node-label" x="420" y="225">E</text>
+        <circle class="node-circle" cx="580" cy="220" r="18"></circle>
+        <text class="node-label" x="580" y="225">F</text>
+
+        <!-- level 3: beyond the limit, no successors generated -->
+        <circle class="node-circle beyond" cx="60" cy="310" r="16"></circle>
+        <text class="node-label beyond" x="60" y="315">G</text>
+        <circle class="node-circle beyond" cx="140" cy="310" r="16"></circle>
+        <text class="node-label beyond" x="140" y="315">H</text>
+        <circle class="node-circle beyond" cx="220" cy="310" r="16"></circle>
+        <text class="node-label beyond" x="220" y="315">I</text>
+        <circle class="node-circle beyond" cx="300" cy="310" r="16"></circle>
+        <text class="node-label beyond" x="300" y="315">J</text>
+        <circle class="node-circle beyond" cx="380" cy="310" r="16"></circle>
+        <text class="node-label beyond" x="380" y="315">K</text>
+        <circle class="node-circle beyond" cx="460" cy="310" r="16"></circle>
+        <text class="node-label beyond" x="460" y="315">L</text>
+        <circle class="node-circle beyond" cx="540" cy="310" r="16"></circle>
+        <text class="node-label beyond" x="540" y="315">M</text>
+        <circle class="node-circle beyond" cx="620" cy="310" r="16"></circle>
+        <text class="node-label beyond" x="620" y="315">N</text>
+      </svg>
+    </div>
+    <p class="caption-note">With l = 2, C/D/E/F (depth 2) are treated as if they were leaves — G through N (depth 3) are never generated, even though they exist in the real tree.</p>
+
+    <div class="algo-stats dls">
+      <div class="algo-stat">
+        <div class="label">Complete?</div>
+        <div class="value">Yes</div>
+        <div class="detail">If l ≥ d.</div>
+      </div>
+      <div class="algo-stat">
+        <div class="label">Optimal?</div>
+        <div class="value">No</div>
+      </div>
+      <div class="algo-stat">
+        <div class="label">Time complexity</div>
+        <div class="value">O(b<sup>l</sup>)</div>
+        <div class="detail">As before, but m = l.</div>
+      </div>
+      <div class="algo-stat">
+        <div class="label">Space complexity</div>
+        <div class="value">O(bl)</div>
+      </div>
+      <div class="algo-stat" style="grid-column:1 / -1;">
+        <div class="label">Data structure</div>
+        <div class="value">Stack</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== IDS ===== -->
+  <section class="block" id="ids">
+    <span class="badge ids" style="margin-bottom:0.6rem; display:inline-block;">IDS</span>
+    <h2 class="section-title">IDS — Iterative Deepening Search</h2>
+    <p class="section-lede">Iterate over the limit l in Depth-Limited Search: run DLS with l = 0, then l = 1, then l = 2, ... — restarting from the root each time — until a goal is found. Each restart throws away the previous iteration's work, but it's the price paid for DFS's small memory footprint with BFS's level-by-level completeness.</p>
+
+    <div class="algo-stats ids">
+      <div class="algo-stat">
+        <div class="label">Complete?</div>
+        <div class="value">Yes</div>
+      </div>
+      <div class="algo-stat">
+        <div class="label">Optimal?</div>
+        <div class="value">Yes*</div>
+        <div class="detail">If step cost = 1. Can be modified to explore a uniform-cost tree.</div>
+      </div>
+      <div class="algo-stat">
+        <div class="label">Time complexity</div>
+        <div class="value">O(b<sup>d</sup>)</div>
+        <div class="detail">(d+1)b⁰ + db¹ + ... + b<sup>d</sup> = O(b<sup>d</sup>).</div>
+      </div>
+      <div class="algo-stat">
+        <div class="label">Space complexity</div>
+        <div class="value">O(bd)</div>
+        <div class="detail">It's a DFS underneath.</div>
+      </div>
+      <div class="algo-stat" style="grid-column:1 / -1;">
+        <div class="label">Data structure</div>
+        <div class="value">Stack</div>
+      </div>
+    </div>
+
+    <p class="caption-note">Optimality's key: since each iteration explores level-by-level up to its limit, the <i>first</i> iteration to find a goal finds it at the shallowest possible depth — just like BFS, but without keeping every level in memory at once.</p>
+
+    <div class="playground" style="margin-top:1.6rem;">
+      <div class="pg-controls">
+        <div class="play-btns" style="margin-left:0;">
+          <button class="icon-btn" id="ids-prev" title="Step back">⏮</button>
+          <button class="icon-btn" id="ids-play" title="Play / pause">▶</button>
+          <button class="icon-btn" id="ids-next" title="Step forward">⏭</button>
+          <button class="icon-btn" id="ids-reset" title="Reset">↺</button>
+        </div>
+      </div>
+      <span class="ids-readout">Iteration limit: l = <span id="ids-l-val">0</span></span>
+      <div class="pg-grid">
+        <svg id="ids-tree" class="dl-diagram" viewBox="0 0 640 420" xmlns="http://www.w3.org/2000/svg"></svg>
+        <div>
+          <div class="frontier-box">
+            <h5>Stack (this iteration only)</h5>
+            <div class="chip-row" id="ids-stack-chips"></div>
+          </div>
+          <div class="frontier-box">
+            <h5>Search log</h5>
+            <div class="log-box" id="ids-log"></div>
+          </div>
+        </div>
+      </div>
+    </div>
   </section>
 
   <!-- ===== COMPLEXITY SIMULATOR ===== -->
   <section class="block" id="simulator">
-    <p class="eyebrow">Interactive</p>
-    <h2 class="section-title">b · d · m complexity simulator</h2>
-    <p class="section-lede">
-      <b>b</b> = branching factor (breadth) · <b>d</b> = depth of the shallowest solution · <b>m</b> = maximum depth of the state space.
-      Drag the sliders and watch how many nodes each strategy has to generate — and how much memory it needs.
-    </p>
+    <h2 class="section-title">Complexity simulator</h2>
+    <ul class="concept-list">
+      <li><b>b</b> = branching factor (breadth)</li>
+      <li><b>d</b> = depth of the shallowest solution</li>
+      <li><b>m</b> = maximum depth of the state space</li>
+    </ul>
+    <p class="section-lede" style="margin-top:1rem;">Drag the sliders and watch how many nodes each strategy has to generate — and how much memory it needs.</p>
 
     <div class="sim-panel">
       <div class="sliders">
@@ -117,46 +536,43 @@
     </div>
   </section>
 
-  <!-- ===== ALGORITHM PLAYGROUND ===== -->
-  <section class="block" id="playground">
-    <p class="eyebrow">Interactive</p>
-    <h2 class="section-title">Algorithm playground</h2>
-    <p class="section-lede">Same tree as above, now with edge costs. Pick a strategy and press play to watch it search — the frontier (its "to‑do list") is shown exactly as that strategy stores it: a stack for DFS, a queue for BFS, a priority queue for UCS.</p>
+  <!-- ===== IDS vs BFS ===== -->
+  <section class="block" id="ids-vs-bfs">
+    <h2 class="section-title">IDS vs BFS</h2>
+    <p class="section-lede">Let <b>b = 10</b> and <b>d = 5</b>, solution at the far-right leaf.</p>
 
-    <div class="playground">
-      <div class="pg-controls">
-        <div class="strategy-pick">
-          <button class="strat-btn active" data-s="dfs">DFS (stack)</button>
-          <button class="strat-btn" data-s="bfs">BFS (queue)</button>
-          <button class="strat-btn" data-s="ucs">UCS (priority queue)</button>
-        </div>
-        <div class="play-btns">
-          <button class="icon-btn" id="pg-prev" title="Step back">⏮</button>
-          <button class="icon-btn" id="pg-play" title="Play / pause">▶</button>
-          <button class="icon-btn" id="pg-next" title="Step forward">⏭</button>
-          <button class="icon-btn" id="pg-reset" title="Reset">↺</button>
-        </div>
-      </div>
+    <p class="section-lede">BFS time complexity is calculated the following way: b<sup>0</sup> + b<sup>1</sup> + ... + b<sup>d</sup> + b(b<sup>d</sup> − 1)</p>
+    <p class="section-lede">IDS time complexity is calculated the following way: (d+1)b<sup>0</sup> + db<sup>1</sup> + ... + b<sup>d</sup></p>
+    <p class="section-lede">Let's compare IDS and BFS numerically:</p>
 
-      <div class="pg-grid">
-        <svg id="tree-playground" viewBox="0 0 640 420" xmlns="http://www.w3.org/2000/svg"></svg>
-        <div>
-          <div class="frontier-box">
-            <h5 id="frontier-title">Frontier (stack — next pop from the right)</h5>
-            <div class="chip-row" id="frontier-chips"></div>
-          </div>
-          <div class="frontier-box">
-            <h5>Search log</h5>
-            <div class="log-box" id="pg-log"></div>
-          </div>
-        </div>
-      </div>
+    <div class="caption-note">
+      <span style="display:block;">N<sub>IDS</sub> = 6 + 10·5 + 4·100 + 3·1000 + 2·10<sup>4</sup> + 10<sup>5</sup> = <b>123,456</b></span>
+      <span style="display:block; margin-top:0.5rem;">N<sub>BFS</sub> = 1 + 10 + 100 + 1000 + 10<sup>4</sup> + 10<sup>5</sup> + 999,990 = <b>1,111,101</b></span>
     </div>
+
+    <div class="sim-panel">
+      <div class="b2b-header">
+        <span class="side-label left">IDS</span>
+        <span class="side-label right">BFS</span>
+      </div>
+      <div class="b2b-chart">
+        <div class="b2b-value left">123,456</div>
+        <div class="b2b-track left"><div class="b2b-fill" style="width:11.1%; background:var(--ids);"></div></div>
+        <div class="b2b-center"></div>
+        <div class="b2b-track right"><div class="b2b-fill" style="width:100%; background:var(--bfs);"></div></div>
+        <div class="b2b-value right">1,111,101</div>
+      </div>
+      <p style="font-size:0.85rem; color:var(--ink-soft); margin-top:1rem; text-align:center;">Nodes generated to find the goal — IDS does the same job with about 9× fewer node expansions.</p>
+    </div>
+
+    <ul class="concept-list" style="margin-top:1.2rem;">
+      <li>IDS does better because other nodes at depth d are not expanded.</li>
+      <li>BFS can be modified to apply the goal test when a node is generated (not when it's expanded) to close some of this gap.</li>
+    </ul>
   </section>
 
   <!-- ===== SUMMARY TABLE ===== -->
   <section class="block" id="summary">
-    <p class="eyebrow">Reference</p>
     <h2 class="section-title">Summary of algorithms</h2>
     <div class="table-wrap">
       <table class="summary">
@@ -172,14 +588,6 @@
         </tbody>
       </table>
     </div>
-  </section>
-
-  <!-- ===== QUIZ ===== -->
-  <section class="block" id="quiz">
-    <p class="eyebrow">Check yourself</p>
-    <h2 class="section-title">Quick quiz</h2>
-    <p class="section-lede">Five questions, instant feedback, no grade recorded anywhere.</p>
-    <div id="quiz-container"></div>
   </section>
 
 </div>
