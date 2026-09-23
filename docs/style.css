@@ -2,8 +2,8 @@
 :root {
   --bg: #ffffff;
   --surface: #ffffff;
-  --ink: #24272c;
-  --ink-soft: #656a71;
+  --ink: #14171b;
+  --ink-soft: #4c5157;
   --line: #e3e7ea;
 
   --indigo: #4d7ea8;
@@ -139,6 +139,14 @@ a:hover { text-decoration: underline; }
 /* ---- sections ---- */
 section.block { padding: 2.6rem 0; border-top: 1px solid var(--line); }
 section.block:first-of-type { border-top: none; }
+
+/* ---- algorithm sections: stronger, color-coded separation between DFS/BFS/UCS/DLS/IDS ---- */
+section.algo-section { padding-top: 3.6rem; border-top: 4px solid var(--line); }
+section.algo-section.dfs { border-top-color: var(--dfs); }
+section.algo-section.bfs { border-top-color: var(--bfs); }
+section.algo-section.ucs { border-top-color: var(--ucs); }
+section.algo-section.dls { border-top-color: var(--pink); }
+section.algo-section.ids { border-top-color: var(--ids); }
 .eyebrow { color: var(--teal); font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; font-size: 0.78rem; margin: 0 0 0.4rem; }
 h2.section-title { font-size: 1.7rem; margin: 0 0 0.6rem; }
 .section-lede { color: var(--ink-soft); max-width: 700px; margin: 0 0 1.6rem; }
@@ -469,7 +477,7 @@ footer { text-align: center; color: var(--ink-soft); font-size: 0.85rem; padding
 /* ---- per-algorithm stat card (Complete / Optimal / Time / Space) ---- */
 .algo-stats {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 1px;
   background: var(--line);
   border: 1px solid var(--line);
@@ -477,6 +485,9 @@ footer { text-align: center; color: var(--ink-soft); font-size: 0.85rem; padding
   overflow: hidden;
   box-shadow: var(--shadow-sm);
   margin: 1.2rem 0;
+}
+@media (max-width: 640px) {
+  .algo-stats { grid-template-columns: repeat(2, 1fr); }
 }
 .algo-stats.dfs { border-top: 3px solid var(--dfs); }
 .algo-stats.bfs { border-top: 3px solid var(--bfs); }
@@ -486,7 +497,7 @@ footer { text-align: center; color: var(--ink-soft); font-size: 0.85rem; padding
 .algo-stat { background: var(--surface); padding: 1rem 1.1rem; }
 .algo-stat .label { font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-soft); margin-bottom: 0.35rem; }
 .algo-stat .value { font-family: 'Poppins', sans-serif; font-size: 1.05rem; font-weight: 700; color: var(--ink); }
-.algo-stat .detail { font-size: 0.8rem; color: var(--ink-soft); margin-top: 0.35rem; line-height: 1.5; }
+.algo-stat .detail { font-size: 0.8rem; color: color-mix(in srgb, var(--ink) 65%, var(--ink-soft) 35%); margin-top: 0.35rem; line-height: 1.5; }
 
 /* ---- static depth-limit diagram (DLS) ---- */
 .dl-diagram { width: 100%; height: auto; }

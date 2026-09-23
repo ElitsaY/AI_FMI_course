@@ -133,7 +133,7 @@
   </section>
 
   <!-- ===== DFS ===== -->
-  <section class="block" id="dfs">
+  <section class="block algo-section dfs" id="dfs">
     <span class="badge dfs" style="margin-bottom:0.6rem; display:inline-block;">DFS</span>
     <h2 class="section-title">DFS — Depth-First Search</h2>
     <p class="section-lede"><b>Go Deep First</b>: DFS explores as far as possible down one branch of a tree or graph before it backtracks. It's like exploring a maze by always choosing the first available path until you hit a dead end.</p>
@@ -206,7 +206,7 @@
   </section>
 
   <!-- ===== BFS ===== -->
-  <section class="block" id="bfs">
+  <section class="block algo-section bfs" id="bfs">
     <span class="badge bfs" style="margin-bottom:0.6rem; display:inline-block;">BFS</span>
     <h2 class="section-title">BFS — Breadth-First Search</h2>
 
@@ -266,7 +266,7 @@
   </section>
 
   <!-- ===== UCS ===== -->
-  <section class="block" id="ucs">
+  <section class="block algo-section ucs" id="ucs">
     <span class="badge ucs" style="margin-bottom:0.6rem; display:inline-block;">UCS</span>
     <h2 class="section-title">UCS — Uniform-Cost Search</h2>
 
@@ -332,7 +332,7 @@
   </section>
 
   <!-- ===== DLS ===== -->
-  <section class="block" id="dls">
+  <section class="block algo-section dls" id="dls">
     <span class="badge dls" style="margin-bottom:0.6rem; display:inline-block;">DLS</span>
     <h2 class="section-title">DLS — Depth-Limited Search</h2>
     <p class="section-lede">= depth-first search with a depth limit <b>l</b> — nodes at depth level l have no successors. It's DFS with a fence: once a branch reaches depth l, DLS stops digging there and backtracks, whether or not that's actually the bottom of the real tree.</p>
@@ -438,7 +438,7 @@
   </section>
 
   <!-- ===== IDS ===== -->
-  <section class="block" id="ids">
+  <section class="block algo-section ids" id="ids">
     <span class="badge ids" style="margin-bottom:0.6rem; display:inline-block;">IDS</span>
     <h2 class="section-title">IDS — Iterative Deepening Search</h2>
     <p class="section-lede">Iterate over the limit l in Depth-Limited Search: run DLS with l = 0, then l = 1, then l = 2, ... — restarting from the root each time — until a goal is found. Each restart throws away the previous iteration's work, but it's the price paid for DFS's small memory footprint with BFS's level-by-level completeness.</p>
