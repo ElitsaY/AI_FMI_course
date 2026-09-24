@@ -548,3 +548,43 @@ footer { text-align: center; color: var(--ink-soft); font-size: 0.85rem; padding
 .ida-iter { border-top: 1px solid var(--line); padding-top: 1.2rem; margin-top: 1.4rem; }
 .ida-iter h4 { margin: 0 0 0.5rem; }
 .strat-btn.ida-mode-btn.active { background: var(--pink); border-color: var(--pink); color: #fff; }
+
+/* ---- Lab 03: CSP map, constraint graph, domains, n-queens ---- */
+.csp-map, .csp-graph, .queens-fig { width: 100%; height: auto; display: block; }
+.csp-region { fill: color-mix(in srgb, var(--ink-soft) 10%, var(--surface)); stroke: var(--surface); stroke-width: 3; cursor: pointer; transition: fill 0.2s ease; }
+.csp-region:hover { filter: brightness(1.06); }
+.csp-region.bad { stroke: var(--ink); stroke-width: 4; stroke-dasharray: 8 5; }
+.csp-region-label { font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 22px; fill: var(--ink); text-anchor: middle; dominant-baseline: central; cursor: pointer; }
+.csp-region-label.filled { fill: #fff; }
+.csp-edge { stroke: var(--ink-soft); stroke-width: 2.5; }
+.csp-edge.bad { stroke: #d9546e; stroke-width: 5; stroke-dasharray: 9 6; }
+.csp-node circle { fill: var(--surface); stroke: var(--ink-soft); stroke-width: 2.5; transition: all 0.2s ease; }
+.csp-node text { font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 17px; fill: var(--ink); text-anchor: middle; dominant-baseline: central; pointer-events: none; }
+.csp-node text.filled { fill: #fff; }
+.csp-node.clickable { cursor: pointer; }
+.csp-node.current circle { stroke: var(--ink); stroke-width: 5; }
+.csp-status { margin: 1rem 0 0; font-size: 0.92rem; font-weight: 600; color: var(--ink-soft); }
+.csp-status.bad { color: #b8394f; }
+.csp-status.ok { color: var(--bfs); }
+.domain-table { display: grid; gap: 0.3rem; }
+.dom-row { display: flex; align-items: center; gap: 0.4rem; padding: 0.15rem 0.4rem; border-radius: 6px; }
+.dom-row.current { background: color-mix(in srgb, var(--amber) 20%, transparent); }
+.dom-var { font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 0.85rem; width: 2.6rem; }
+.dom-swatch { width: 22px; height: 22px; border-radius: 50%; display: inline-block; border: 2px solid transparent; }
+.dom-swatch.pruned { opacity: 0.15; }
+.dom-swatch.chosen { border-color: var(--ink); box-shadow: 0 0 0 2px var(--surface) inset; }
+.log-box p.bt-bad { color: #b8394f; }
+.cb-light { fill: var(--surface); }
+.cb-dark { fill: color-mix(in srgb, var(--ink-soft) 35%, var(--surface)); }
+.cb-queen { font-size: 30px; text-anchor: middle; dominant-baseline: central; fill: var(--ink); }
+.nq-board { display: grid; border: 2px solid var(--ink); width: max-content; max-width: 100%; align-self: start; }
+.nq-cell { display: flex; align-items: center; justify-content: center; background: var(--surface); color: var(--ink); line-height: 1; }
+.nq-cell.dark { background: color-mix(in srgb, var(--ink-soft) 30%, var(--surface)); }
+.nq-cell.conflict { color: #d9546e; }
+.nq-cell.picked-col { background: color-mix(in srgb, var(--amber) 22%, var(--surface)); }
+.nq-cell.picked-col.dark { background: color-mix(in srgb, var(--amber) 38%, var(--surface)); }
+.nq-cell.was-here { outline: 2px dashed var(--ink-soft); outline-offset: -3px; }
+.nq-cost { font-family: 'Inter', sans-serif; font-size: 0.8rem; font-weight: 700; color: var(--ink-soft); }
+.nq-cost.min { color: var(--bfs); font-size: 0.95rem; font-weight: 800; }
+.nq-arrays { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.78rem; display: grid; gap: 0.35rem; word-break: break-all; }
+.nq-arrays b { font-family: 'Inter', sans-serif; }

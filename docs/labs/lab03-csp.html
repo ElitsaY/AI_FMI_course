@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lab 03 — Constraint Satisfaction Problems | Class Notes</title>
+<meta name="description" content="Interactive notes on Constraint Satisfaction Problems: map colouring, constraint graphs, backtracking with forward checking, MRV and LCV, min-conflicts, and the N-queens problem.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+
+<header class="site-nav">
+  <span class="brand"><span class="dot"></span> Class Notes</span>
+  <nav>
+    <a href="../index.html">Home</a>
+    <a href="lab01-uninformed-search.html">Lab 01</a>
+    <a href="lab02-informed-search.html">Lab 02</a>
+  </nav>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <p class="eyebrow">Lab 03</p>
+    <h1>Constraint Satisfaction Problems</h1>
+    <div class="badges">
+      <span class="badge neutral">CSP</span>
+      <span class="badge dfs">Backtracking</span>
+      <span class="badge bfs">Min-conflicts</span>
+      <span class="badge ids">N-Queens</span>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+
+  <!-- ===== OVERVIEW ===== -->
+  <section class="block" id="overview">
+    <h2 class="section-title">Overview of the lab</h2>
+    <ol class="concept-list">
+      <li><a href="#intro">Introduction to Constraint Satisfaction Problems (CSP)</a></li>
+      <li><a href="#solving">Solving Constraint Satisfaction Problems</a></li>
+      <li><a href="#min-conflicts">Min-conflicts</a></li>
+      <li><a href="#nqueens">Solving the N-queens problem</a></li>
+    </ol>
+  </section>
+
+  <!-- ===== INTRO ===== -->
+  <section class="block" id="intro">
+    <h2 class="section-title">Introduction to Constraint Satisfaction Problems</h2>
+    <p class="section-lede">Unlike search problems, CSPs are a type of <b>identification problem</b>: problems in which we must <b>simply identify whether a state is a goal state or not</b>, with no regard to how we arrive at that goal. CSPs are defined by three factors:</p>
+    <ol class="concept-list">
+      <li><b>Variables</b> — CSPs possess a set of N variables X<sub>1</sub>, …, X<sub>N</sub> that can each take on a single value from some defined set of values.</li>
+      <li><b>Domain</b> — a set {x<sub>1</sub>, …, x<sub>d</sub>} representing all possible values that a CSP variable can take on.</li>
+      <li><b>Constraints</b> — constraints define restrictions on the values of variables, potentially with regard to other variables.</li>
+    </ol>
+
+    <div class="definition-box">
+      <div class="dbox-label">📐 Shortly, a CSP</div>
+      <p>• <b>state</b> is defined by variables X<sub>i</sub> with values from domain D<sub>i</sub><br>• <b>goal test</b> is a set of constraints specifying allowable combinations of values for subsets of variables</p>
+    </div>
+  </section>
+
+  <!-- ===== MAP COLOURING ===== -->
+  <section class="block algo-section dfs" id="map">
+    <span class="badge dfs" style="margin-bottom:0.6rem; display:inline-block;">Example</span>
+    <h2 class="section-title">Example: Map colouring</h2>
+    <p class="section-lede">Map colouring solves the problem where we're given a set of colours and must colour a map such that no two adjacent states or regions have the same colour.</p>
+    <ul class="concept-list">
+      <li><b>Variables</b>: <i>WA, NT, Q, NSW, V, SA, T</i></li>
+      <li><b>Domains</b>: <i>D<sub>i</sub> = {red, green, blue}</i></li>
+      <li><b>Constraints</b>: adjacent regions must have different colours, e.g., WA ≠ NT (if the language allows this), or (WA, NT) ∈ {(red, green), (red, blue), (green, red), (green, blue), …}</li>
+      <li><b>Solutions</b> are assignments satisfying all constraints, e.g., {WA = red, NT = green, Q = red, NSW = green, V = red, SA = blue, T = green}</li>
+    </ul>
+
+    <p class="section-lede" style="margin-top:1.4rem;">The map and its constraint graph below are linked. They start with the solution above; <b>click a region or a node</b> to cycle its colour (none → red → green → blue) and watch violated constraints light up.</p>
+
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="toggle-row" style="margin:0;">
+          <button class="toggle-btn" id="map-solution">Show solution</button>
+          <button class="toggle-btn" id="map-clear">Clear colours</button>
+        </div>
+      </div>
+      <div class="pg-grid" style="grid-template-columns:1.2fr 1fr;">
+        <div>
+          <p class="puzzle-label">Map of Australia</p>
+          <svg id="map-svg" class="csp-map" viewBox="0 0 690 580" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Map of the Australian states"></svg>
+        </div>
+        <div>
+          <p class="puzzle-label">Constraint graph</p>
+          <svg id="map-graph" class="csp-graph" viewBox="0 0 400 380" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Constraint graph of the Australian states"></svg>
+        </div>
+      </div>
+      <p id="map-status" class="csp-status"></p>
+    </div>
+  </section>
+
+  <!-- ===== CONSTRAINT GRAPH ===== -->
+  <section class="block" id="constraint-graph">
+    <h2 class="section-title">Constraint graph</h2>
+    <p class="section-lede">Constraint satisfaction problems are often represented as <b>constraint graphs</b>, where nodes represent variables and edges represent constraints between them. In the map-colouring problem the constraints are simply that no two adjacent states can be the same colour — so drawing an edge between every pair of adjacent states gives the constraint graph above.</p>
+    <p class="section-lede">There are many different types of constraints, and each is handled slightly differently:</p>
+    <ul class="concept-list">
+      <li><b>Unary constraints</b> — involve a single variable in the CSP. They are not represented in constraint graphs, instead simply being used to prune the domain of the variable they constrain when necessary, e.g. SA ≠ green.</li>
+      <li><b>Binary constraints</b> — involve two variables. They're represented in constraint graphs as traditional graph edges, e.g. SA ≠ WA.</li>
+      <li><b>Higher-order constraints</b> — constraints involving three or more variables can also be represented with edges in a CSP graph.</li>
+      <li><b>Preferences (soft constraints)</b> — e.g., red is better than green; often representable by a cost for each variable assignment → <b>constrained optimization problems</b>.</li>
+    </ul>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.8rem;">Example: University course timetabling</h3>
+    <p class="section-lede">The variables are the assignment of a time slot and a room to each class (e.g., specific lectures, tutorials, and labs): V = {C<sub>1</sub>, C<sub>2</sub>, …, C<sub>n</sub>}. The domain for each variable C<sub>i</sub> is a set of possible (Time Slot, Room) pairs, but other things should be taken into account, which leads to <b>higher-order constraints</b>:</p>
+    <div class="tree-panel" style="grid-template-columns:1fr 1fr;">
+      <div>
+        <h4 style="margin:0 0 0.6rem;">Maximum capacity (order k ≥ 3)</h4>
+        <p style="margin:0 0 0.6rem; font-size:0.92rem;">Ensures that the total number of students scheduled to be in the same room at the same time does not exceed the room's maximum capacity.</p>
+        <ul class="concept-list">
+          <li><b>Room (R)</b>: the capacity is a property of the room.</li>
+          <li><b>Time slot (T)</b>: the simultaneous usage.</li>
+          <li><b>Classes (C<sub>i</sub>, C<sub>j</sub>, …)</b>: the classes assigned to that room and time.</li>
+        </ul>
+      </div>
+      <div>
+        <h4 style="margin:0 0 0.6rem;">Professor / student availability and load (order ≥ 3)</h4>
+        <p style="margin:0 0 0.6rem; font-size:0.92rem;">Constraints related to the workload or availability of a single resource (like a professor or a pool of shared equipment) across multiple classes.</p>
+        <ul class="concept-list">
+          <li><b>Professor (P)</b>: a shared resource.</li>
+          <li><b>Classes (C<sub>i</sub>, C<sub>j</sub>, C<sub>k</sub>, …)</b>: the classes taught by that professor.</li>
+          <li><b>Time slots (T<sub>i</sub>, T<sub>j</sub>, T<sub>k</sub>, …)</b>: the scheduled times.</li>
+        </ul>
+        <p class="caption-note">E.g., a professor P cannot teach more than 3 classes on any given day, or they must have a 1-hour break between consecutive classes.</p>
+      </div>
+    </div>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.8rem;">Real-world CSPs</h3>
+    <ul class="concept-list">
+      <li>Assignment problems</li>
+      <li>Timetabling problems</li>
+      <li>Transportation scheduling</li>
+    </ul>
+  </section>
+
+  <!-- ===== SOLVING ===== -->
+  <section class="block algo-section dfs" id="solving">
+    <span class="badge dfs" style="margin-bottom:0.6rem; display:inline-block;">Backtracking</span>
+    <h2 class="section-title">Solving Constraint Satisfaction Problems</h2>
+    <p class="section-lede">Constraint satisfaction problems are traditionally solved using <b>backtracking</b>. Backtracking is an optimization on <a href="lab01-uninformed-search.html#dfs">depth-first search</a> used specifically for the problem of constraint satisfaction, with improvements coming from two main principles:</p>
+    <ol class="concept-list">
+      <li><b>Fix an ordering for variables</b>, and select values for variables in this order — because assignments are commutative (e.g. assigning WA = Red, NT = Green is identical to NT = Green, WA = Red).</li>
+      <li>When selecting values for a variable, <b>only select values that don't conflict with any previously assigned values</b>. If no such values exist, backtrack and return to the previous variable, changing its value.</li>
+    </ol>
+
+    <p class="section-lede">The most used techniques are variants of:</p>
+    <ul class="concept-list">
+      <li>Backtracking (Depth-First Search)</li>
+      <li>Constraint Propagation
+        <ul class="concept-list" style="margin-top:0.6rem;">
+          <li>Forward checking</li>
+          <li>Arc consistency (AC-3 algorithm) — for more, <a href="https://www.youtube.com/watch?v=4cCS8rrYT14" target="_blank" rel="noopener">watch this video</a></li>
+        </ul>
+      </li>
+      <li>Local Search
+        <ul class="concept-list" style="margin-top:0.6rem;">
+          <li><a href="#min-conflicts">minConflict</a> (<a href="lab02-informed-search.html#hillclimbing">Hill Climbing</a>)</li>
+        </ul>
+      </li>
+    </ul>
+
+    <div class="definition-box">
+      <div class="dbox-label">📐 Minimum Remaining Values (MRV) — which variable next?</div>
+      <p>When selecting which variable to assign next, an MRV policy chooses whichever unassigned variable has the <b>fewest valid remaining values</b> (the most constrained variable). This is intuitive in the sense that the most constrained variable is most likely to run out of possible values and result in backtracking if left unassigned, and so it's best to assign a value to it sooner rather than later.</p>
+    </div>
+    <div class="definition-box">
+      <div class="dbox-label">📐 Least Constraining Value (LCV) — which value next?</div>
+      <p>Similarly, when selecting which value to assign next, a good policy is to select the value that <b>prunes the fewest values</b> from the domains of the remaining unassigned variables. Notably, this requires additional computation (e.g. rerunning arc consistency / forward checking or other filtering methods for each value to find the LCV), but can still yield speed gains depending on usage.</p>
+    </div>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:2rem;">Step through backtracking</h3>
+    <p class="section-lede">Map colouring with the deliberately bad variable order <b>WA, NSW, NT, Q, SA, V, T</b> and value order red, green, blue. Plain backtracking only notices a problem when it tries to colour SA. Turn on <b>forward checking</b> to see the dead end earlier (an empty domain), and <b>MRV</b> to avoid it altogether. Try <b>LCV</b> on its own too: here it still picks red for NSW (the value that rules out the fewest options) and runs into the same dead end — MRV and LCV are heuristics, not guarantees.</p>
+
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="strategy-pick">
+          <button class="strat-btn bt-opt" data-opt="fc">Forward checking</button>
+          <button class="strat-btn bt-opt" data-opt="mrv">MRV</button>
+          <button class="strat-btn bt-opt" data-opt="lcv">LCV</button>
+        </div>
+        <div class="play-btns">
+          <button class="icon-btn" id="bt-prev" title="Step back">⏮</button>
+          <button class="icon-btn" id="bt-play" title="Play / pause">▶</button>
+          <button class="icon-btn" id="bt-next" title="Step forward">⏭</button>
+          <button class="icon-btn" id="bt-reset" title="Reset">↺</button>
+        </div>
+      </div>
+      <div class="pg-grid">
+        <div>
+          <svg id="bt-graph" class="csp-graph" viewBox="0 0 400 380" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Constraint graph showing the current partial assignment"></svg>
+          <div class="sa-readout">
+            <div class="stat"><div class="n" id="bt-assigns">0</div><div class="l">assignments</div></div>
+            <div class="stat"><div class="n" id="bt-backtracks">0</div><div class="l">backtracks</div></div>
+          </div>
+        </div>
+        <div>
+          <div class="frontier-box">
+            <h5>Domains</h5>
+            <div id="bt-domains" class="domain-table"></div>
+          </div>
+          <div class="frontier-box">
+            <h5>Search log</h5>
+            <div class="log-box" id="bt-log"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== MIN-CONFLICTS ===== -->
+  <section class="block algo-section bfs" id="min-conflicts">
+    <span class="badge bfs" style="margin-bottom:0.6rem; display:inline-block;">Min-conflicts</span>
+    <h2 class="section-title">Min-conflicts</h2>
+    <p class="section-lede">Start with some random assignment to values, then <b>iteratively select a random conflicted variable and reassign its value to the one that violates the fewest constraints until no more constraint violations exist</b> (a policy known as the <b>min-conflicts heuristic</b>). Under such a policy, constraint satisfaction problems like N-queens become both very time-efficient and space-efficient to solve.</p>
+    <p class="section-lede">The <b>eight queens puzzle</b> is the problem of placing eight chess queens on an 8×8 chessboard so that no two queens threaten each other; thus, a solution requires that no two queens share the same row, column, or diagonal. It is an example of the more general <b>n-queens problem</b> of placing n non-attacking queens on an n×n chessboard, for which solutions exist for all natural numbers n with the exception of n = 2 and n = 3.</p>
+    <p class="section-lede">For example, with 4 queens we arrive at a solution after only 2 iterations:</p>
+
+    <div class="sim-panel">
+      <svg class="queens-fig" viewBox="0 0 700 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="4-queens min-conflicts: h = 5, then h = 2, then h = 0"><g transform="translate(10,10)"><rect x="-4" y="-4" width="184" height="184" fill="none" style="stroke:var(--ink)" stroke-width="2"></rect><rect class="cb-light" x="0" y="0" width="44" height="44"></rect><rect class="cb-dark" x="44" y="0" width="44" height="44"></rect><rect class="cb-light" x="88" y="0" width="44" height="44"></rect><rect class="cb-dark" x="132" y="0" width="44" height="44"></rect><rect class="cb-dark" x="0" y="44" width="44" height="44"></rect><rect class="cb-light" x="44" y="44" width="44" height="44"></rect><rect class="cb-dark" x="88" y="44" width="44" height="44"></rect><rect class="cb-light" x="132" y="44" width="44" height="44"></rect><rect class="cb-light" x="0" y="88" width="44" height="44"></rect><rect class="cb-dark" x="44" y="88" width="44" height="44"></rect><rect class="cb-light" x="88" y="88" width="44" height="44"></rect><rect class="cb-dark" x="132" y="88" width="44" height="44"></rect><rect class="cb-dark" x="0" y="132" width="44" height="44"></rect><rect class="cb-light" x="44" y="132" width="44" height="44"></rect><rect class="cb-dark" x="88" y="132" width="44" height="44"></rect><rect class="cb-light" x="132" y="132" width="44" height="44"></rect><line x1="22.0" y1="110.0" x2="66.0" y2="66.0" stroke-width="4" stroke-linecap="round" style="stroke:var(--coral)"></line><line x1="22.0" y1="110.0" x2="110.0" y2="110.0" stroke-width="4" stroke-linecap="round" style="stroke:var(--coral)"></line><line x1="66.0" y1="66.0" x2="110.0" y2="110.0" stroke-width="4" stroke-linecap="round" style="stroke:var(--coral)"></line><line x1="66.0" y1="66.0" x2="154.0" y2="66.0" stroke-width="4" stroke-linecap="round" style="stroke:var(--coral)"></line><line x1="110.0" y1="110.0" x2="154.0" y2="66.0" stroke-width="4" stroke-linecap="round" style="stroke:var(--coral)"></line><text class="cb-queen" x="22.0" y="110.0">♛</text><text class="cb-queen" x="66.0" y="66.0">♛</text><text class="cb-queen" x="110.0" y="110.0">♛</text><text class="cb-queen" x="154.0" y="66.0">♛</text><text x="88" y="212" text-anchor="middle" font-size="22" font-weight="800" style="fill:var(--ink)">h = 5</text></g><path d="M208,90 h28 v-14 l26,22 l-26,22 v-14 h-28 z" stroke-width="2" style="fill:var(--line); stroke:var(--ink-soft)"></path><g transform="translate(260,10)"><rect x="-4" y="-4" width="184" height="184" fill="none" style="stroke:var(--ink)" stroke-width="2"></rect><rect class="cb-light" x="0" y="0" width="44" height="44"></rect><rect class="cb-dark" x="44" y="0" width="44" height="44"></rect><rect class="cb-light" x="88" y="0" width="44" height="44"></rect><rect class="cb-dark" x="132" y="0" width="44" height="44"></rect><rect class="cb-dark" x="0" y="44" width="44" height="44"></rect><rect class="cb-light" x="44" y="44" width="44" height="44"></rect><rect class="cb-dark" x="88" y="44" width="44" height="44"></rect><rect class="cb-light" x="132" y="44" width="44" height="44"></rect><rect class="cb-light" x="0" y="88" width="44" height="44"></rect><rect class="cb-dark" x="44" y="88" width="44" height="44"></rect><rect class="cb-light" x="88" y="88" width="44" height="44"></rect><rect class="cb-dark" x="132" y="88" width="44" height="44"></rect><rect class="cb-dark" x="0" y="132" width="44" height="44"></rect><rect class="cb-light" x="44" y="132" width="44" height="44"></rect><rect class="cb-dark" x="88" y="132" width="44" height="44"></rect><rect class="cb-light" x="132" y="132" width="44" height="44"></rect><line x1="22.0" y1="110.0" x2="110.0" y2="110.0" stroke-width="4" stroke-linecap="round" style="stroke:var(--coral)"></line><line x1="110.0" y1="110.0" x2="154.0" y2="66.0" stroke-width="4" stroke-linecap="round" style="stroke:var(--coral)"></line><text class="cb-queen" x="22.0" y="110.0">♛</text><text class="cb-queen" x="66.0" y="22.0">♛</text><text class="cb-queen" x="110.0" y="110.0">♛</text><text class="cb-queen" x="154.0" y="66.0">♛</text><text x="88" y="212" text-anchor="middle" font-size="22" font-weight="800" style="fill:var(--ink)">h = 2</text></g><path d="M458,90 h28 v-14 l26,22 l-26,22 v-14 h-28 z" stroke-width="2" style="fill:var(--line); stroke:var(--ink-soft)"></path><g transform="translate(510,10)"><rect x="-4" y="-4" width="184" height="184" fill="none" style="stroke:var(--ink)" stroke-width="2"></rect><rect class="cb-light" x="0" y="0" width="44" height="44"></rect><rect class="cb-dark" x="44" y="0" width="44" height="44"></rect><rect class="cb-light" x="88" y="0" width="44" height="44"></rect><rect class="cb-dark" x="132" y="0" width="44" height="44"></rect><rect class="cb-dark" x="0" y="44" width="44" height="44"></rect><rect class="cb-light" x="44" y="44" width="44" height="44"></rect><rect class="cb-dark" x="88" y="44" width="44" height="44"></rect><rect class="cb-light" x="132" y="44" width="44" height="44"></rect><rect class="cb-light" x="0" y="88" width="44" height="44"></rect><rect class="cb-dark" x="44" y="88" width="44" height="44"></rect><rect class="cb-light" x="88" y="88" width="44" height="44"></rect><rect class="cb-dark" x="132" y="88" width="44" height="44"></rect><rect class="cb-dark" x="0" y="132" width="44" height="44"></rect><rect class="cb-light" x="44" y="132" width="44" height="44"></rect><rect class="cb-dark" x="88" y="132" width="44" height="44"></rect><rect class="cb-light" x="132" y="132" width="44" height="44"></rect><text class="cb-queen" x="22.0" y="110.0">♛</text><text class="cb-queen" x="66.0" y="22.0">♛</text><text class="cb-queen" x="110.0" y="154.0">♛</text><text class="cb-queen" x="154.0" y="66.0">♛</text><text x="88" y="212" text-anchor="middle" font-size="22" font-weight="800" style="fill:var(--ink)">h = 0</text></g></svg>
+      <p style="margin:0.6rem 0 0; font-size:0.9rem;"><b>h(n)</b> = number of attacks (each line is one pair of queens attacking each other).</p>
+    </div>
+  </section>
+
+  <!-- ===== N-QUEENS ===== -->
+  <section class="block algo-section ids" id="nqueens">
+    <span class="badge ids" style="margin-bottom:0.6rem; display:inline-block;">N-Queens</span>
+    <h2 class="section-title">Solving the N-queens problem</h2>
+    <p class="section-lede"><b>n</b> = the size of the board. Each queen should be in a different column, so we represent the queens by the column they are in: Queen<sub>0</sub> in column<sub>0</sub>, Queen<sub>1</sub> in column<sub>1</sub>, …, Queen<sub>n−1</sub> in column<sub>n−1</sub>.</p>
+    <p class="section-lede">To track the conflicts and in which row Queen<sub>i</sub> is positioned we use the following arrays:</p>
+    <ul class="concept-list">
+      <li><b>queenPosition</b> — keeps track in which row Queen<sub>i</sub> is</li>
+      <li><b>conflictRows</b> — number of queens in each row</li>
+      <li><b>conflictPositiveDiagonals</b> — number of queens in each positive diagonal</li>
+      <li><b>conflictNegativeDiagonals</b> — number of queens in each negative diagonal</li>
+    </ul>
+    <p class="section-lede">The number of positive / negative diagonals in an n×n matrix is <b>2n − 1</b>:</p>
+    <ul class="concept-list">
+      <li>Accessing the i-th positive diagonal: <b>(row + col)</b></li>
+      <li>Accessing the i-th negative diagonal: <b>(n − 1 − row + col)</b></li>
+    </ul>
+    <p class="caption-note"><b>h(n)</b> = total number of conflicts on the board</p>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.8rem;">Algorithm</h3>
+    <ol class="concept-list">
+      <li>Initialize the starting positions of the queens randomly.</li>
+      <li>Until the number of conflicts is zero:
+        <ul class="concept-list" style="margin-top:0.6rem;">
+          <li>take a random conflicted queen and remove her from the current row</li>
+          <li>calculate the number of conflicts by positioning the queen at row<sub>i</sub> for all i = 0, …, n − 1</li>
+          <li>for all rows where the count of the conflicts is minimal, choose a random one to place the queen</li>
+        </ul>
+      </li>
+    </ol>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:2rem;">Run min-conflicts yourself</h3>
+    <p class="section-lede">Each step has two halves: <b>pick</b> a random conflicted queen (the numbers in her column are the conflicts she would have in each row), then <b>move</b> her to a row with the fewest conflicts. The arrays below are exactly the ones the algorithm keeps.</p>
+
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="beam-control show" style="margin:0;">
+          <label>Board size n</label>
+          <input type="range" id="nq-n" min="4" max="16" value="8" step="1">
+          <span class="val" id="nq-n-val">8</span>
+        </div>
+        <div class="play-btns">
+          <button class="icon-btn" id="nq-play" title="Run / pause">▶</button>
+          <button class="icon-btn" id="nq-next" title="Step">⏭</button>
+          <button class="icon-btn" id="nq-reset" title="New random board">↺</button>
+        </div>
+      </div>
+      <div class="pg-grid">
+        <div id="nq-board" class="nq-board"></div>
+        <div>
+          <div class="sa-readout" style="margin-top:0;">
+            <div class="stat"><div class="n" id="nq-h">–</div><div class="l">h = conflicts</div></div>
+            <div class="stat"><div class="n" id="nq-steps">0</div><div class="l">moves</div></div>
+          </div>
+          <div class="frontier-box">
+            <h5>Arrays</h5>
+            <div id="nq-arrays" class="nq-arrays"></div>
+          </div>
+          <div class="frontier-box">
+            <h5>Log</h5>
+            <div class="log-box" id="nq-log"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<footer>Class notes by Elitsa Yotkova · Lab 03 · built with plain HTML, CSS &amp; JS</footer>
+
+<script src="lab03.js"></script>
+</body>
+</html>
