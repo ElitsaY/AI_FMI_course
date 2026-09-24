@@ -3,85 +3,94 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Class Notes — Elitsa Yotkova</title>
-<meta name="description" content="Interactive class notes and quizzes: AI search algorithms, explained with clickable diagrams and simulators.">
+<title>Intelligent Systems / Artificial Intelligence — Sofia University</title>
+<meta name="description" content="Interactive lab notes for the Intelligent Systems / Artificial Intelligence course at Sofia University: search, constraint satisfaction, and genetic algorithms.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="home">
 
 <header class="site-nav">
   <span class="brand"><span class="dot"></span> Class Notes</span>
   <nav>
-    <a href="#labs">Notes</a>
-    <a href="#quizzes">Quizzes</a>
+    <a href="#labs">Labs</a>
+    <a href="#team">Team</a>
   </nav>
 </header>
 
-<section class="hero">
+<section class="hero home-hero">
+  <svg class="home-graph" viewBox="0 0 1200 420" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><line x1="104" y1="115" x2="193" y2="167"></line><line x1="344" y1="281" x2="442" y2="308"></line><line x1="-34" y1="285" x2="-35" y2="376"></line><line x1="686" y1="312" x2="734" y2="378"></line><line x1="-35" y1="376" x2="116" y2="374"></line><line x1="544" y1="110" x2="524" y2="189"></line><line x1="462" y1="107" x2="421" y2="194"></line><line x1="675" y1="101" x2="666" y2="187"></line><line x1="1014" y1="117" x2="1080" y2="94"></line><line x1="196" y1="385" x2="316" y2="385"></line><line x1="120" y1="312" x2="116" y2="374"></line><line x1="442" y1="308" x2="515" y2="295"></line><line x1="675" y1="101" x2="737" y2="12"></line><line x1="-13" y1="-21" x2="77" y2="-25"></line><line x1="116" y1="374" x2="196" y2="385"></line><line x1="855" y1="-23" x2="846" y2="111"></line><line x1="11" y1="69" x2="104" y2="115"></line><line x1="1025" y1="359" x2="1062" y2="280"></line><line x1="781" y1="125" x2="794" y2="177"></line><line x1="247" y1="82" x2="297" y2="172"></line><line x1="256" y1="-27" x2="341" y2="-8"></line><line x1="205" y1="304" x2="196" y2="385"></line><line x1="794" y1="177" x2="852" y2="175"></line><line x1="994" y1="23" x2="1014" y2="117"></line><line x1="666" y1="187" x2="686" y2="312"></line><line x1="846" y1="111" x2="852" y2="175"></line><line x1="1075" y1="-16" x2="1080" y2="94"></line><line x1="344" y1="281" x2="316" y2="385"></line><line x1="341" y1="-8" x2="436" y2="-12"></line><line x1="686" y1="312" x2="761" y2="295"></line><line x1="852" y1="175" x2="973" y2="185"></line><line x1="1080" y1="94" x2="1107" y2="176"></line><line x1="872" y1="307" x2="979" y2="308"></line><line x1="1014" y1="117" x2="973" y2="185"></line><line x1="462" y1="107" x2="524" y2="189"></line><line x1="442" y1="308" x2="457" y2="367"></line><line x1="570" y1="384" x2="658" y2="390"></line><line x1="734" y1="378" x2="848" y2="377"></line><line x1="-13" y1="-21" x2="11" y2="69"></line><line x1="979" y1="308" x2="1062" y2="280"></line><line x1="256" y1="-27" x2="247" y2="82"></line><line x1="3" y1="182" x2="81" y2="173"></line><line x1="11" y1="69" x2="77" y2="-25"></line><line x1="247" y1="82" x2="334" y2="69"></line><line x1="515" y1="295" x2="570" y2="384"></line><line x1="658" y1="390" x2="734" y2="378"></line><line x1="689" y1="-11" x2="737" y2="12"></line><line x1="104" y1="115" x2="81" y2="173"></line><line x1="341" y1="-8" x2="334" y2="69"></line><line x1="457" y1="367" x2="515" y2="295"></line><line x1="686" y1="312" x2="658" y2="390"></line><line x1="994" y1="23" x2="1075" y2="-16"></line><line x1="586" y1="-23" x2="689" y2="-11"></line><line x1="872" y1="307" x2="848" y2="377"></line><line x1="737" y1="12" x2="855" y2="-23"></line><line x1="436" y1="-12" x2="462" y2="107"></line><line x1="193" y1="167" x2="297" y2="172"></line><line x1="462" y1="107" x2="544" y2="110"></line><line x1="421" y1="194" x2="524" y2="189"></line><line x1="761" y1="295" x2="734" y2="378"></line><line x1="1014" y1="117" x2="1107" y2="176"></line><line x1="979" y1="308" x2="1025" y2="359"></line><line x1="1025" y1="359" x2="1090" y2="384"></line><line x1="3" y1="182" x2="-34" y2="285"></line><line x1="120" y1="312" x2="205" y2="304"></line><line x1="247" y1="82" x2="193" y2="167"></line><line x1="1062" y1="280" x2="1090" y2="384"></line><line x1="781" y1="125" x2="846" y2="111"></line><line x1="586" y1="-23" x2="544" y2="110"></line><circle class="a" cx="-13" cy="-21" r="3"></circle><circle class="c" cx="11" cy="69" r="6"></circle><circle class="c" cx="3" cy="182" r="6"></circle><circle class="c" cx="-34" cy="285" r="3"></circle><circle class="c" cx="-35" cy="376" r="6"></circle><circle class="" cx="77" cy="-25" r="4"></circle><circle class="" cx="104" cy="115" r="4"></circle><circle class="c" cx="81" cy="173" r="4"></circle><circle class="" cx="120" cy="312" r="5"></circle><circle class="" cx="116" cy="374" r="3"></circle><circle class="" cx="256" cy="-27" r="4"></circle><circle class="" cx="247" cy="82" r="5"></circle><circle class="" cx="193" cy="167" r="3"></circle><circle class="a" cx="205" cy="304" r="6"></circle><circle class="a" cx="196" cy="385" r="5"></circle><circle class="b" cx="341" cy="-8" r="5"></circle><circle class="c" cx="334" cy="69" r="3"></circle><circle class="" cx="297" cy="172" r="6"></circle><circle class="c" cx="344" cy="281" r="6"></circle><circle class="c" cx="316" cy="385" r="5"></circle><circle class="" cx="436" cy="-12" r="4"></circle><circle class="" cx="462" cy="107" r="5"></circle><circle class="b" cx="421" cy="194" r="6"></circle><circle class="a" cx="442" cy="308" r="3"></circle><circle class="a" cx="457" cy="367" r="5"></circle><circle class="a" cx="586" cy="-23" r="3"></circle><circle class="b" cx="544" cy="110" r="3"></circle><circle class="b" cx="524" cy="189" r="5"></circle><circle class="a" cx="515" cy="295" r="5"></circle><circle class="a" cx="570" cy="384" r="5"></circle><circle class="a" cx="689" cy="-11" r="4"></circle><circle class="a" cx="675" cy="101" r="6"></circle><circle class="a" cx="666" cy="187" r="4"></circle><circle class="c" cx="686" cy="312" r="5"></circle><circle class="" cx="658" cy="390" r="3"></circle><circle class="b" cx="737" cy="12" r="6"></circle><circle class="b" cx="781" cy="125" r="4"></circle><circle class="b" cx="794" cy="177" r="6"></circle><circle class="b" cx="761" cy="295" r="5"></circle><circle class="" cx="734" cy="378" r="4"></circle><circle class="" cx="855" cy="-23" r="4"></circle><circle class="c" cx="846" cy="111" r="4"></circle><circle class="b" cx="852" cy="175" r="4"></circle><circle class="c" cx="872" cy="307" r="3"></circle><circle class="c" cx="848" cy="377" r="5"></circle><circle class="" cx="994" cy="23" r="3"></circle><circle class="c" cx="1014" cy="117" r="4"></circle><circle class="c" cx="973" cy="185" r="4"></circle><circle class="c" cx="979" cy="308" r="5"></circle><circle class="" cx="1025" cy="359" r="6"></circle><circle class="c" cx="1075" cy="-16" r="6"></circle><circle class="" cx="1080" cy="94" r="4"></circle><circle class="a" cx="1107" cy="176" r="4"></circle><circle class="" cx="1062" cy="280" r="4"></circle><circle class="c" cx="1090" cy="384" r="4"></circle></svg>
   <div class="wrap">
-    <h1>Notes &amp; quizzes, made to click around in</h1>
-    <p class="lede">A growing set of AI course notes — not just text to scroll past, but diagrams you can poke at, simulators you can drag, and algorithms you can watch run step by step.</p>
-    <div class="badges">
-      <span class="badge neutral">Artificial Intelligence</span>
-      <span class="badge dfs">Search</span>
-      <span class="badge bfs">Algorithms</span>
+    <div class="home-logos">
+      <a href="https://www.uni-sofia.bg/" target="_blank" rel="noopener" class="logo-chip"><img src="assets/su-logo.png" alt="Sofia University &quot;St. Kliment Ohridski&quot;" width="62" height="98"></a>
+      <a href="https://www.fmi.uni-sofia.bg/en" target="_blank" rel="noopener" class="logo-chip"><img src="assets/fmi-logo.png" alt="Faculty of Mathematics and Informatics" width="91" height="58"></a>
     </div>
+    <h1>Intelligent Systems / Artificial Intelligence</h1>
+    <p class="home-sub">course @ Sofia University</p>
   </div>
 </section>
 
 <div class="wrap">
   <section class="block" id="labs">
-    <p class="eyebrow">Lecture notes</p>
     <h2 class="section-title">Labs</h2>
-    <p class="section-lede">Each note page turns the lecture material into something interactive — click a concept, drag a slider, press play on an algorithm.</p>
-
-    <div class="grid-cards">
-      <a class="card" href="labs/lab01-uninformed-search.html" style="color:inherit; text-decoration:none;">
-        <p class="tag">Lab 01</p>
-        <h3>Basic Definitions &amp; Uninformed Search</h3>
-        <p>State spaces, search trees, and DFS / BFS / UCS / DLS / IDS — with a clickable search tree, per-algorithm visualizations, and a complexity simulator.</p>
-        <span class="go">Open notes →</span>
-      </a>
-
-      <a class="card" href="labs/lab02-informed-search.html" style="color:inherit; text-decoration:none;">
-        <p class="tag">Lab 02</p>
-        <h3>Informed Search</h3>
-        <p>Heuristics, Greedy, Beam Search, Hill Climbing, A*, IDA*, Simulated Annealing — plus how these show up in real search/LLM research papers.</p>
-        <span class="go">Open notes →</span>
-      </a>
-      <a class="card" href="labs/lab03-csp.html" style="color:inherit; text-decoration:none;">
-        <p class="tag">Lab 03</p>
-        <h3>Constraint Satisfaction Problems</h3>
-        <p>Variables, domains and constraints, map colouring and constraint graphs, backtracking with forward checking, MRV and LCV, min-conflicts and the N-queens problem.</p>
-        <span class="go">Open notes →</span>
-      </a>
-      <a class="card" href="labs/lab04-genetic-algorithms.html" style="color:inherit; text-decoration:none;">
-        <p class="tag">Lab 04</p>
-        <h3>Genetic Algorithms</h3>
-        <p>Genes, chromosomes and populations, selection methods (roulette wheel, SUS, tournament, rank, elitism, truncation), crossover, mutation — and a live GA solving the travelling salesman problem.</p>
-        <span class="go">Open notes →</span>
-      </a>
+    <div class="lab-table-card">
+      <table class="lab-table">
+        <thead>
+          <tr><th>Topic</th><th>Description</th><th>Resource</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="lab-topic"><span class="lab-num">01</span>Uninformed Search</td>
+            <td class="lab-desc">Basic definitions, state spaces, and blind search strategies (BFS, DFS, UCS, IDS)</td>
+            <td class="lab-go"><a class="learn-btn" href="labs/lab01-uninformed-search.html">Learn →</a></td>
+          </tr>
+          <tr>
+            <td class="lab-topic"><span class="lab-num">02</span>Informed Search</td>
+            <td class="lab-desc">Heuristic functions, greedy search, A* algorithm, and optimization techniques</td>
+            <td class="lab-go"><a class="learn-btn" href="labs/lab02-informed-search.html">Learn →</a></td>
+          </tr>
+          <tr>
+            <td class="lab-topic"><span class="lab-num">03</span>Constraint Satisfaction</td>
+            <td class="lab-desc">CSP fundamentals, backtracking, arc consistency (AC-3), and min-conflicts heuristics</td>
+            <td class="lab-go"><a class="learn-btn" href="labs/lab03-csp.html">Learn →</a></td>
+          </tr>
+          <tr>
+            <td class="lab-topic"><span class="lab-num">04</span>Genetic Algorithms</td>
+            <td class="lab-desc">Evolutionary search, selection mechanisms, crossover, mutation, and metaheuristic optimization</td>
+            <td class="lab-go"><a class="learn-btn" href="labs/lab04-genetic-algorithms.html">Learn →</a></td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </section>
 
-  <section class="block" id="quizzes">
-    <p class="eyebrow">Check yourself</p>
-    <h2 class="section-title">Quizzes</h2>
-    <p class="section-lede">Instant feedback, no login, no grading pressure.</p>
-    <div class="grid-cards">
-      <a class="card" href="labs/lab02-informed-search.html#quiz" style="color:inherit; text-decoration:none;">
-        <p class="tag">Lab 02</p>
-        <h3>Informed Search — quick check</h3>
-        <p>5 questions on admissibility, consistency, and choosing a strategy.</p>
-        <span class="go">Take the quiz →</span>
-      </a>
+  <section class="block" id="team">
+    <h2 class="section-title">Led by</h2>
+    <div class="team-grid">
+      <div class="person-card">
+        <p class="role">Labs · Teaching Assistant</p>
+        <h3>Elitsa Yotkova</h3>
+        <p>Master's student in Information Retrieval and Knowledge Discovery @ Sofia University, ex-Google, Uber</p>
+        <div class="person-links">
+          <a href="https://github.com/ElitsaY" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 19c-4 1.3-4-2-6-2.5M15 21v-3.4a3 3 0 0 0-.8-2.3c2.7-.3 5.5-1.3 5.5-6a4.7 4.7 0 0 0-1.3-3.2 4.3 4.3 0 0 0-.1-3.2s-1-.3-3.4 1.3a11.6 11.6 0 0 0-6 0C6.5 2.6 5.5 2.9 5.5 2.9a4.3 4.3 0 0 0-.1 3.2A4.7 4.7 0 0 0 4 9.3c0 4.6 2.8 5.7 5.5 6a3 3 0 0 0-.8 2.3V21"/></svg>GitHub</a>
+          <a href="https://scholar.google.com/citations?user=-Y7pNIsAAAAJ&amp;hl=en" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v5c3 2.5 9 2.5 12 0v-5"/></svg>Google Scholar</a>
+          <a href="https://www.linkedin.com/in/elitza-yotkova/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 10v7M8 7v.01M12 17v-4a2 2 0 0 1 4 0v4M12 10v7"/></svg>LinkedIn</a>
+        </div>
+      </div>
+      <div class="person-card">
+        <p class="role">Lectures</p>
+        <h3>Prof. Ivan Koychev</h3>
+        <p>Sofia University "St. Kliment Ohridski", Faculty of Mathematics and Informatics</p>
+        <div class="person-links">
+          <a href="https://scholar.google.com/citations?user=o5YAI9wAAAAJ&amp;hl=en" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v5c3 2.5 9 2.5 12 0v-5"/></svg>Google Scholar</a>
+        </div>
+      </div>
     </div>
   </section>
 </div>
 
-<footer>Class notes by Elitsa Yotkova · built with plain HTML, CSS &amp; JS</footer>
+<footer>Intelligent Systems / Artificial Intelligence · Sofia University · Class notes by Elitsa Yotkova</footer>
 
 </body>
 </html>
