@@ -295,6 +295,11 @@ input[type="range"] { width: 100%; accent-color: var(--indigo); }
   font-size: 0.82rem;
   cursor: pointer;
 }
+.strat-btn { transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease; }
+.strat-btn.active { background: var(--indigo); border-color: var(--indigo); color: #fff; }
+#selection .strat-btn.active { background: var(--dfs); border-color: var(--dfs); }
+#mutation .strat-btn.active { background: var(--ucs); border-color: var(--ucs); }
+#tsp .strat-btn.active { background: var(--ids); border-color: var(--ids); }
 .strat-btn[data-s="dfs"].active { background: var(--dfs); border-color: var(--dfs); color: #fff; }
 .strat-btn[data-s="bfs"].active { background: var(--bfs); border-color: var(--bfs); color: #fff; }
 .strat-btn[data-s="ucs"].active { background: var(--ucs); border-color: var(--ucs); color: #fff; }
@@ -588,3 +593,122 @@ footer { text-align: center; color: var(--ink-soft); font-size: 0.85rem; padding
 .nq-cost.min { color: var(--bfs); font-size: 0.95rem; font-weight: 800; }
 .nq-arrays { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.78rem; display: grid; gap: 0.35rem; word-break: break-all; }
 .nq-arrays b { font-family: 'Inter', sans-serif; }
+
+/* ---- Lab 04: genetic algorithms ---- */
+.dna-hero { position: relative; overflow: hidden; }
+.dna-hero .wrap { position: relative; z-index: 1; }
+.dna-helix { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0.28; pointer-events: none; }
+.dna-helix .strand { fill: none; stroke-width: 4; stroke-linecap: round; }
+.dna-helix .strand.a { stroke: var(--indigo); }
+.dna-helix .strand.b { stroke: var(--teal); }
+.dna-helix .rung { stroke-width: 3.5; stroke-linecap: round; }
+
+.term {
+  font-weight: 700; color: var(--ink); cursor: help; border-radius: 4px; padding: 0 0.15em;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--dfs) 22%, transparent), color-mix(in srgb, var(--bfs) 22%, transparent), color-mix(in srgb, var(--ucs) 22%, transparent), color-mix(in srgb, var(--ids) 22%, transparent));
+  border-bottom: 2px dotted color-mix(in srgb, var(--ink) 45%, transparent);
+}
+.term:hover, .term:focus { outline: none; background: color-mix(in srgb, var(--ids) 30%, transparent); }
+.term-tip {
+  position: fixed; z-index: 50; pointer-events: none; opacity: 0; transform: translateY(4px);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  background: var(--ink); color: var(--bg); font-size: 0.82rem; line-height: 1.45; padding: 0.55rem 0.75rem; border-radius: 8px; box-shadow: var(--shadow-sm);
+}
+.term-tip.show { opacity: 1; transform: none; }
+
+.ga-concepts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+@media (max-width: 760px) { .ga-concepts { grid-template-columns: 1fr; } }
+.ga-concept { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 1.1rem; box-shadow: var(--shadow-sm); }
+.ga-concept h4 { margin: 0.8rem 0 0.3rem; font-size: 1.05rem; }
+.ga-concept p { margin: 0; font-size: 0.9rem; color: var(--ink-soft); }
+.ga-concept p.ex { margin-top: 0.4rem; font-size: 0.82rem; font-style: italic; }
+.ga-visual { display: flex; gap: 3px; min-height: 96px; align-items: center; }
+.ga-visual.stack { flex-direction: column; align-items: flex-start; justify-content: center; }
+.ga-visual.stack > div { display: flex; gap: 3px; }
+.gene-cell { width: 28px; height: 28px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.85rem; color: #fff; }
+.gene-cell.g1 { background: var(--dfs); } .gene-cell.g2 { background: var(--bfs); } .gene-cell.g3 { background: var(--ucs); } .gene-cell.g4 { background: var(--ids); }
+
+.ga-fig { width: 100%; height: auto; display: block; }
+table.proscons { margin: 0.8rem 0; font-size: 0.88rem; }
+table.proscons thead th:first-child { background: var(--bfs); }
+table.proscons thead th:last-child { background: #c2566a; }
+table.proscons td { width: 50%; vertical-align: top; }
+
+/* code card: editor-style, same dark theme in light and dark mode */
+.code-card { margin: 1.2rem 0; border-radius: var(--radius-sm); overflow: hidden; background: #1e2230; box-shadow: 0 10px 28px -16px rgba(20, 24, 40, 0.55); border: 1px solid #2c3246; }
+.code-card summary { list-style: none; display: flex; align-items: center; gap: 0.7rem; padding: 0.6rem 0.9rem; cursor: pointer; background: #262b3c; color: #c9cfe0; font-size: 0.82rem; user-select: none; }
+.code-card summary::-webkit-details-marker { display: none; }
+.code-dots { display: inline-flex; gap: 5px; }
+.code-dots i { width: 10px; height: 10px; border-radius: 50%; background: #ff5f57; }
+.code-dots i:nth-child(2) { background: #febc2e; }
+.code-dots i:nth-child(3) { background: #28c840; }
+.code-file { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-weight: 600; color: #e6e8ef; }
+.code-lang { font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: #1e2230; background: #ffcb6b; padding: 0.1rem 0.45rem; border-radius: 999px; }
+.code-copy { margin-left: auto; border: 1px solid #3a4158; background: transparent; color: #c9cfe0; font: inherit; font-size: 0.75rem; font-weight: 700; padding: 0.2rem 0.65rem; border-radius: 6px; cursor: pointer; }
+.code-copy:hover { background: #33394d; color: #fff; }
+.code-chevron { color: #8a93ab; transition: transform 0.2s ease; }
+.code-card:not([open]) .code-copy { display: none; }
+.code-card:not([open]) .code-chevron { transform: rotate(-90deg); margin-left: auto; }
+.code-body { margin: 0; padding: 0.9rem 0; overflow-x: auto; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.8rem; line-height: 1.65; color: #e6e8ef; counter-reset: line; }
+.code-body .ln { display: block; padding: 0 1.1rem 0 0; }
+.code-body .ln::before { counter-increment: line; content: counter(line); display: inline-block; width: 2.4rem; margin-right: 1rem; text-align: right; color: #5b6480; user-select: none; }
+.code-body .ln:hover { background: rgba(255, 255, 255, 0.04); }
+.tok-kw { color: #c792ea; }
+.tok-str { color: #c3e88d; }
+.tok-com { color: #7f8aa3; font-style: italic; }
+.tok-num { color: #f78c6c; }
+.tok-fn { color: #82aaff; }
+.tok-bi { color: #ffcb6b; }
+.caption-note code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+.rw-stage { position: relative; max-width: 320px; width: 100%; margin: 0 auto; aspect-ratio: 1; }
+.rw-wheel, .rw-pointers { position: absolute; inset: 0; width: 100%; height: 100%; }
+.rw-wheel { transform-origin: 50% 50%; }
+.rw-slice { stroke: var(--surface); stroke-width: 2; }
+.rw-label { font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 20px; fill: #fff; text-anchor: middle; dominant-baseline: central; }
+.rw-sub { font-size: 11px; font-weight: 700; fill: #fff; text-anchor: middle; dominant-baseline: central; }
+.rw-hub { fill: var(--surface); stroke: var(--ink); stroke-width: 2; }
+.rw-pointer { fill: var(--ink); }
+.tally-row { grid-template-columns: 76px 1fr 96px; }
+.tally-row .fit { font-weight: 600; font-size: 0.75rem; color: var(--ink-soft); margin-left: 0.2rem; }
+.exp-mark { position: absolute; top: -3px; bottom: -3px; width: 3px; margin-left: -1.5px; background: var(--ink); border-radius: 2px; }
+
+.tn-arena { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.6rem; }
+@media (max-width: 560px) { .tn-arena { grid-template-columns: repeat(3, 1fr); } }
+.tn-card { position: relative; border: 2px solid var(--line); border-radius: var(--radius-sm); padding: 0.8rem 0.4rem; text-align: center; background: var(--surface); transition: all 0.2s ease; opacity: 0.55; }
+.tn-card.in { opacity: 1; border-color: var(--c); background: color-mix(in srgb, var(--c) 12%, var(--surface)); }
+.tn-card.winner { box-shadow: 0 0 0 3px var(--c); }
+.tn-card .crown { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); font-size: 1.2rem; }
+.tn-id { font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 1.3rem; }
+.tn-f { font-size: 0.78rem; color: var(--ink-soft); }
+
+.rk-bars { display: grid; gap: 0.9rem; }
+.rk-row { display: grid; grid-template-columns: 110px 1fr; gap: 0.8rem; align-items: center; }
+.rk-id { font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 1.1rem; line-height: 1.2; }
+.rk-id span { display: block; font-family: 'Inter', sans-serif; font-size: 0.72rem; font-weight: 600; color: var(--ink-soft); }
+.rk-pair { display: grid; gap: 0.3rem; }
+.rk-bar { display: grid; grid-template-columns: 62px 1fr 52px; gap: 0.5rem; align-items: center; font-size: 0.8rem; }
+.rk-tag { color: var(--ink-soft); font-weight: 600; }
+.rk-bar b { text-align: right; font-variant-numeric: tabular-nums; }
+
+.xo-view { display: grid; gap: 0.55rem; }
+.xo-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.8rem; }
+.xo-label { width: 78px; font-size: 0.8rem; font-weight: 800; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.03em; }
+.xo-genes { display: flex; gap: 4px; }
+.xo-note { font-size: 0.82rem; color: var(--ink-soft); flex-basis: 100%; padding-left: calc(78px + 0.8rem); }
+.xo-sep { border-top: 1px dashed var(--line); margin: 0.3rem 0; }
+.gcell { width: 36px; height: 36px; border-radius: 7px; display: inline-flex; align-items: center; justify-content: center; font-weight: 800; color: #fff; position: relative; transition: all 0.2s ease; }
+.gcell.p1 { background: #d9546e; }
+.gcell.p2 { background: #4d7ea8; }
+.gcell.dim { opacity: 0.35; }
+.gcell.mask { width: 36px; height: 22px; font-size: 0.72rem; opacity: 0.75; }
+.gcell.cut::after { content: ''; position: absolute; right: -5px; top: -6px; bottom: -6px; border-right: 2px dashed var(--ink); }
+.gcell.hl { box-shadow: 0 0 0 3px var(--surface), 0 0 0 5px var(--ucs); }
+
+.ga-map { width: 100%; height: auto; background: color-mix(in srgb, var(--ids) 5%, var(--surface)); border-radius: var(--radius-sm); }
+.ga-tour { fill: none; stroke: var(--ids); stroke-width: 3; stroke-linejoin: round; }
+.ga-city { fill: var(--surface); stroke: var(--ink); stroke-width: 2.5; }
+.ga-city.start { fill: var(--ucs); }
+.ga-chart { width: 100%; height: auto; }
+.ga-axis { stroke: var(--line); stroke-width: 1; }
+.ga-line { fill: none; stroke: var(--ids); stroke-width: 2.5; stroke-linejoin: round; }

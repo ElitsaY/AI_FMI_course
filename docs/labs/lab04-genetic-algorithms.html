@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lab 04 — Genetic Algorithms | Class Notes</title>
+<meta name="description" content="Interactive notes on genetic algorithms: genes, chromosomes and populations, selection methods (roulette wheel, tournament, rank, SUS, elitism, truncation), crossover, mutation, and a live GA solving the travelling salesman problem.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+<style>
+  body.dna-page {
+    background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2280%22%20height%3D%22240%22%20viewBox%3D%220%200%2080%20240%22%20opacity%3D%220.22%22%3E%3Cline%20x1%3D%2246.7%22%20y1%3D%2210%22%20x2%3D%2233.3%22%20y2%3D%2210%22%20stroke%3D%22%23cf9470%22%20stroke-width%3D%223%22%20stroke-linecap%3D%22round%22/%3E%3Cline%20x1%3D%2258.4%22%20y1%3D%2230%22%20x2%3D%2221.6%22%20y2%3D%2230%22%20stroke%3D%22%235c9a6a%22%20stroke-width%3D%223%22%20stroke-linecap%3D%22round%22/%3E%3Cline%20x1%3D%2265.1%22%20y1%3D%2250%22%20x2%3D%2214.9%22%20y2%3D%2250%22%20stroke%3D%22%23d1ab68%22%20stroke-width%3D%223%22%20stroke-linecap%3D%22round%22/%3E%3Cline%20x1%3D%2265.1%22%20y1%3D%2270%22%20x2%3D%2214.9%22%20y2%3D%2270%22%20stroke%3D%22%236f93b0%22%20stroke-width%3D%223%22%20stroke-linecap%3D%22round%22/%3E%3Cline%20x1%3D%2258.4%22%20y1%3D%2290%22%20x2%3D%2221.6%22%20y2%3D%2290%22%20stroke%3D%22%23cf9470%22%20stroke-width%3D%223%22%20stroke-linecap%3D%22round%22/%3E%3Cline%20x1%3D%2246.7%22%20y1%3D%22110%22%20x2%3D%2233.3%22%20y2%3D%22110%22%20stroke%3D%22%235c9a6a%22%20stroke-width%3D%223%22%20stroke-linecap%3D%22round%22/%3E%3Cline%20x1%3D%2233.3%22%20y1%3D%22130%22%20x2%3D%2246.7%22%20y2%3D%22130%22%20stroke%3D%22%23d1ab68%22%20stroke-width%3D%223%22%20stroke-linecap%3D%22round%22/%3E%3Cline%20x1%3D%2221.6%22%20y1%3D%22150%22%20x2%3D%2258.4%22%20y2%3D%22150%22%20stroke%3D%22%236f93b0%22%20stroke-width%3D%223%22%20stroke-linecap%3D%22round%22/%3E%3Cline%20x1%3D%2214.9%22%20y1%3D%22170%22%20x2%3D%2265.1%22%20y2%3D%22170%22%20stroke%3D%22%23cf9470%22%20stroke-width%3D%223%22%20stroke-linecap%3D%22round%22/%3E%3Cline%20x1%3D%2214.9%22%20y1%3D%22190%22%20x2%3D%2265.1%22%20y2%3D%22190%22%20stroke%3D%22%235c9a6a%22%20stroke-width%3D%223%22%20stroke-linecap%3D%22round%22/%3E%3Cline%20x1%3D%2221.6%22%20y1%3D%22210%22%20x2%3D%2258.4%22%20y2%3D%22210%22%20stroke%3D%22%23d1ab68%22%20stroke-width%3D%223%22%20stroke-linecap%3D%22round%22/%3E%3Cline%20x1%3D%2233.3%22%20y1%3D%22230%22%20x2%3D%2246.7%22%20y2%3D%22230%22%20stroke%3D%22%236f93b0%22%20stroke-width%3D%223%22%20stroke-linecap%3D%22round%22/%3E%3Cpath%20d%3D%22M40.0%2C0%20L42.7%2C4%20L45.4%2C8%20L48.0%2C12%20L50.6%2C16%20L53.0%2C20%20L55.3%2C24%20L57.4%2C28%20L59.3%2C32%20L61.0%2C36%20L62.5%2C40%20L63.8%2C44%20L64.7%2C48%20L65.4%2C52%20L65.9%2C56%20L66.0%2C60%20L65.9%2C64%20L65.4%2C68%20L64.7%2C72%20L63.8%2C76%20L62.5%2C80%20L61.0%2C84%20L59.3%2C88%20L57.4%2C92%20L55.3%2C96%20L53.0%2C100%20L50.6%2C104%20L48.0%2C108%20L45.4%2C112%20L42.7%2C116%20L40.0%2C120%20L37.3%2C124%20L34.6%2C128%20L32.0%2C132%20L29.4%2C136%20L27.0%2C140%20L24.7%2C144%20L22.6%2C148%20L20.7%2C152%20L19.0%2C156%20L17.5%2C160%20L16.2%2C164%20L15.3%2C168%20L14.6%2C172%20L14.1%2C176%20L14.0%2C180%20L14.1%2C184%20L14.6%2C188%20L15.3%2C192%20L16.2%2C196%20L17.5%2C200%20L19.0%2C204%20L20.7%2C208%20L22.6%2C212%20L24.7%2C216%20L27.0%2C220%20L29.4%2C224%20L32.0%2C228%20L34.6%2C232%20L37.3%2C236%20L40.0%2C240%22%20fill%3D%22none%22%20stroke%3D%22%236f93b0%22%20stroke-width%3D%223%22/%3E%3Cpath%20d%3D%22M40.0%2C0%20L37.3%2C4%20L34.6%2C8%20L32.0%2C12%20L29.4%2C16%20L27.0%2C20%20L24.7%2C24%20L22.6%2C28%20L20.7%2C32%20L19.0%2C36%20L17.5%2C40%20L16.2%2C44%20L15.3%2C48%20L14.6%2C52%20L14.1%2C56%20L14.0%2C60%20L14.1%2C64%20L14.6%2C68%20L15.3%2C72%20L16.2%2C76%20L17.5%2C80%20L19.0%2C84%20L20.7%2C88%20L22.6%2C92%20L24.7%2C96%20L27.0%2C100%20L29.4%2C104%20L32.0%2C108%20L34.6%2C112%20L37.3%2C116%20L40.0%2C120%20L42.7%2C124%20L45.4%2C128%20L48.0%2C132%20L50.6%2C136%20L53.0%2C140%20L55.3%2C144%20L57.4%2C148%20L59.3%2C152%20L61.0%2C156%20L62.5%2C160%20L63.8%2C164%20L64.7%2C168%20L65.4%2C172%20L65.9%2C176%20L66.0%2C180%20L65.9%2C184%20L65.4%2C188%20L64.7%2C192%20L63.8%2C196%20L62.5%2C200%20L61.0%2C204%20L59.3%2C208%20L57.4%2C212%20L55.3%2C216%20L53.0%2C220%20L50.6%2C224%20L48.0%2C228%20L45.4%2C232%20L42.7%2C236%20L40.0%2C240%22%20fill%3D%22none%22%20stroke%3D%22%236f93b0%22%20stroke-width%3D%223%22/%3E%3C/svg%3E"), url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2280%22%20height%3D%22240%22%20viewBox%3D%220%200%2080%20240%22%20opacity%3D%220.22%22%3E%3Cline%20x1%3D%2246.7%22%20y1%3D%2210%22%20x2%3D%2233.3%22%20y2%3D%2210%22%20stroke%3D%22%23cf9470%22%20stroke-width%3D%223%22%20stroke-linecap%3D%22round%22/%3E%3Cline%20x1%3D%2258.4%22%20y1%3D%2230%22%20x2%3D%2221.6%22%20y2%3D%2230%22%20stroke%3D%22%235c9a6a%22%20stroke-width%3D%223%22%20stroke-linecap%3D%22round%22/%3E%3Cline%20x1%3D%2265.1%22%20y1%3D%2250%22%20x2%3D%2214.9%22%20y2%3D%2250%22%20stroke%3D%22%23d1ab68%22%20stroke-width%3D%223%22%20stroke-linecap%3D%22round%22/%3E%3Cline%20x1%3D%2265.1%22%20y1%3D%2270%22%20x2%3D%2214.9%22%20y2%3D%2270%22%20stroke%3D%22%236f93b0%22%20stroke-width%3D%223%22%20stroke-linecap%3D%22round%22/%3E%3Cline%20x1%3D%2258.4%22%20y1%3D%2290%22%20x2%3D%2221.6%22%20y2%3D%2290%22%20stroke%3D%22%23cf9470%22%20stroke-width%3D%223%22%20stroke-linecap%3D%22round%22/%3E%3Cline%20x1%3D%2246.7%22%20y1%3D%22110%22%20x2%3D%2233.3%22%20y2%3D%22110%22%20stroke%3D%22%235c9a6a%22%20stroke-width%3D%223%22%20stroke-linecap%3D%22round%22/%3E%3Cline%20x1%3D%2233.3%22%20y1%3D%22130%22%20x2%3D%2246.7%22%20y2%3D%22130%22%20stroke%3D%22%23d1ab68%22%20stroke-width%3D%223%22%20stroke-linecap%3D%22round%22/%3E%3Cline%20x1%3D%2221.6%22%20y1%3D%22150%22%20x2%3D%2258.4%22%20y2%3D%22150%22%20stroke%3D%22%236f93b0%22%20stroke-width%3D%223%22%20stroke-linecap%3D%22round%22/%3E%3Cline%20x1%3D%2214.9%22%20y1%3D%22170%22%20x2%3D%2265.1%22%20y2%3D%22170%22%20stroke%3D%22%23cf9470%22%20stroke-width%3D%223%22%20stroke-linecap%3D%22round%22/%3E%3Cline%20x1%3D%2214.9%22%20y1%3D%22190%22%20x2%3D%2265.1%22%20y2%3D%22190%22%20stroke%3D%22%235c9a6a%22%20stroke-width%3D%223%22%20stroke-linecap%3D%22round%22/%3E%3Cline%20x1%3D%2221.6%22%20y1%3D%22210%22%20x2%3D%2258.4%22%20y2%3D%22210%22%20stroke%3D%22%23d1ab68%22%20stroke-width%3D%223%22%20stroke-linecap%3D%22round%22/%3E%3Cline%20x1%3D%2233.3%22%20y1%3D%22230%22%20x2%3D%2246.7%22%20y2%3D%22230%22%20stroke%3D%22%236f93b0%22%20stroke-width%3D%223%22%20stroke-linecap%3D%22round%22/%3E%3Cpath%20d%3D%22M40.0%2C0%20L42.7%2C4%20L45.4%2C8%20L48.0%2C12%20L50.6%2C16%20L53.0%2C20%20L55.3%2C24%20L57.4%2C28%20L59.3%2C32%20L61.0%2C36%20L62.5%2C40%20L63.8%2C44%20L64.7%2C48%20L65.4%2C52%20L65.9%2C56%20L66.0%2C60%20L65.9%2C64%20L65.4%2C68%20L64.7%2C72%20L63.8%2C76%20L62.5%2C80%20L61.0%2C84%20L59.3%2C88%20L57.4%2C92%20L55.3%2C96%20L53.0%2C100%20L50.6%2C104%20L48.0%2C108%20L45.4%2C112%20L42.7%2C116%20L40.0%2C120%20L37.3%2C124%20L34.6%2C128%20L32.0%2C132%20L29.4%2C136%20L27.0%2C140%20L24.7%2C144%20L22.6%2C148%20L20.7%2C152%20L19.0%2C156%20L17.5%2C160%20L16.2%2C164%20L15.3%2C168%20L14.6%2C172%20L14.1%2C176%20L14.0%2C180%20L14.1%2C184%20L14.6%2C188%20L15.3%2C192%20L16.2%2C196%20L17.5%2C200%20L19.0%2C204%20L20.7%2C208%20L22.6%2C212%20L24.7%2C216%20L27.0%2C220%20L29.4%2C224%20L32.0%2C228%20L34.6%2C232%20L37.3%2C236%20L40.0%2C240%22%20fill%3D%22none%22%20stroke%3D%22%236f93b0%22%20stroke-width%3D%223%22/%3E%3Cpath%20d%3D%22M40.0%2C0%20L37.3%2C4%20L34.6%2C8%20L32.0%2C12%20L29.4%2C16%20L27.0%2C20%20L24.7%2C24%20L22.6%2C28%20L20.7%2C32%20L19.0%2C36%20L17.5%2C40%20L16.2%2C44%20L15.3%2C48%20L14.6%2C52%20L14.1%2C56%20L14.0%2C60%20L14.1%2C64%20L14.6%2C68%20L15.3%2C72%20L16.2%2C76%20L17.5%2C80%20L19.0%2C84%20L20.7%2C88%20L22.6%2C92%20L24.7%2C96%20L27.0%2C100%20L29.4%2C104%20L32.0%2C108%20L34.6%2C112%20L37.3%2C116%20L40.0%2C120%20L42.7%2C124%20L45.4%2C128%20L48.0%2C132%20L50.6%2C136%20L53.0%2C140%20L55.3%2C144%20L57.4%2C148%20L59.3%2C152%20L61.0%2C156%20L62.5%2C160%20L63.8%2C164%20L64.7%2C168%20L65.4%2C172%20L65.9%2C176%20L66.0%2C180%20L65.9%2C184%20L65.4%2C188%20L64.7%2C192%20L63.8%2C196%20L62.5%2C200%20L61.0%2C204%20L59.3%2C208%20L57.4%2C212%20L55.3%2C216%20L53.0%2C220%20L50.6%2C224%20L48.0%2C228%20L45.4%2C232%20L42.7%2C236%20L40.0%2C240%22%20fill%3D%22none%22%20stroke%3D%22%236f93b0%22%20stroke-width%3D%223%22/%3E%3C/svg%3E");
+    background-repeat: repeat-y, repeat-y;
+    background-position: left 18px top 0, right 18px top 120px;
+    background-attachment: fixed, fixed;
+  }
+  @media (max-width: 1100px) { body.dna-page { background-image: none; } }
+</style>
+</head>
+<body class="dna-page">
+
+<header class="site-nav">
+  <span class="brand"><span class="dot"></span> Class Notes</span>
+  <nav>
+    <a href="../index.html">Home</a>
+    <a href="lab01-uninformed-search.html">Lab 01</a>
+    <a href="lab02-informed-search.html">Lab 02</a>
+    <a href="lab03-csp.html">Lab 03</a>
+  </nav>
+</header>
+
+<section class="hero dna-hero">
+  <svg id="dna-helix" class="dna-helix" viewBox="0 0 1200 220" preserveAspectRatio="none" aria-hidden="true"></svg>
+  <div class="wrap">
+    <p class="eyebrow">Lab 04</p>
+    <h1>Genetic Algorithms</h1>
+    <div class="badges">
+      <span class="badge dfs">Selection</span>
+      <span class="badge bfs">Crossover</span>
+      <span class="badge ucs">Mutation</span>
+      <span class="badge ids">Evolution</span>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+
+  <!-- ===== OVERVIEW ===== -->
+  <section class="block" id="overview">
+    <h2 class="section-title">Overview of the lab</h2>
+    <ol class="concept-list">
+      <li><a href="#intro">Introduction to Genetic Algorithms</a></li>
+      <li><a href="#steps">Main steps in Genetic Algorithms</a>
+        <ul class="concept-list" style="margin-top:0.6rem;">
+          <li><a href="#selection">Selection</a></li>
+          <li><a href="#crossover">Crossover</a></li>
+          <li><a href="#mutation">Mutation</a></li>
+        </ul>
+      </li>
+      <li><a href="#tsp">GA in action: Travelling Salesman Problem</a></li>
+    </ol>
+    <p class="caption-note">💡 Words like <span class="term" tabindex="0" data-def="A complete set of genes; represents one potential solution, e.g. [x₁, x₂, x₃, …].">chromosome</span> or <span class="term" tabindex="0" data-def="The degree of bias towards fitter individuals in the selection process.">selection pressure</span> are key terms — hover or tap them for a definition.</p>
+  </section>
+
+  <!-- ===== INTRO ===== -->
+  <section class="block" id="intro">
+    <h2 class="section-title">Introduction to Genetic Algorithms</h2>
+    <ul class="concept-list">
+      <li>A <b>search and optimization technique</b> inspired by natural evolution.</li>
+      <li>Uses the principles of <span class="term" tabindex="0" data-def="Choosing chromosomes from the population for later breeding (crossover).">selection</span>, <span class="term" tabindex="0" data-def="Taking more than one parent solution and producing a child solution from them.">crossover</span>, and <span class="term" tabindex="0" data-def="A small random change to a chromosome — keeps diversity in the population.">mutation</span>.</li>
+      <li>Evolves a <span class="term" tabindex="0" data-def="A group of chromosomes; represents many solutions being tested at once.">population</span> of possible solutions to find the best (fittest) one.</li>
+    </ul>
+    <p class="section-lede">Each solution (often called an <span class="term" tabindex="0" data-def="One member of the population — a single chromosome / candidate solution.">individual</span> or <span class="term" tabindex="0" data-def="A complete set of genes; represents one potential solution, e.g. [x₁, x₂, x₃, …].">chromosome</span>) is represented by a set of parameters — similar to genes in biology. The <span class="term" tabindex="0" data-def="How well an individual solves the problem at hand (here: higher is better).">fitness</span> of each individual measures how well it solves the problem at hand.</p>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.8rem;">Key concepts</h3>
+    <div class="ga-concepts">
+      <div class="ga-concept">
+        <div class="ga-visual"><span class="gene-cell g2">7</span></div>
+        <h4><span class="term" tabindex="0" data-def="A single parameter or feature that defines part of a solution (e.g. weight, value, or decision variable).">Gene</span></h4>
+        <p>A single parameter or feature that defines part of a solution.</p>
+        <p class="ex">Example: weight, value, or decision variable</p>
+      </div>
+      <div class="ga-concept">
+        <div class="ga-visual"><span class="gene-cell g1">3</span><span class="gene-cell g2">7</span><span class="gene-cell g3">1</span><span class="gene-cell g4">9</span><span class="gene-cell g1">4</span></div>
+        <h4><span class="term" tabindex="0" data-def="A complete set of genes; represents one potential solution, e.g. [x₁, x₂, x₃, …].">Chromosome</span></h4>
+        <p>A complete set of genes; represents one potential solution.</p>
+        <p class="ex">Example: [x₁, x₂, x₃, …]</p>
+      </div>
+      <div class="ga-concept">
+        <div class="ga-visual stack">
+          <div><span class="gene-cell g1">3</span><span class="gene-cell g2">7</span><span class="gene-cell g3">1</span><span class="gene-cell g4">9</span><span class="gene-cell g1">4</span></div>
+          <div><span class="gene-cell g4">8</span><span class="gene-cell g1">2</span><span class="gene-cell g2">6</span><span class="gene-cell g3">5</span><span class="gene-cell g4">0</span></div>
+          <div><span class="gene-cell g3">1</span><span class="gene-cell g3">1</span><span class="gene-cell g4">7</span><span class="gene-cell g2">3</span><span class="gene-cell g1">6</span></div>
+        </div>
+        <h4><span class="term" tabindex="0" data-def="A group of chromosomes; represents many solutions being tested at once.">Population</span></h4>
+        <p>A group of chromosomes; represents many solutions being tested at once.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== MAIN STEPS ===== -->
+  <section class="block" id="steps">
+    <h2 class="section-title">Main steps in Genetic Algorithms</h2>
+    <p class="section-lede"><b>Initialization</b> (<span class="term" tabindex="0" data-def="A group of chromosomes; represents many solutions being tested at once.">Population</span>) → <b>Selection</b> (<span class="term" tabindex="0" data-def="The function that scores each individual — it measures how well it solves the problem.">Fitness Function</span>) → <b>Crossover</b> → <b>Mutation</b> — repeated <span class="term" tabindex="0" data-def="One pass of the GA loop: selection → crossover → mutation produces a new population.">generation</span> after generation until the population converges.</p>
+    <div class="sim-panel"><svg class="ga-fig" viewBox="0 0 820 290" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Genetic algorithm loop: initial population, evaluation, selection, crossover, mutation, evolved population, convergence check, back to evaluation or result"><defs><marker id="ga-arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--ink)"></path></marker></defs><line x1="182" y1="65" x2="221" y2="65" stroke-width="2.5" marker-end="url(#ga-arr)" style="stroke:var(--ink)"></line><line x1="387" y1="65" x2="426" y2="65" stroke-width="2.5" marker-end="url(#ga-arr)" style="stroke:var(--ink)"></line><line x1="592" y1="65" x2="631" y2="65" stroke-width="2.5" marker-end="url(#ga-arr)" style="stroke:var(--ink)"></line><line x1="715" y1="102" x2="715" y2="186" stroke-width="2.5" marker-end="url(#ga-arr)" style="stroke:var(--ink)"></line><line x1="633" y1="225" x2="594" y2="225" stroke-width="2.5" marker-end="url(#ga-arr)" style="stroke:var(--ink)"></line><line x1="428" y1="225" x2="389" y2="225" stroke-width="2.5" marker-end="url(#ga-arr)" style="stroke:var(--ink)"></line><line x1="223" y1="225" x2="184" y2="225" stroke-width="2.5" marker-end="url(#ga-arr)" style="stroke:var(--ink)"></line><line x1="305" y1="188" x2="305" y2="104" stroke-width="2.5" marker-end="url(#ga-arr)" style="stroke:var(--ink)"></line><rect x="20" y="30" width="160" height="70" rx="14" stroke-width="2.5" style="fill:var(--surface); stroke:var(--ink-soft)"></rect><text x="100" y="55" text-anchor="middle" dominant-baseline="central" font-size="16" font-weight="600" style="fill:var(--ink)"><tspan x="100" dy="0">Initial</tspan><tspan x="100" dy="20">Population</tspan></text><rect x="225" y="30" width="160" height="70" rx="14" stroke-width="2.5" style="fill:var(--surface); stroke:#d9546e"></rect><text x="305" y="55" text-anchor="middle" dominant-baseline="central" font-size="16" font-weight="600" style="fill:var(--ink)"><tspan x="305" dy="0">Evaluation</tspan><tspan x="305" dy="20">(Fitness)</tspan></text><rect x="430" y="30" width="160" height="70" rx="14" stroke-width="2.5" style="fill:var(--surface); stroke:var(--indigo)"></rect><text x="510" y="65" text-anchor="middle" dominant-baseline="central" font-size="16" font-weight="600" style="fill:var(--ink)"><tspan x="510" dy="0">Selection</tspan></text><rect x="635" y="30" width="160" height="70" rx="14" stroke-width="2.5" style="fill:var(--surface); stroke:var(--indigo)"></rect><text x="715" y="65" text-anchor="middle" dominant-baseline="central" font-size="16" font-weight="600" style="fill:var(--ink)"><tspan x="715" dy="0">Crossover</tspan></text><rect x="635" y="190" width="160" height="70" rx="14" stroke-width="2.5" style="fill:var(--surface); stroke:var(--indigo)"></rect><text x="715" y="225" text-anchor="middle" dominant-baseline="central" font-size="16" font-weight="600" style="fill:var(--ink)"><tspan x="715" dy="0">Mutation</tspan></text><rect x="430" y="190" width="160" height="70" rx="14" stroke-width="2.5" style="fill:var(--surface); stroke:var(--ink-soft)"></rect><text x="510" y="215" text-anchor="middle" dominant-baseline="central" font-size="16" font-weight="600" style="fill:var(--ink)"><tspan x="510" dy="0">Evolved</tspan><tspan x="510" dy="20">Population</tspan></text><rect x="225" y="190" width="160" height="70" rx="14" stroke-width="2.5" style="fill:var(--surface); stroke:var(--ucs)"></rect><text x="305" y="215" text-anchor="middle" dominant-baseline="central" font-size="16" font-weight="600" style="fill:var(--ink)"><tspan x="305" dy="0">Convergence</tspan><tspan x="305" dy="20">Check</tspan></text><rect x="20" y="190" width="160" height="70" rx="14" stroke-width="2.5" style="fill:var(--surface); stroke:var(--bfs)"></rect><text x="100" y="225" text-anchor="middle" dominant-baseline="central" font-size="16" font-weight="600" style="fill:var(--ink)"><tspan x="100" dy="0">Result</tspan></text></svg></div>
+  </section>
+
+  <!-- ===== SELECTION ===== -->
+  <section class="block algo-section dfs" id="selection">
+    <span class="badge dfs" style="margin-bottom:0.6rem; display:inline-block;">2.1</span>
+    <h2 class="section-title">Selection</h2>
+    <p class="section-lede"><span class="term" tabindex="0" data-def="Choosing chromosomes from the population for later breeding (crossover).">Selection</span> is the stage of a genetic algorithm in which individual chromosomes are chosen from a population for later breeding (using the <span class="term" tabindex="0" data-def="Taking more than one parent solution and producing a child solution from them.">crossover</span> operator).</p>
+
+    <div class="definition-box">
+      <div class="dbox-label">📐 Selection pressure</div>
+      <p>In genetic algorithms, <span class="term" tabindex="0" data-def="The degree of bias towards fitter individuals in the selection process.">selection pressure</span> refers to how strongly the algorithm favors the best-performing individuals when choosing who gets to reproduce and create the next generation — the <b>degree of bias towards fitter individuals</b> in the selection process.</p>
+    </div>
+    <div class="tree-panel" style="grid-template-columns:1fr 1fr;">
+      <div>
+        <h4 style="margin:0 0 0.5rem;">High selection pressure</h4>
+        <p style="margin:0; font-size:0.92rem;">Strongly favors the best individuals → <b>faster convergence</b>, but risk of <span class="term" tabindex="0" data-def="The population loses diversity too early and gets stuck in a local optimum.">premature convergence</span> (loss of <span class="term" tabindex="0" data-def="How different the individuals in the population are from each other.">diversity</span>, stuck in local optima).</p>
+      </div>
+      <div>
+        <h4 style="margin:0 0 0.5rem;">Low selection pressure</h4>
+        <p style="margin:0; font-size:0.92rem;">Individuals are chosen more randomly → <b>slower convergence</b>, but better exploration of the search space (more genetic <span class="term" tabindex="0" data-def="How different the individuals in the population are from each other.">diversity</span>).</p>
+      </div>
+    </div>
+
+    <p class="section-lede" style="margin-top:1.6rem;">All examples below use the same population: <b>A–E</b> with fitness <b>10, 20, 30, 25, 15</b> (higher is better).</p>
+
+    <!-- roulette + SUS -->
+    <h3 class="section-title" style="font-size:1.2rem; margin-top:1.6rem;">Roulette Wheel 🎯</h3>
+    <p class="section-lede">Chromosomes are selected with a probability proportional to their <span class="term" tabindex="0" data-def="How well an individual solves the problem at hand (here: higher is better).">fitness</span>. Imagine a roulette wheel where each chromosome has a slot size corresponding to its fitness value; fitter individuals have larger slots and are more likely to be selected.</p>
+    <div class="definition-box"><div class="dbox-label">📐 Selection probability</div><p>probability = individual fitness / total fitness</p></div>
+    <ol class="concept-list">
+      <li>Calculate the total fitness of the population.</li>
+      <li>Compute each individual's selection probability = (individual fitness / total fitness).</li>
+      <li>Spin the wheel (generate a random number) to select individuals based on these probabilities.</li>
+    </ol>
+    <div class="table-wrap"><table class="summary proscons"><thead><tr><th>Pros</th><th>Cons</th></tr></thead><tbody><tr><td>Simple</td><td>Premature convergence if a single individual is overwhelmingly fit (takes over the wheel).</td></tr><tr><td>Works well when fitness differences are moderate.</td><td>Sensitive to scaling: small differences in fitness can have a large effect.</td></tr></tbody></table></div>
+
+    <h3 class="section-title" style="font-size:1.2rem; margin-top:1.6rem;">Stochastic Universal Sampling (SUS) 🎲</h3>
+    <p class="section-lede">A variation of roulette wheel selection that ensures a more even and consistent spread of selected individuals. Imagine the roulette wheel as before, but instead of one spin, place <b>multiple evenly spaced pointers</b> on it (equal to the number of parents needed). Spin the wheel once — all pointers select individuals simultaneously.</p>
+    <div class="table-wrap"><table class="summary proscons"><thead><tr><th>Pros</th><th>Cons</th></tr></thead><tbody><tr><td>Reduces randomness in selection (less variance).</td><td>Slightly more complex to implement than standard roulette selection.</td></tr><tr><td>Ensures even sampling proportional to fitness.</td><td></td></tr></tbody></table></div>
+
+    <div class="playground" style="margin-top:1.2rem;">
+      <div class="pg-controls">
+        <div class="strategy-pick">
+          <button class="strat-btn rw-mode active" data-mode="roulette">Roulette wheel</button>
+          <button class="strat-btn rw-mode" data-mode="sus">SUS</button>
+        </div>
+        <div class="beam-control show" style="margin:0;">
+          <label>Parents needed</label>
+          <input type="range" id="rw-n" min="1" max="5" value="3" step="1">
+          <span class="val" id="rw-n-val">3</span>
+        </div>
+        <div class="play-btns">
+          <button class="toggle-btn" id="rw-spin">Spin</button>
+          <button class="toggle-btn" id="rw-many">Spin ×100</button>
+          <button class="icon-btn" id="rw-reset" title="Reset tally">↺</button>
+        </div>
+      </div>
+      <div class="pg-grid" style="grid-template-columns:1fr 1.2fr;">
+        <div class="rw-stage">
+          <svg id="rw-wheel" class="rw-wheel" viewBox="-110 -110 220 220" aria-label="Roulette wheel with slots proportional to fitness"></svg>
+          <svg id="rw-pointers" class="rw-pointers" viewBox="-110 -110 220 220" aria-hidden="true"></svg>
+        </div>
+        <div>
+          <div class="frontier-box">
+            <h5>Selected this spin</h5>
+            <div class="chip-row" id="rw-picked"></div>
+          </div>
+          <div class="frontier-box">
+            <h5>Tally — how often each was selected vs. expected share</h5>
+            <div id="rw-tally" class="bars"></div>
+          </div>
+        </div>
+      </div>
+      <p id="rw-msg" style="font-size:0.85rem; color:var(--ink-soft); margin:0.8rem 0 0;"></p>
+    </div>
+
+    <details class="code-card">
+      <summary>
+        <span class="code-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="code-file">roulette_wheel_selection.py</span>
+        <span class="code-lang">Python</span>
+        <button type="button" class="code-copy">Copy</button>
+        <span class="code-chevron" aria-hidden="true">▾</span>
+      </summary>
+      <pre class="code-body"><code class="lang-py">import numpy as np
+
+population = [&#x27;A&#x27;, &#x27;B&#x27;, &#x27;C&#x27;, &#x27;D&#x27;, &#x27;E&#x27;]
+fitness_scores = [10, 20, 30, 25, 15]  # higher is better
+
+def roulette_wheel_selection(population, fitness_scores, num_selections):
+    total_fitness = sum(fitness_scores)
+    selection_probs = [f / total_fitness for f in fitness_scores]
+    selected_chromosomes = np.random.choice(population, size=num_selections, replace=True, p=selection_probs)
+    return selected_chromosomes
+
+selected = roulette_wheel_selection(population, fitness_scores, 3)
+print(&quot;Selected chromosomes:&quot;, selected)</code></pre>
+    </details>
+    <div class="caption-note">
+      <b>np.random.choice</b> randomly selects elements from an array (or a range of integers). It can sample with or without replacement and can also use probabilities for weighted selection. The argument <code>replace</code> controls whether the same element can be chosen more than once:
+      <ul class="concept-list" style="margin-top:0.5rem;">
+        <li><code>replace=True</code> → sampling <b>with</b> replacement: the same chromosome can be selected multiple times; after one is chosen, it's still "available". This is common in genetic algorithms, because the most fit individuals can be selected more than once (proportional to their selection probability).</li>
+        <li><code>replace=False</code> → sampling <b>without</b> replacement: once an element is chosen, it cannot be selected again, so all selected chromosomes are unique.</li>
+      </ul>
+    </div>
+
+    <!-- tournament -->
+    <h3 class="section-title" style="font-size:1.2rem; margin-top:2rem;">Tournament Selection 🏆</h3>
+    <p class="section-lede">Randomly select a small group (a "tournament") of individuals and pick the best one from that group to be a <span class="term" tabindex="0" data-def="A chromosome chosen by selection to take part in crossover.">parent</span>. <span class="term" tabindex="0" data-def="The degree of bias towards fitter individuals in the selection process.">Selection pressure</span> can be controlled by changing <b>k</b>:</p>
+    <ul class="concept-list">
+      <li>Larger k → stronger selection pressure (more elitist).</li>
+      <li>Smaller k → more <span class="term" tabindex="0" data-def="How different the individuals in the population are from each other.">diversity</span>.</li>
+    </ul>
+    <div class="table-wrap"><table class="summary proscons"><thead><tr><th>Pros</th><th>Cons</th></tr></thead><tbody><tr><td>Easy to implement. Selection pressure can be controlled by changing k.</td><td>May lose diversity if tournament size is too large.</td></tr></tbody></table></div>
+
+    <div class="playground" style="margin-top:1.2rem;">
+      <div class="pg-controls">
+        <div class="beam-control show" style="margin:0;">
+          <label>Tournament size k</label>
+          <input type="range" id="tn-k" min="1" max="5" value="3" step="1">
+          <span class="val" id="tn-k-val">3</span>
+        </div>
+        <div class="play-btns">
+          <button class="toggle-btn" id="tn-run">Run tournament</button>
+          <button class="toggle-btn" id="tn-many">Run ×100</button>
+          <button class="icon-btn" id="tn-reset" title="Reset tally">↺</button>
+        </div>
+      </div>
+      <div id="tn-arena" class="tn-arena"></div>
+      <p id="tn-msg" style="font-size:0.9rem; margin:0.8rem 0;"></p>
+      <div class="frontier-box">
+        <h5>Winners so far</h5>
+        <div id="tn-tally" class="bars"></div>
+      </div>
+    </div>
+    <details class="code-card">
+      <summary>
+        <span class="code-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="code-file">tournament_selection.py</span>
+        <span class="code-lang">Python</span>
+        <button type="button" class="code-copy">Copy</button>
+        <span class="code-chevron" aria-hidden="true">▾</span>
+      </summary>
+      <pre class="code-body"><code class="lang-py"># Implementation of Tournament Selection with indexes
+def tournament_selection(population, fitness_scores, tournament_size, num_selections):
+    selected_chromosomes = []
+    for _ in range(num_selections):
+        # choose random indexes of chromosomes from the population for the tournament
+        tournament = np.random.choice(len(population), tournament_size, replace=False)
+
+        # chromosomes in the tournament
+        selected_population = [population[i] for i in tournament]
+        print(&quot;Tournament participants:&quot;, selected_population)
+        print(&quot;Fitness scores:&quot;, [fitness_scores[i] for i in tournament])
+
+        # select the index of best chromosome from the tournament
+        winner = tournament[np.argmax([fitness_scores[i] for i in tournament])]
+        print(&quot;Tournament winner:&quot;, population[winner])
+        selected_chromosomes.append(population[winner])
+
+    return selected_chromosomes
+
+selected = tournament_selection(population, fitness_scores, tournament_size=3, num_selections=3)
+print(&quot;Selected:&quot;, selected)</code></pre>
+    </details>
+
+    <!-- rank -->
+    <h3 class="section-title" style="font-size:1.2rem; margin-top:2rem;">Rank-Based Selection</h3>
+    <p class="section-lede">Instead of using raw fitness values, individuals are <b>ranked</b> according to fitness. The selection probability depends on rank, not the absolute fitness.</p>
+    <ol class="concept-list">
+      <li>Sort the population by fitness (best to worst).</li>
+      <li>Assign selection probabilities based on rank (e.g., linearly or exponentially decreasing).</li>
+      <li>Select individuals using these rank-based probabilities.</li>
+    </ol>
+    <div class="table-wrap"><table class="summary proscons"><thead><tr><th>Pros</th><th>Cons</th></tr></thead><tbody><tr><td>Prevents domination by one very fit individual.</td><td>Can be slower to converge because it reduces differences between individuals.</td></tr><tr><td>Maintains steady selection pressure.</td><td></td></tr></tbody></table></div>
+
+    <div class="playground" style="margin-top:1.2rem;">
+      <div class="pg-controls">
+        <div class="strategy-pick">
+          <button class="strat-btn rk-mode active" data-c="30">C has fitness 30</button>
+          <button class="strat-btn rk-mode" data-c="300">Make C super-fit (300)</button>
+        </div>
+      </div>
+      <p style="font-size:0.9rem; margin:0 0 0.8rem;">Selection probability of each individual — roulette (fitness-proportional) vs. rank-based (ranks 1…5).</p>
+      <div id="rk-bars" class="rk-bars"></div>
+      <p id="rk-msg" style="font-size:0.85rem; color:var(--ink-soft); margin:0.8rem 0 0;"></p>
+    </div>
+    <details class="code-card">
+      <summary>
+        <span class="code-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="code-file">rank_based_selection.py</span>
+        <span class="code-lang">Python</span>
+        <button type="button" class="code-copy">Copy</button>
+        <span class="code-chevron" aria-hidden="true">▾</span>
+      </summary>
+      <pre class="code-body"><code class="lang-py">def rank_based_selection(population, fitness_scores, num_selections):
+    # Rank individuals based on fitness
+    sorted_indices = np.argsort(fitness_scores)
+    sorted_fitness = [(i, fitness_scores[i], population[i]) for i in sorted_indices]
+    print(&quot;Sorted indices and their scores:&quot;, sorted_fitness)
+
+    ranks = np.arange(1, len(fitness_scores) + 1)
+    print(&quot;Ranks:&quot;, ranks)
+
+    probs = ranks / np.sum(ranks)
+    print(&quot;Selection probabilities:&quot;, probs)
+    print(&quot;Elements by rank: &quot;, np.array(population)[sorted_indices])
+
+    chosen = np.random.choice(np.array(population)[sorted_indices], size=num_selections, p=probs)
+    return chosen
+
+selected = rank_based_selection(population, fitness_scores, num_selections=3)
+print(&quot;Selected chromosomes:&quot;, selected)</code></pre>
+    </details>
+    <p class="caption-note"><b>numpy.arange([start,] stop[, step,] dtype=None)</b> creates an array with evenly spaced values within a given range — similar to Python's built-in <code>range()</code>, but returns a NumPy array instead of a list. A <i>Python list</i> can store mixed data types; in a <i>NumPy array</i> all elements must have the same data type (NumPy will try to cast them to a common type).</p>
+
+    <!-- elitism + truncation -->
+    <div class="tree-panel" style="grid-template-columns:1fr 1fr; margin-top:2rem;">
+      <div>
+        <h3 class="section-title" style="font-size:1.2rem; margin:0 0 0.6rem;">Elitism</h3>
+        <p style="margin:0 0 0.8rem; font-size:0.92rem;">The <b>best individuals from the current generation</b> are automatically passed to the next generation, without alteration (<span class="term" tabindex="0" data-def="The best individuals of the current generation are copied unchanged into the next one.">elitism</span>).</p>
+        <div class="table-wrap"><table class="summary proscons"><thead><tr><th>Pros</th><th>Cons</th></tr></thead><tbody><tr><td>Guarantees that the best solutions are preserved.</td><td>Reduces diversity.</td></tr><tr><td>Improves convergence speed.</td><td></td></tr></tbody></table></div>
+      </div>
+      <div>
+        <h3 class="section-title" style="font-size:1.2rem; margin:0 0 0.6rem;">Truncation Selection</h3>
+        <p style="margin:0 0 0.6rem; font-size:0.92rem;">Select only the top fraction of the population (e.g., top 30%) based on fitness. All selected individuals have equal probability of being parents.</p>
+        <ol class="concept-list" style="font-size:0.92rem;">
+          <li>Sort population by fitness.</li>
+          <li>Keep only the top percentage (say, best 20–50%).</li>
+          <li>Randomly select parents from this truncated set.</li>
+        </ol>
+        <div class="table-wrap"><table class="summary proscons"><thead><tr><th>Pros</th><th>Cons</th></tr></thead><tbody><tr><td>Very simple and deterministic.</td><td>Can quickly reduce genetic diversity.</td></tr><tr><td>Strong selection pressure (fast convergence).</td><td>May get stuck in local optima.</td></tr></tbody></table></div>
+      </div>
+    </div>
+
+    <h3 class="section-title" style="font-size:1.2rem; margin-top:2rem;">Summary of selection methods</h3>
+    <div class="table-wrap">
+      <table class="summary">
+        <thead><tr><th>Method</th><th>Key idea</th><th>Strength</th><th>Weakness</th></tr></thead>
+        <tbody>
+          <tr data-s="dfs"><td><b>Roulette Wheel</b></td><td>Prob. proportional to fitness</td><td>Simple</td><td>Premature convergence</td></tr>
+          <tr data-s="bfs"><td><b>Tournament</b></td><td>Best of random subset wins</td><td>Adjustable pressure</td><td>Can lose diversity</td></tr>
+          <tr data-s="ucs"><td><b>Rank-Based</b></td><td>Selection by rank</td><td>Stable pressure</td><td>Slower convergence</td></tr>
+          <tr data-s="ids"><td><b>SUS</b></td><td>Evenly spaced roulette sampling</td><td>Low variance</td><td>More complex</td></tr>
+          <tr data-s="dls"><td><b>Elitism</b></td><td>Best always survive</td><td>Guarantees progress</td><td>Less diversity</td></tr>
+          <tr><td><b>Truncation</b></td><td>Top % survive</td><td>Simple &amp; strong pressure</td><td>Fast loss of diversity</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ===== CROSSOVER ===== -->
+  <section class="block algo-section bfs" id="crossover">
+    <span class="badge bfs" style="margin-bottom:0.6rem; display:inline-block;">2.2</span>
+    <h2 class="section-title">Crossover</h2>
+    <p class="section-lede"><span class="term" tabindex="0" data-def="Taking more than one parent solution and producing a child solution from them.">Crossover</span> is a process of taking more than one <span class="term" tabindex="0" data-def="A chromosome chosen by selection to take part in crossover.">parent</span> solution and producing a <span class="term" tabindex="0" data-def="A new chromosome (offspring) produced by crossover from its parents.">child</span> solution from them.</p>
+    <div class="sim-panel"><svg class="ga-fig" viewBox="0 0 880 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="One-point crossover and two-point crossover: children swap parent segments at the crossover points"><rect x="110" y="20" width="290" height="16" fill="#d9546e"></rect><rect x="110" y="50" width="290" height="16" fill="#4d7ea8"></rect><text x="100" y="50" text-anchor="end" font-size="17" font-weight="500" style="fill:var(--ink)">Parents</text><line x1="180" y1="10" x2="180" y2="190" stroke-width="2" stroke-dasharray="5 5" style="stroke:var(--ink)"></line><text x="188" y="112" text-anchor="start" font-size="15" font-weight="500" style="fill:var(--ink)">crossover point</text><rect x="110" y="140" width="70" height="16" fill="#d9546e"></rect><rect x="180" y="140" width="220" height="16" fill="#4d7ea8"></rect><rect x="110" y="170" width="70" height="16" fill="#4d7ea8"></rect><rect x="180" y="170" width="220" height="16" fill="#d9546e"></rect><text x="100" y="168" text-anchor="end" font-size="17" font-weight="500" style="fill:var(--ink)">Children</text><text x="255.0" y="235" text-anchor="middle" font-size="19" font-weight="800" style="fill:var(--ink)">One-point crossover</text><rect x="480" y="20" width="390" height="16" fill="#d9546e"></rect><rect x="480" y="50" width="390" height="16" fill="#4d7ea8"></rect><line x1="550" y1="10" x2="550" y2="190" stroke-width="2" stroke-dasharray="5 5" style="stroke:var(--ink)"></line><line x1="740" y1="10" x2="740" y2="190" stroke-width="2" stroke-dasharray="5 5" style="stroke:var(--ink)"></line><text x="645.0" y="112" text-anchor="middle" font-size="15" font-weight="500" style="fill:var(--ink)">crossover points</text><rect x="480" y="140" width="70" height="16" fill="#d9546e"></rect><rect x="550" y="140" width="190" height="16" fill="#4d7ea8"></rect><rect x="740" y="140" width="130" height="16" fill="#d9546e"></rect><rect x="480" y="170" width="70" height="16" fill="#4d7ea8"></rect><rect x="550" y="170" width="190" height="16" fill="#d9546e"></rect><rect x="740" y="170" width="130" height="16" fill="#4d7ea8"></rect><text x="675.0" y="235" text-anchor="middle" font-size="19" font-weight="800" style="fill:var(--ink)">Two-point and k-point crossover</text></svg></div>
+
+    <p class="section-lede" style="margin-top:1.4rem;">There are a lot of types of crossover, such as:</p>
+    <div class="table-wrap">
+      <table class="summary">
+        <thead><tr><th>Binary coded</th><th>Real coded</th><th>Order coded</th></tr></thead>
+        <tbody>
+          <tr><td>Single Point</td><td>Linear</td><td>Partially-Mapped</td></tr>
+          <tr><td>Two-Point</td><td>Single Arithmetic</td><td>Cycle</td></tr>
+          <tr><td>Multi-Point</td><td></td><td></td></tr>
+          <tr><td>Uniform</td><td></td><td></td></tr>
+          <tr><td>Shuffle</td><td></td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="section-title" style="font-size:1.2rem; margin-top:2rem;">One-point crossover</h3>
+    <p class="section-lede">For order-coded chromosomes (permutations), copy the first part from one parent, then <b>fill the remaining values in their order from the other parent</b> — so no value is repeated. Drag the crossover point:</p>
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="beam-control show" style="margin:0;">
+          <label>Crossover point after gene</label>
+          <input type="range" id="op-k" min="1" max="4" value="3" step="1">
+          <span class="val" id="op-k-val">3</span>
+        </div>
+      </div>
+      <div id="op-view" class="xo-view"></div>
+    </div>
+
+    <h3 class="section-title" style="font-size:1.2rem; margin-top:2rem;">Uniform crossover</h3>
+    <p class="section-lede">Getting a gene from one of the parents <b>randomly</b>! A random mask decides, gene by gene, which parent child 1 takes from; child 2 takes from the other parent.</p>
+    <div class="playground">
+      <div class="pg-controls">
+        <button class="toggle-btn" id="uc-roll">New random mask</button>
+      </div>
+      <div id="uc-view" class="xo-view"></div>
+    </div>
+  </section>
+
+  <!-- ===== MUTATION ===== -->
+  <section class="block algo-section ucs" id="mutation">
+    <span class="badge ucs" style="margin-bottom:0.6rem; display:inline-block;">2.3</span>
+    <h2 class="section-title">Mutation</h2>
+    <p class="section-lede">A <span class="term" tabindex="0" data-def="A small random change to a chromosome — keeps diversity in the population.">mutation</span> makes a small random change to a single chromosome, which keeps <span class="term" tabindex="0" data-def="How different the individuals in the population are from each other.">diversity</span> in the population. Three common operators for order-coded chromosomes:</p>
+    <div class="sim-panel"><svg class="ga-fig" viewBox="0 0 700 380" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Mutation operators on chromosome 2 1 5 4 3: swap, insertion and reverse"><defs><marker id="mu-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d9546e"></path></marker></defs><rect x="20" y="60" width="52" height="44" stroke-width="1.5" style="fill:var(--surface); stroke:var(--ink-soft)"></rect><text x="46.0" y="82.0" text-anchor="middle" dominant-baseline="central" font-size="20" style="fill:var(--ink)">2</text><rect x="72" y="60" width="52" height="44" stroke-width="1.5" style="fill:var(--surface); stroke:var(--ink-soft)"></rect><text x="98.0" y="82.0" text-anchor="middle" dominant-baseline="central" font-size="20" style="fill:var(--ink)">1</text><rect x="124" y="60" width="52" height="44" stroke-width="1.5" style="fill:var(--surface); stroke:var(--ink-soft)"></rect><text x="150.0" y="82.0" text-anchor="middle" dominant-baseline="central" font-size="20" style="fill:var(--ink)">5</text><rect x="176" y="60" width="52" height="44" stroke-width="1.5" style="fill:var(--surface); stroke:var(--ink-soft)"></rect><text x="202.0" y="82.0" text-anchor="middle" dominant-baseline="central" font-size="20" style="fill:var(--ink)">4</text><rect x="228" y="60" width="52" height="44" stroke-width="1.5" style="fill:var(--surface); stroke:var(--ink-soft)"></rect><text x="254.0" y="82.0" text-anchor="middle" dominant-baseline="central" font-size="20" style="fill:var(--ink)">3</text><rect x="67" y="55" width="62" height="54" fill="none" stroke="#d9546e" stroke-width="3"></rect><rect x="171" y="55" width="62" height="54" fill="none" stroke="#d9546e" stroke-width="3"></rect><path d="M98.0,52 C98.0,10 202.0,10 202.0,52" fill="none" stroke="#d9546e" stroke-width="3" marker-start="url(#mu-arr)" marker-end="url(#mu-arr)"></path><text x="310" y="82.0" dominant-baseline="central" font-size="28" font-weight="800" style="fill:var(--ink)">swap</text><text x="480" y="82.0" dominant-baseline="central" font-size="18" style="fill:var(--ink-soft)">→ 2 4 5 1 3</text><rect x="20" y="175" width="52" height="44" stroke-width="1.5" style="fill:var(--surface); stroke:var(--ink-soft)"></rect><text x="46.0" y="197.0" text-anchor="middle" dominant-baseline="central" font-size="20" style="fill:var(--ink)">2</text><rect x="72" y="175" width="52" height="44" stroke-width="1.5" style="fill:var(--surface); stroke:var(--ink-soft)"></rect><text x="98.0" y="197.0" text-anchor="middle" dominant-baseline="central" font-size="20" style="fill:var(--ink)">1</text><rect x="124" y="175" width="52" height="44" stroke-width="1.5" style="fill:var(--surface); stroke:var(--ink-soft)"></rect><text x="150.0" y="197.0" text-anchor="middle" dominant-baseline="central" font-size="20" style="fill:var(--ink)">5</text><rect x="176" y="175" width="52" height="44" stroke-width="1.5" style="fill:var(--surface); stroke:var(--ink-soft)"></rect><text x="202.0" y="197.0" text-anchor="middle" dominant-baseline="central" font-size="20" style="fill:var(--ink)">4</text><rect x="228" y="175" width="52" height="44" stroke-width="1.5" style="fill:var(--surface); stroke:var(--ink-soft)"></rect><text x="254.0" y="197.0" text-anchor="middle" dominant-baseline="central" font-size="20" style="fill:var(--ink)">3</text><rect x="67" y="170" width="62" height="54" fill="none" stroke="#d9546e" stroke-width="3"></rect><path d="M98.0,167 C98.0,125 228,125 228,171" fill="none" stroke="#d9546e" stroke-width="3" marker-end="url(#mu-arr)"></path><text x="310" y="197.0" dominant-baseline="central" font-size="28" font-weight="800" style="fill:var(--ink)">insertion</text><text x="480" y="197.0" dominant-baseline="central" font-size="18" style="fill:var(--ink-soft)">→ 2 5 4 1 3</text><rect x="20" y="290" width="52" height="44" stroke-width="1.5" style="fill:var(--surface); stroke:var(--ink-soft)"></rect><text x="46.0" y="312.0" text-anchor="middle" dominant-baseline="central" font-size="20" style="fill:var(--ink)">2</text><rect x="72" y="290" width="52" height="44" stroke-width="1.5" style="fill:var(--surface); stroke:var(--ink-soft)"></rect><text x="98.0" y="312.0" text-anchor="middle" dominant-baseline="central" font-size="20" style="fill:var(--ink)">1</text><rect x="124" y="290" width="52" height="44" stroke-width="1.5" style="fill:var(--surface); stroke:var(--ink-soft)"></rect><text x="150.0" y="312.0" text-anchor="middle" dominant-baseline="central" font-size="20" style="fill:var(--ink)">5</text><rect x="176" y="290" width="52" height="44" stroke-width="1.5" style="fill:var(--surface); stroke:var(--ink-soft)"></rect><text x="202.0" y="312.0" text-anchor="middle" dominant-baseline="central" font-size="20" style="fill:var(--ink)">4</text><rect x="228" y="290" width="52" height="44" stroke-width="1.5" style="fill:var(--surface); stroke:var(--ink-soft)"></rect><text x="254.0" y="312.0" text-anchor="middle" dominant-baseline="central" font-size="20" style="fill:var(--ink)">3</text><rect x="67" y="285" width="166" height="54" fill="none" stroke="#d9546e" stroke-width="3"></rect><path d="M207.20000000000002,278 Q150.0,250 92.8,278" fill="none" stroke="#d9546e" stroke-width="3" marker-end="url(#mu-arr)"></path><text x="310" y="312.0" dominant-baseline="central" font-size="28" font-weight="800" style="fill:var(--ink)">reverse</text><text x="480" y="312.0" dominant-baseline="central" font-size="18" style="fill:var(--ink-soft)">→ 2 4 5 1 3</text></svg></div>
+
+    <div class="playground" style="margin-top:1.2rem;">
+      <div class="pg-controls">
+        <div class="strategy-pick">
+          <button class="strat-btn mu-op active" data-op="swap">Swap</button>
+          <button class="strat-btn mu-op" data-op="insertion">Insertion</button>
+          <button class="strat-btn mu-op" data-op="reverse">Reverse</button>
+        </div>
+        <div class="play-btns">
+          <button class="toggle-btn" id="mu-apply">Mutate at random positions</button>
+          <button class="icon-btn" id="mu-reset" title="Reset chromosome">↺</button>
+        </div>
+      </div>
+      <div id="mu-view" class="xo-view"></div>
+    </div>
+  </section>
+
+  <!-- ===== TSP ===== -->
+  <section class="block algo-section ids" id="tsp">
+    <span class="badge ids" style="margin-bottom:0.6rem; display:inline-block;">Demo</span>
+    <h2 class="section-title">GA in action: Travelling Salesman Problem</h2>
+    <p class="section-lede">Everything together. Each <span class="term" tabindex="0" data-def="A complete set of genes; represents one potential solution, e.g. [x₁, x₂, x₃, …].">chromosome</span> is a tour — a permutation of the cities — and <span class="term" tabindex="0" data-def="How well an individual solves the problem at hand (here: higher is better).">fitness</span> is higher for shorter tours. Every <span class="term" tabindex="0" data-def="One pass of the GA loop: selection → crossover → mutation produces a new population.">generation</span>: keep the 2 best tours (<span class="term" tabindex="0" data-def="The best individuals of the current generation are copied unchanged into the next one.">elitism</span>), pick parents by tournament selection (k = 3), combine them with the one-point order crossover from above, and mutate each child with the chosen operator.</p>
+
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="strategy-pick">
+          <button class="strat-btn ga-op active" data-op="reverse">Reverse</button>
+          <button class="strat-btn ga-op" data-op="swap">Swap</button>
+          <button class="strat-btn ga-op" data-op="insertion">Insertion</button>
+        </div>
+        <div class="beam-control show" style="margin:0;">
+          <label>Mutation rate</label>
+          <input type="range" id="ga-pm" min="0" max="100" value="30" step="5">
+          <span class="val" id="ga-pm-val">0.30</span>
+        </div>
+        <div class="play-btns">
+          <button class="icon-btn" id="ga-play" title="Run / pause">▶</button>
+          <button class="icon-btn" id="ga-step" title="One generation">⏭</button>
+          <button class="icon-btn" id="ga-reset" title="New population">↺</button>
+          <button class="toggle-btn" id="ga-cities">New cities</button>
+        </div>
+      </div>
+      <div class="pg-grid">
+        <svg id="ga-map" class="ga-map" viewBox="0 0 600 400" role="img" aria-label="Best tour found so far"></svg>
+        <div>
+          <div class="sa-readout" style="margin-top:0;">
+            <div class="stat"><div class="n" id="ga-gen">0</div><div class="l">generation</div></div>
+            <div class="stat"><div class="n" id="ga-best">–</div><div class="l">best tour length</div></div>
+          </div>
+          <div class="frontier-box">
+            <h5>Best tour length per generation</h5>
+            <svg id="ga-chart" class="ga-chart" viewBox="0 0 300 140" aria-label="Best tour length over generations"></svg>
+          </div>
+        </div>
+      </div>
+      <p style="font-size:0.85rem; color:var(--ink-soft); margin:0.8rem 0 0;">Population of 60 tours over 14 cities. Try a mutation rate of 0 — without mutation the population loses diversity and often gets stuck early (premature convergence).</p>
+    </div>
+  </section>
+
+</div>
+
+<div class="term-tip" id="term-tip" role="tooltip"></div>
+
+<footer>Class notes by Elitsa Yotkova · Lab 04 · built with plain HTML, CSS &amp; JS</footer>
+
+<script src="lab04.js"></script>
+</body>
+</html>
