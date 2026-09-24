@@ -771,3 +771,48 @@ body.home {
 .person-links a:hover { border-color: var(--teal); color: color-mix(in srgb, var(--teal) 75%, var(--ink)); text-decoration: none; }
 .person-links svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 body.home .wrap { max-width: 1040px; }
+
+/* ---- phone layout fixes (Labs 03/04, shared components) ---- */
+.pg-grid > *, .tree-panel > * { min-width: 0; }
+.code-file { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.code-lang, .code-copy { flex-shrink: 0; }
+.fig-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.fig-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+@media (max-width: 760px) {
+  /* inline two-column layouts must still collapse on small screens */
+  .pg-grid, .tree-panel { grid-template-columns: 1fr !important; }
+  .fig-scroll > svg { min-width: 620px; }
+  .fig-pair { grid-template-columns: 1fr; }
+}
+@media (max-width: 520px) {
+  .playground, .sim-panel, .puzzle-panel { padding: 1rem 0.8rem; }
+  .code-dots { display: none; }
+  .code-card summary { gap: 0.5rem; padding: 0.55rem 0.7rem; }
+  .code-body { font-size: 0.74rem; }
+  .code-body .ln::before { width: 1.6rem; margin-right: 0.6rem; }
+  .gcell { width: 27px; height: 30px; font-size: 0.82rem; border-radius: 5px; }
+  .gcell.mask { width: 27px; height: 20px; }
+  .xo-genes { gap: 3px; }
+  .xo-label { width: 100%; }
+  .xo-note { padding-left: 0; }
+  .rk-row { grid-template-columns: 1fr; gap: 0.4rem; }
+  .rk-id span { display: inline; margin-left: 0.4rem; }
+  .tally-row { grid-template-columns: 64px 1fr 84px; gap: 0.5rem; }
+  .play-btns { margin-left: 0; flex-wrap: wrap; }
+  .beam-control input[type="range"] { max-width: none; }
+  .home-logos .logo-chip { height: 72px; }
+}
+.site-nav { gap: 0.8rem; }
+.site-nav .brand { white-space: nowrap; flex-shrink: 0; }
+.site-nav nav a { white-space: nowrap; }
+@media (max-width: 520px) {
+  .site-nav { padding-left: 1rem; padding-right: 1rem; }
+  .site-nav .brand { font-size: 1rem; }
+  .site-nav nav { gap: 0.85rem; font-size: 0.85rem; overflow-x: auto; scrollbar-width: none; }
+  .site-nav nav::-webkit-scrollbar { display: none; }
+  .sa-readout { gap: 0.6rem; }
+  .sa-readout .stat { min-width: 0; padding: 0.6rem 0.8rem; }
+  .sa-readout .stat .n { font-size: 1.25rem; }
+}
+@media (max-width: 520px) { .csp-region-label { font-size: 32px; } }
+.team-note { margin: 1rem 0 0; font-size: 0.9rem; color: var(--ink-soft); font-style: italic; }

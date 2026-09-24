@@ -330,7 +330,10 @@ function initNQueens() {
   }
 
   function render() {
-    const cell = Math.max(22, Math.min(52, Math.floor(420 / n)));
+    // fit the board to the space it has: its whole column on phones, the left column otherwise
+    const host = boardEl.parentElement.getBoundingClientRect().width;
+    const avail = window.matchMedia('(max-width: 760px)').matches ? host : host * 0.55;
+    const cell = Math.max(16, Math.min(52, Math.floor((Math.min(avail, 440) - 4) / n)));
     boardEl.style.gridTemplateColumns = `repeat(${n}, ${cell}px)`;
     boardEl.style.fontSize = `${Math.round(cell * 0.62)}px`;
     let html = '';
@@ -385,6 +388,9 @@ function initNQueens() {
     }, 350);
     render();
   });
+
+  let resizeTimer;
+  window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(render, 120); });
 
   newBoard();
 }
