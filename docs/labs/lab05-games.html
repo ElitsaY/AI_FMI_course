@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lab 05 — Games | Class Notes</title>
+<meta name="description" content="Interactive notes on adversarial search: perfect vs complete information, game trees, minimax, alpha-beta pruning, and tic-tac-toe against a minimax player.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+<style>
+  .games-hero { background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22120%22%20height%3D%22120%22%20viewBox%3D%220%200%20120%20120%22%3E%3Cg%20fill%3D%22none%22%20stroke-width%3D%225%22%20stroke-linecap%3D%22round%22%20opacity%3D%220.14%22%3E%3Cpath%20d%3D%22M18%2018%20L42%2042%20M42%2018%20L18%2042%22%20stroke%3D%22%235c9a6a%22/%3E%3Ccircle%20cx%3D%2290%22%20cy%3D%2230%22%20r%3D%2213%22%20stroke%3D%22%234d7ea8%22/%3E%3Ccircle%20cx%3D%2230%22%20cy%3D%2290%22%20r%3D%2213%22%20stroke%3D%22%234d7ea8%22/%3E%3Cpath%20d%3D%22M78%2078%20L102%20102%20M102%2078%20L78%20102%22%20stroke%3D%22%235c9a6a%22/%3E%3C/g%3E%3C/svg%3E"), radial-gradient(60% 60% at 15% 0%, color-mix(in srgb, var(--violet) 8%, transparent), transparent 70%); }
+</style>
+</head>
+<body>
+
+<header class="site-nav">
+  <span class="brand"><span class="dot"></span> Class Notes</span>
+  <nav>
+    <a href="../index.html">Home</a>
+    <a href="lab01-uninformed-search.html">Lab 01</a>
+    <a href="lab02-informed-search.html">Lab 02</a>
+    <a href="lab03-csp.html">Lab 03</a>
+    <a href="lab04-genetic-algorithms.html">Lab 04</a>
+  </nav>
+</header>
+
+<section class="hero games-hero">
+  <div class="wrap">
+    <p class="eyebrow">Lab 05</p>
+    <h1>Games</h1>
+    <div class="badges">
+      <span class="badge bfs">Game trees</span>
+      <span class="badge ids">Minimax</span>
+      <span class="badge dfs">Alpha-beta pruning</span>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+
+  <!-- ===== OVERVIEW ===== -->
+  <section class="block" id="overview">
+    <h2 class="section-title">Overview of the lab</h2>
+    <ol class="concept-list">
+      <li><a href="#games">Games</a></li>
+      <li><a href="#minimax">Minimax</a></li>
+      <li><a href="#alphabeta">Alpha-beta pruning</a></li>
+      <li><a href="#play">Play against minimax</a></li>
+      <li><a href="#materials">Additional materials</a></li>
+    </ol>
+  </section>
+
+  <!-- ===== GAMES ===== -->
+  <section class="block" id="games">
+    <h2 class="section-title">Games</h2>
+    <div class="tree-panel" style="grid-template-columns:1fr 1fr;">
+      <div>
+        <h4 style="margin:0 0 0.5rem;">Perfect information <span class="info-tag">knowledge of moves</span></h4>
+        <p style="margin:0; font-size:0.93rem;">Every player knows every move that has ever been made by all players up to the current point in the game. Think of it as <b>no hidden history</b>.</p>
+      </div>
+      <div>
+        <h4 style="margin:0 0 0.5rem;">Complete information <span class="info-tag">knowledge of rules / payoffs</span></h4>
+        <p style="margin:0; font-size:0.93rem;">Every player knows the rules, possible strategies, and payoff structure for every player. Think of it as <b>no hidden types / incentives</b>; everyone knows what everyone else stands to gain or lose.</p>
+      </div>
+    </div>
+
+    <div class="table-wrap" style="margin-top:1.4rem;">
+      <table class="summary games-table">
+        <thead><tr><th></th><th>Deterministic</th><th>Chance</th></tr></thead>
+        <tbody>
+          <tr><td><b>Perfect information</b></td><td>♟️ chess, go</td><td>🎲 monopoly</td></tr>
+          <tr><td><b>Complete information</b></td><td>🚢 battleships</td><td>🃏 poker, scrabble</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:2rem;">Is it true that if a game has perfect information, it also has complete information?</h3>
+    <ul class="concept-list">
+      <li><b>Perfect information</b> — <i>all past moves</i>. Every player knows the entire history of actions taken in the game up to the current moment (no hidden action). E.g., chess: both players see every piece and every move made on the board.</li>
+      <li><b>Complete information</b> — <i>all game rules / payoffs / types</i>. Every player knows the incentives (utility functions / payoffs) and strategies available to all other players (no hidden rules / goals).</li>
+    </ul>
+    <div class="answer-card">
+      <div class="answer-no">NO!</div>
+      <div>
+        <p style="margin:0 0 0.5rem;"><b>The game:</b> imagine a sequential bargaining game where Player 1 makes a proposal, and Player 2 accepts or rejects it.</p>
+        <ul class="concept-list">
+          <li><b>Perfect information? Yes.</b> Player 2 sees Player 1's proposal (the action). If Player 2 rejects, Player 1 sees the rejection. All moves are transparent.</li>
+          <li><b>Complete information? Maybe not.</b> Player 1 might not know the exact minimum amount Player 2 is willing to accept (Player 2's payoff / type). Player 2's threshold is private, hidden information.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== MINIMAX ===== -->
+  <section class="block algo-section ids" id="minimax">
+    <span class="badge ids" style="margin-bottom:0.6rem; display:inline-block;">Minimax</span>
+    <h2 class="section-title">Minimax</h2>
+    <p class="section-lede">Its core principle is to <b>minimize the maximum possible loss</b> for the current player, assuming the opponent will always play optimally to maximize their own gain (and thus minimize your score). The name "Minimax" comes from the recursive alternation between two roles:</p>
+    <div class="role-pair">
+      <div class="role max"><span class="role-dot"></span><div><b>MAX</b> (Player 1)<br>tries to <b>maximize</b> the score</div></div>
+      <div class="role min"><span class="role-dot"></span><div><b>MIN</b> (Player 2)<br>tries to <b>minimize</b> the score</div></div>
+    </div>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.8rem;">Game tree</h3>
+    <p class="section-lede">A game tree is a directed graph where:</p>
+    <ul class="concept-list">
+      <li><b>Nodes</b> represent a possible state of the game (e.g., a board configuration).</li>
+      <li><b>Edges</b> represent a move from one game state to the next.</li>
+    </ul>
+
+    <div class="definition-box">
+      <div class="dbox-label">📐 Minimax summarised</div>
+      <p>1. Minimax is a decision-making tool for two-player turn-taking games.<br>2. Minimax explores a game tree by anticipating future moves.<br>3. Minimax uses an <b>evaluation function</b> to assign scores to board states.<br>4. Minimax strategically chooses the optimal path through <b>recursive exploration and backtracking</b>.</p>
+    </div>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.8rem;">Evaluation function — tic-tac-toe</h3>
+    <div class="score-row">
+      <span class="score-chip x">Player X wins → <b>+1</b></span>
+      <span class="score-chip o">Player O wins → <b>−1</b></span>
+      <span class="score-chip d">Draw → <b>0</b></span>
+    </div>
+    <div class="sim-panel fig-scroll"><svg class="ga-fig" viewBox="0 0 780 560" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Tic-tac-toe game tree with minimax values: the root, a MIN node, has value -1"><line x1="420" y1="85" x2="200" y2="160" class="ttt-edge"></line><line x1="420" y1="85" x2="420" y2="160" class="ttt-edge"></line><line x1="420" y1="85" x2="640" y2="160" class="ttt-edge"></line><line x1="200" y1="252" x2="145" y2="310" class="ttt-edge"></line><line x1="200" y1="252" x2="255" y2="310" class="ttt-edge"></line><line x1="420" y1="252" x2="365" y2="310" class="ttt-edge"></line><line x1="420" y1="252" x2="475" y2="310" class="ttt-edge"></line><line x1="640" y1="252" x2="585" y2="310" class="ttt-edge"></line><line x1="640" y1="252" x2="695" y2="310" class="ttt-edge"></line><line x1="145" y1="402" x2="145" y2="455" class="ttt-edge"></line><line x1="255" y1="402" x2="255" y2="455" class="ttt-edge"></line><line x1="475" y1="402" x2="475" y2="455" class="ttt-edge"></line><line x1="695" y1="402" x2="695" y2="455" class="ttt-edge"></line><text x="18" y="55" class="ttt-level">Min</text><text x="18" y="200" class="ttt-level">Max</text><text x="18" y="350" class="ttt-level">Min</text><text x="18" y="495" class="ttt-level">Max</text><g class="ttt-mini"><rect x="389.0" y="19.0" width="62" height="62" rx="6" class="ttt-frame"></rect><line x1="411.0" y1="23.0" x2="411.0" y2="77.0" class="ttt-grid"></line><line x1="393.0" y1="41.0" x2="447.0" y2="41.0" class="ttt-grid"></line><line x1="429.0" y1="23.0" x2="429.0" y2="77.0" class="ttt-grid"></line><line x1="393.0" y1="59.0" x2="447.0" y2="59.0" class="ttt-grid"></line><circle cx="402.0" cy="32.0" r="5.5" class="ttt-o"></circle><path d="M415.0,27.0 L425.0,37.0 M425.0,27.0 L415.0,37.0" class="ttt-x"></path><circle cx="438.0" cy="32.0" r="5.5" class="ttt-o"></circle><path d="M397.0,45.0 L407.0,55.0 M407.0,45.0 L397.0,55.0" class="ttt-x"></path><path d="M433.0,45.0 L443.0,55.0 M443.0,45.0 L433.0,55.0" class="ttt-x"></path><circle cx="420.0" cy="68.0" r="5.5" class="ttt-o"></circle><text x="387.0" y="14.0" class="ttt-num">1</text></g><g class="ttt-mini"><rect x="169.0" y="164.0" width="62" height="62" rx="6" class="ttt-frame"></rect><line x1="191.0" y1="168.0" x2="191.0" y2="222.0" class="ttt-grid"></line><line x1="173.0" y1="186.0" x2="227.0" y2="186.0" class="ttt-grid"></line><line x1="209.0" y1="168.0" x2="209.0" y2="222.0" class="ttt-grid"></line><line x1="173.0" y1="204.0" x2="227.0" y2="204.0" class="ttt-grid"></line><circle cx="182.0" cy="177.0" r="5.5" class="ttt-o"></circle><path d="M195.0,172.0 L205.0,182.0 M205.0,172.0 L195.0,182.0" class="ttt-x"></path><circle cx="218.0" cy="177.0" r="5.5" class="ttt-o"></circle><path d="M177.0,190.0 L187.0,200.0 M187.0,190.0 L177.0,200.0" class="ttt-x"></path><circle cx="200.0" cy="195.0" r="5.5" class="ttt-o"></circle><path d="M213.0,190.0 L223.0,200.0 M223.0,190.0 L213.0,200.0" class="ttt-x"></path><circle cx="200.0" cy="213.0" r="5.5" class="ttt-o"></circle><text x="167.0" y="159.0" class="ttt-num">2</text><text x="200" y="244.0" class="ttt-v">v=-1</text></g><g class="ttt-mini"><rect x="389.0" y="164.0" width="62" height="62" rx="6" class="ttt-frame"></rect><line x1="411.0" y1="168.0" x2="411.0" y2="222.0" class="ttt-grid"></line><line x1="393.0" y1="186.0" x2="447.0" y2="186.0" class="ttt-grid"></line><line x1="429.0" y1="168.0" x2="429.0" y2="222.0" class="ttt-grid"></line><line x1="393.0" y1="204.0" x2="447.0" y2="204.0" class="ttt-grid"></line><circle cx="402.0" cy="177.0" r="5.5" class="ttt-o"></circle><path d="M415.0,172.0 L425.0,182.0 M425.0,172.0 L415.0,182.0" class="ttt-x"></path><circle cx="438.0" cy="177.0" r="5.5" class="ttt-o"></circle><path d="M397.0,190.0 L407.0,200.0 M407.0,190.0 L397.0,200.0" class="ttt-x"></path><path d="M433.0,190.0 L443.0,200.0 M443.0,190.0 L433.0,200.0" class="ttt-x"></path><circle cx="402.0" cy="213.0" r="5.5" class="ttt-o"></circle><circle cx="420.0" cy="213.0" r="5.5" class="ttt-o"></circle><text x="387.0" y="159.0" class="ttt-num">3</text><text x="420" y="244.0" class="ttt-v">v=1</text></g><g class="ttt-mini"><rect x="609.0" y="164.0" width="62" height="62" rx="6" class="ttt-frame"></rect><line x1="631.0" y1="168.0" x2="631.0" y2="222.0" class="ttt-grid"></line><line x1="613.0" y1="186.0" x2="667.0" y2="186.0" class="ttt-grid"></line><line x1="649.0" y1="168.0" x2="649.0" y2="222.0" class="ttt-grid"></line><line x1="613.0" y1="204.0" x2="667.0" y2="204.0" class="ttt-grid"></line><circle cx="622.0" cy="177.0" r="5.5" class="ttt-o"></circle><path d="M635.0,172.0 L645.0,182.0 M645.0,172.0 L635.0,182.0" class="ttt-x"></path><circle cx="658.0" cy="177.0" r="5.5" class="ttt-o"></circle><path d="M617.0,190.0 L627.0,200.0 M627.0,190.0 L617.0,200.0" class="ttt-x"></path><path d="M653.0,190.0 L663.0,200.0 M663.0,190.0 L653.0,200.0" class="ttt-x"></path><circle cx="640.0" cy="213.0" r="5.5" class="ttt-o"></circle><circle cx="658.0" cy="213.0" r="5.5" class="ttt-o"></circle><text x="607.0" y="159.0" class="ttt-num">4</text><text x="640" y="244.0" class="ttt-v">v=1</text></g><g class="ttt-mini"><rect x="114.0" y="314.0" width="62" height="62" rx="6" class="ttt-frame"></rect><line x1="136.0" y1="318.0" x2="136.0" y2="372.0" class="ttt-grid"></line><line x1="118.0" y1="336.0" x2="172.0" y2="336.0" class="ttt-grid"></line><line x1="154.0" y1="318.0" x2="154.0" y2="372.0" class="ttt-grid"></line><line x1="118.0" y1="354.0" x2="172.0" y2="354.0" class="ttt-grid"></line><circle cx="127.0" cy="327.0" r="5.5" class="ttt-o"></circle><path d="M140.0,322.0 L150.0,332.0 M150.0,322.0 L140.0,332.0" class="ttt-x"></path><circle cx="163.0" cy="327.0" r="5.5" class="ttt-o"></circle><path d="M122.0,340.0 L132.0,350.0 M132.0,340.0 L122.0,350.0" class="ttt-x"></path><circle cx="145.0" cy="345.0" r="5.5" class="ttt-o"></circle><path d="M158.0,340.0 L168.0,350.0 M168.0,340.0 L158.0,350.0" class="ttt-x"></path><path d="M122.0,358.0 L132.0,368.0 M132.0,358.0 L122.0,368.0" class="ttt-x"></path><circle cx="145.0" cy="363.0" r="5.5" class="ttt-o"></circle><text x="112.0" y="309.0" class="ttt-num">5</text><text x="145" y="394.0" class="ttt-v">v=-1</text></g><g class="ttt-mini"><rect x="224.0" y="314.0" width="62" height="62" rx="6" class="ttt-frame"></rect><line x1="246.0" y1="318.0" x2="246.0" y2="372.0" class="ttt-grid"></line><line x1="228.0" y1="336.0" x2="282.0" y2="336.0" class="ttt-grid"></line><line x1="264.0" y1="318.0" x2="264.0" y2="372.0" class="ttt-grid"></line><line x1="228.0" y1="354.0" x2="282.0" y2="354.0" class="ttt-grid"></line><circle cx="237.0" cy="327.0" r="5.5" class="ttt-o"></circle><path d="M250.0,322.0 L260.0,332.0 M260.0,322.0 L250.0,332.0" class="ttt-x"></path><circle cx="273.0" cy="327.0" r="5.5" class="ttt-o"></circle><path d="M232.0,340.0 L242.0,350.0 M242.0,340.0 L232.0,350.0" class="ttt-x"></path><circle cx="255.0" cy="345.0" r="5.5" class="ttt-o"></circle><path d="M268.0,340.0 L278.0,350.0 M278.0,340.0 L268.0,350.0" class="ttt-x"></path><circle cx="255.0" cy="363.0" r="5.5" class="ttt-o"></circle><path d="M268.0,358.0 L278.0,368.0 M278.0,358.0 L268.0,368.0" class="ttt-x"></path><text x="222.0" y="309.0" class="ttt-num">6</text><text x="255" y="394.0" class="ttt-v">v=-1</text></g><g class="ttt-mini"><rect x="334.0" y="314.0" width="62" height="62" rx="6" class="ttt-frame"></rect><line x1="356.0" y1="318.0" x2="356.0" y2="372.0" class="ttt-grid"></line><line x1="338.0" y1="336.0" x2="392.0" y2="336.0" class="ttt-grid"></line><line x1="374.0" y1="318.0" x2="374.0" y2="372.0" class="ttt-grid"></line><line x1="338.0" y1="354.0" x2="392.0" y2="354.0" class="ttt-grid"></line><circle cx="347.0" cy="327.0" r="5.5" class="ttt-o"></circle><path d="M360.0,322.0 L370.0,332.0 M370.0,322.0 L360.0,332.0" class="ttt-x"></path><circle cx="383.0" cy="327.0" r="5.5" class="ttt-o"></circle><path d="M342.0,340.0 L352.0,350.0 M352.0,340.0 L342.0,350.0" class="ttt-x"></path><path d="M360.0,340.0 L370.0,350.0 M370.0,340.0 L360.0,350.0" class="ttt-x"></path><path d="M378.0,340.0 L388.0,350.0 M388.0,340.0 L378.0,350.0" class="ttt-x"></path><circle cx="347.0" cy="363.0" r="5.5" class="ttt-o"></circle><circle cx="365.0" cy="363.0" r="5.5" class="ttt-o"></circle><line x1="335.0" y1="345.0" x2="395.0" y2="345.0" class="ttt-win"></line><text x="332.0" y="309.0" class="ttt-num">7</text><text x="365" y="394.0" class="ttt-v">v=1</text></g><g class="ttt-mini"><rect x="444.0" y="314.0" width="62" height="62" rx="6" class="ttt-frame"></rect><line x1="466.0" y1="318.0" x2="466.0" y2="372.0" class="ttt-grid"></line><line x1="448.0" y1="336.0" x2="502.0" y2="336.0" class="ttt-grid"></line><line x1="484.0" y1="318.0" x2="484.0" y2="372.0" class="ttt-grid"></line><line x1="448.0" y1="354.0" x2="502.0" y2="354.0" class="ttt-grid"></line><circle cx="457.0" cy="327.0" r="5.5" class="ttt-o"></circle><path d="M470.0,322.0 L480.0,332.0 M480.0,322.0 L470.0,332.0" class="ttt-x"></path><circle cx="493.0" cy="327.0" r="5.5" class="ttt-o"></circle><path d="M452.0,340.0 L462.0,350.0 M462.0,340.0 L452.0,350.0" class="ttt-x"></path><path d="M488.0,340.0 L498.0,350.0 M498.0,340.0 L488.0,350.0" class="ttt-x"></path><circle cx="457.0" cy="363.0" r="5.5" class="ttt-o"></circle><circle cx="475.0" cy="363.0" r="5.5" class="ttt-o"></circle><path d="M488.0,358.0 L498.0,368.0 M498.0,358.0 L488.0,368.0" class="ttt-x"></path><text x="442.0" y="309.0" class="ttt-num">8</text><text x="475" y="394.0" class="ttt-v">v=-1</text></g><g class="ttt-mini"><rect x="554.0" y="314.0" width="62" height="62" rx="6" class="ttt-frame"></rect><line x1="576.0" y1="318.0" x2="576.0" y2="372.0" class="ttt-grid"></line><line x1="558.0" y1="336.0" x2="612.0" y2="336.0" class="ttt-grid"></line><line x1="594.0" y1="318.0" x2="594.0" y2="372.0" class="ttt-grid"></line><line x1="558.0" y1="354.0" x2="612.0" y2="354.0" class="ttt-grid"></line><circle cx="567.0" cy="327.0" r="5.5" class="ttt-o"></circle><path d="M580.0,322.0 L590.0,332.0 M590.0,322.0 L580.0,332.0" class="ttt-x"></path><circle cx="603.0" cy="327.0" r="5.5" class="ttt-o"></circle><path d="M562.0,340.0 L572.0,350.0 M572.0,340.0 L562.0,350.0" class="ttt-x"></path><path d="M580.0,340.0 L590.0,350.0 M590.0,340.0 L580.0,350.0" class="ttt-x"></path><path d="M598.0,340.0 L608.0,350.0 M608.0,340.0 L598.0,350.0" class="ttt-x"></path><circle cx="585.0" cy="363.0" r="5.5" class="ttt-o"></circle><circle cx="603.0" cy="363.0" r="5.5" class="ttt-o"></circle><line x1="555.0" y1="345.0" x2="615.0" y2="345.0" class="ttt-win"></line><text x="552.0" y="309.0" class="ttt-num">9</text><text x="585" y="394.0" class="ttt-v">v=1</text></g><g class="ttt-mini"><rect x="664.0" y="314.0" width="62" height="62" rx="6" class="ttt-frame"></rect><line x1="686.0" y1="318.0" x2="686.0" y2="372.0" class="ttt-grid"></line><line x1="668.0" y1="336.0" x2="722.0" y2="336.0" class="ttt-grid"></line><line x1="704.0" y1="318.0" x2="704.0" y2="372.0" class="ttt-grid"></line><line x1="668.0" y1="354.0" x2="722.0" y2="354.0" class="ttt-grid"></line><circle cx="677.0" cy="327.0" r="5.5" class="ttt-o"></circle><path d="M690.0,322.0 L700.0,332.0 M700.0,322.0 L690.0,332.0" class="ttt-x"></path><circle cx="713.0" cy="327.0" r="5.5" class="ttt-o"></circle><path d="M672.0,340.0 L682.0,350.0 M682.0,340.0 L672.0,350.0" class="ttt-x"></path><path d="M708.0,340.0 L718.0,350.0 M718.0,340.0 L708.0,350.0" class="ttt-x"></path><path d="M672.0,358.0 L682.0,368.0 M682.0,358.0 L672.0,368.0" class="ttt-x"></path><circle cx="695.0" cy="363.0" r="5.5" class="ttt-o"></circle><circle cx="713.0" cy="363.0" r="5.5" class="ttt-o"></circle><text x="662.0" y="309.0" class="ttt-num">10</text><text x="695" y="394.0" class="ttt-v">v=-1</text></g><g class="ttt-mini"><rect x="114.0" y="459.0" width="62" height="62" rx="6" class="ttt-frame"></rect><line x1="136.0" y1="463.0" x2="136.0" y2="517.0" class="ttt-grid"></line><line x1="118.0" y1="481.0" x2="172.0" y2="481.0" class="ttt-grid"></line><line x1="154.0" y1="463.0" x2="154.0" y2="517.0" class="ttt-grid"></line><line x1="118.0" y1="499.0" x2="172.0" y2="499.0" class="ttt-grid"></line><circle cx="127.0" cy="472.0" r="5.5" class="ttt-o"></circle><path d="M140.0,467.0 L150.0,477.0 M150.0,467.0 L140.0,477.0" class="ttt-x"></path><circle cx="163.0" cy="472.0" r="5.5" class="ttt-o"></circle><path d="M122.0,485.0 L132.0,495.0 M132.0,485.0 L122.0,495.0" class="ttt-x"></path><circle cx="145.0" cy="490.0" r="5.5" class="ttt-o"></circle><path d="M158.0,485.0 L168.0,495.0 M168.0,485.0 L158.0,495.0" class="ttt-x"></path><path d="M122.0,503.0 L132.0,513.0 M132.0,503.0 L122.0,513.0" class="ttt-x"></path><circle cx="145.0" cy="508.0" r="5.5" class="ttt-o"></circle><circle cx="163.0" cy="508.0" r="5.5" class="ttt-o"></circle><line x1="115.0" y1="460.0" x2="175.0" y2="520.0" class="ttt-win"></line><text x="112.0" y="454.0" class="ttt-num">11</text><text x="145" y="539.0" class="ttt-v">v=-1</text></g><g class="ttt-mini"><rect x="224.0" y="459.0" width="62" height="62" rx="6" class="ttt-frame"></rect><line x1="246.0" y1="463.0" x2="246.0" y2="517.0" class="ttt-grid"></line><line x1="228.0" y1="481.0" x2="282.0" y2="481.0" class="ttt-grid"></line><line x1="264.0" y1="463.0" x2="264.0" y2="517.0" class="ttt-grid"></line><line x1="228.0" y1="499.0" x2="282.0" y2="499.0" class="ttt-grid"></line><circle cx="237.0" cy="472.0" r="5.5" class="ttt-o"></circle><path d="M250.0,467.0 L260.0,477.0 M260.0,467.0 L250.0,477.0" class="ttt-x"></path><circle cx="273.0" cy="472.0" r="5.5" class="ttt-o"></circle><path d="M232.0,485.0 L242.0,495.0 M242.0,485.0 L232.0,495.0" class="ttt-x"></path><circle cx="255.0" cy="490.0" r="5.5" class="ttt-o"></circle><path d="M268.0,485.0 L278.0,495.0 M278.0,485.0 L268.0,495.0" class="ttt-x"></path><circle cx="237.0" cy="508.0" r="5.5" class="ttt-o"></circle><circle cx="255.0" cy="508.0" r="5.5" class="ttt-o"></circle><path d="M268.0,503.0 L278.0,513.0 M278.0,503.0 L268.0,513.0" class="ttt-x"></path><line x1="285.0" y1="460.0" x2="225.0" y2="520.0" class="ttt-win"></line><text x="222.0" y="454.0" class="ttt-num">12</text><text x="255" y="539.0" class="ttt-v">v=-1</text></g><g class="ttt-mini"><rect x="444.0" y="459.0" width="62" height="62" rx="6" class="ttt-frame"></rect><line x1="466.0" y1="463.0" x2="466.0" y2="517.0" class="ttt-grid"></line><line x1="448.0" y1="481.0" x2="502.0" y2="481.0" class="ttt-grid"></line><line x1="484.0" y1="463.0" x2="484.0" y2="517.0" class="ttt-grid"></line><line x1="448.0" y1="499.0" x2="502.0" y2="499.0" class="ttt-grid"></line><circle cx="457.0" cy="472.0" r="5.5" class="ttt-o"></circle><path d="M470.0,467.0 L480.0,477.0 M480.0,467.0 L470.0,477.0" class="ttt-x"></path><circle cx="493.0" cy="472.0" r="5.5" class="ttt-o"></circle><path d="M452.0,485.0 L462.0,495.0 M462.0,485.0 L452.0,495.0" class="ttt-x"></path><circle cx="475.0" cy="490.0" r="5.5" class="ttt-o"></circle><path d="M488.0,485.0 L498.0,495.0 M498.0,485.0 L488.0,495.0" class="ttt-x"></path><circle cx="457.0" cy="508.0" r="5.5" class="ttt-o"></circle><circle cx="475.0" cy="508.0" r="5.5" class="ttt-o"></circle><path d="M488.0,503.0 L498.0,513.0 M498.0,503.0 L488.0,513.0" class="ttt-x"></path><line x1="505.0" y1="460.0" x2="445.0" y2="520.0" class="ttt-win"></line><text x="442.0" y="454.0" class="ttt-num">13</text><text x="475" y="539.0" class="ttt-v">v=-1</text></g><g class="ttt-mini"><rect x="664.0" y="459.0" width="62" height="62" rx="6" class="ttt-frame"></rect><line x1="686.0" y1="463.0" x2="686.0" y2="517.0" class="ttt-grid"></line><line x1="668.0" y1="481.0" x2="722.0" y2="481.0" class="ttt-grid"></line><line x1="704.0" y1="463.0" x2="704.0" y2="517.0" class="ttt-grid"></line><line x1="668.0" y1="499.0" x2="722.0" y2="499.0" class="ttt-grid"></line><circle cx="677.0" cy="472.0" r="5.5" class="ttt-o"></circle><path d="M690.0,467.0 L700.0,477.0 M700.0,467.0 L690.0,477.0" class="ttt-x"></path><circle cx="713.0" cy="472.0" r="5.5" class="ttt-o"></circle><path d="M672.0,485.0 L682.0,495.0 M682.0,485.0 L672.0,495.0" class="ttt-x"></path><circle cx="695.0" cy="490.0" r="5.5" class="ttt-o"></circle><path d="M708.0,485.0 L718.0,495.0 M718.0,485.0 L708.0,495.0" class="ttt-x"></path><path d="M672.0,503.0 L682.0,513.0 M682.0,503.0 L672.0,513.0" class="ttt-x"></path><circle cx="695.0" cy="508.0" r="5.5" class="ttt-o"></circle><circle cx="713.0" cy="508.0" r="5.5" class="ttt-o"></circle><line x1="665.0" y1="460.0" x2="725.0" y2="520.0" class="ttt-win"></line><text x="662.0" y="454.0" class="ttt-num">14</text><text x="695" y="539.0" class="ttt-v">v=-1</text></g></svg></div>
+    <p class="caption-note">O (MIN) is to move at the root. Values are backed up from the finished games: MAX levels take the maximum of their children, MIN levels the minimum — so the root gets v = −1 and O should play the centre (node 2).</p>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:2rem;">Backtracking through the game tree</h3>
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="strategy-pick">
+          <button class="strat-btn mm-stage active" data-stage="0">1 · Game tree</button>
+          <button class="strat-btn mm-stage" data-stage="1">2 · What is "?"</button>
+          <button class="strat-btn mm-stage" data-stage="2">3 · Backed-up values</button>
+        </div>
+      </div>
+      <div class="mm-stages">
+        <div class="mm-stage-fig" data-stage="0"><svg class="ga-fig mm-fig" viewBox="0 0 740 350" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Empty game tree: MAX root, MIN, MAX, MIN levels"><line x1="20" y1="85" x2="660" y2="85" class="mm-sep"></line><line x1="20" y1="175" x2="660" y2="175" class="mm-sep"></line><line x1="20" y1="265" x2="660" y2="265" class="mm-sep"></line><text x="700" y="45" class="mm-level">MAX</text><text x="700" y="135" class="mm-level">MIN</text><text x="700" y="225" class="mm-level">MAX</text><text x="700" y="315" class="mm-level">MIN</text><line x1="340.0" y1="62" x2="180.0" y2="108" class="mm-edge"></line><line x1="340.0" y1="62" x2="500.0" y2="108" class="mm-edge"></line><line x1="180.0" y1="152" x2="100.0" y2="198" class="mm-edge"></line><line x1="180.0" y1="152" x2="260.0" y2="198" class="mm-edge"></line><line x1="500.0" y1="152" x2="420.0" y2="198" class="mm-edge"></line><line x1="500.0" y1="152" x2="580.0" y2="198" class="mm-edge"></line><line x1="100.0" y1="242" x2="60" y2="288" class="mm-edge"></line><line x1="100.0" y1="242" x2="140" y2="288" class="mm-edge"></line><line x1="260.0" y1="242" x2="220" y2="288" class="mm-edge"></line><line x1="260.0" y1="242" x2="300" y2="288" class="mm-edge"></line><line x1="420.0" y1="242" x2="380" y2="288" class="mm-edge"></line><line x1="420.0" y1="242" x2="460" y2="288" class="mm-edge"></line><line x1="580.0" y1="242" x2="540" y2="288" class="mm-edge"></line><line x1="580.0" y1="242" x2="620" y2="288" class="mm-edge"></line><g class="mm-node max"><ellipse cx="340.0" cy="40" rx="23.0" ry="22"></ellipse><text x="340.0" y="40" class=""></text></g><g class="mm-node min"><ellipse cx="180.0" cy="130" rx="23.0" ry="22"></ellipse><text x="180.0" y="130" class=""></text></g><g class="mm-node min"><ellipse cx="500.0" cy="130" rx="23.0" ry="22"></ellipse><text x="500.0" y="130" class=""></text></g><g class="mm-node max"><ellipse cx="100.0" cy="220" rx="23.0" ry="22"></ellipse><text x="100.0" y="220" class=""></text></g><g class="mm-node max"><ellipse cx="260.0" cy="220" rx="23.0" ry="22"></ellipse><text x="260.0" y="220" class=""></text></g><g class="mm-node max"><ellipse cx="420.0" cy="220" rx="23.0" ry="22"></ellipse><text x="420.0" y="220" class=""></text></g><g class="mm-node max"><ellipse cx="580.0" cy="220" rx="23.0" ry="22"></ellipse><text x="580.0" y="220" class=""></text></g><g class="mm-node min"><ellipse cx="60" cy="310" rx="23.0" ry="22"></ellipse><text x="60" y="310" class=""></text></g><g class="mm-node min"><ellipse cx="140" cy="310" rx="23.0" ry="22"></ellipse><text x="140" y="310" class=""></text></g><g class="mm-node min"><ellipse cx="220" cy="310" rx="23.0" ry="22"></ellipse><text x="220" y="310" class=""></text></g><g class="mm-node min"><ellipse cx="300" cy="310" rx="23.0" ry="22"></ellipse><text x="300" y="310" class=""></text></g><g class="mm-node min"><ellipse cx="380" cy="310" rx="23.0" ry="22"></ellipse><text x="380" y="310" class=""></text></g><g class="mm-node min"><ellipse cx="460" cy="310" rx="23.0" ry="22"></ellipse><text x="460" y="310" class=""></text></g><g class="mm-node min"><ellipse cx="540" cy="310" rx="23.0" ry="22"></ellipse><text x="540" y="310" class=""></text></g><g class="mm-node min"><ellipse cx="620" cy="310" rx="23.0" ry="22"></ellipse><text x="620" y="310" class=""></text></g></svg></div>
+        <div class="mm-stage-fig" data-stage="1" hidden><svg class="ga-fig mm-fig" viewBox="0 0 740 350" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Game tree with leaf values; some inner values still unknown"><line x1="20" y1="85" x2="660" y2="85" class="mm-sep"></line><line x1="20" y1="175" x2="660" y2="175" class="mm-sep"></line><line x1="20" y1="265" x2="660" y2="265" class="mm-sep"></line><text x="700" y="45" class="mm-level">MAX</text><text x="700" y="135" class="mm-level">MIN</text><text x="700" y="225" class="mm-level">MAX</text><text x="700" y="315" class="mm-level">MIN</text><line x1="340.0" y1="62" x2="180.0" y2="108" class="mm-edge"></line><line x1="340.0" y1="62" x2="500.0" y2="108" class="mm-edge"></line><line x1="180.0" y1="152" x2="100.0" y2="198" class="mm-edge"></line><line x1="180.0" y1="152" x2="260.0" y2="198" class="mm-edge"></line><line x1="500.0" y1="152" x2="420.0" y2="198" class="mm-edge"></line><line x1="500.0" y1="152" x2="580.0" y2="198" class="mm-edge"></line><line x1="100.0" y1="242" x2="60" y2="288" class="mm-edge"></line><line x1="100.0" y1="242" x2="140" y2="288" class="mm-edge"></line><line x1="260.0" y1="242" x2="220" y2="288" class="mm-edge"></line><line x1="260.0" y1="242" x2="300" y2="288" class="mm-edge"></line><line x1="420.0" y1="242" x2="380" y2="288" class="mm-edge"></line><line x1="420.0" y1="242" x2="460" y2="288" class="mm-edge"></line><line x1="580.0" y1="242" x2="540" y2="288" class="mm-edge"></line><line x1="580.0" y1="242" x2="620" y2="288" class="mm-edge"></line><g class="mm-node max"><ellipse cx="340.0" cy="40" rx="23.0" ry="22"></ellipse><text x="340.0" y="40" class=""></text></g><g class="mm-node min"><ellipse cx="180.0" cy="130" rx="23.0" ry="22"></ellipse><text x="180.0" y="130" class="">?</text></g><g class="mm-node min"><ellipse cx="500.0" cy="130" rx="23.0" ry="22"></ellipse><text x="500.0" y="130" class=""></text></g><g class="mm-node max"><ellipse cx="100.0" cy="220" rx="23.0" ry="22"></ellipse><text x="100.0" y="220" class="">3</text></g><g class="mm-node max"><ellipse cx="260.0" cy="220" rx="23.0" ry="22"></ellipse><text x="260.0" y="220" class="">5</text></g><g class="mm-node max"><ellipse cx="420.0" cy="220" rx="23.0" ry="22"></ellipse><text x="420.0" y="220" class="">?</text></g><g class="mm-node max"><ellipse cx="580.0" cy="220" rx="23.0" ry="22"></ellipse><text x="580.0" y="220" class="">9</text></g><g class="mm-node min"><ellipse cx="60" cy="310" rx="23.0" ry="22"></ellipse><text x="60" y="310" class="">-1</text></g><g class="mm-node min"><ellipse cx="140" cy="310" rx="23.0" ry="22"></ellipse><text x="140" y="310" class="">3</text></g><g class="mm-node min"><ellipse cx="220" cy="310" rx="23.0" ry="22"></ellipse><text x="220" y="310" class="">5</text></g><g class="mm-node min"><ellipse cx="300" cy="310" rx="23.0" ry="22"></ellipse><text x="300" y="310" class="">1</text></g><g class="mm-node min"><ellipse cx="380" cy="310" rx="23.0" ry="22"></ellipse><text x="380" y="310" class="">-6</text></g><g class="mm-node min"><ellipse cx="460" cy="310" rx="23.0" ry="22"></ellipse><text x="460" y="310" class="">-4</text></g><g class="mm-node min"><ellipse cx="540" cy="310" rx="23.0" ry="22"></ellipse><text x="540" y="310" class="">0</text></g><g class="mm-node min"><ellipse cx="620" cy="310" rx="23.0" ry="22"></ellipse><text x="620" y="310" class="">9</text></g></svg></div>
+        <div class="mm-stage-fig" data-stage="2" hidden><svg class="ga-fig mm-fig" viewBox="0 0 740 350" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Fully backed-up game tree: the root value is 3"><line x1="20" y1="85" x2="660" y2="85" class="mm-sep"></line><line x1="20" y1="175" x2="660" y2="175" class="mm-sep"></line><line x1="20" y1="265" x2="660" y2="265" class="mm-sep"></line><text x="700" y="45" class="mm-level">MAX</text><text x="700" y="135" class="mm-level">MIN</text><text x="700" y="225" class="mm-level">MAX</text><text x="700" y="315" class="mm-level">MIN</text><line x1="340.0" y1="62" x2="180.0" y2="108" class="mm-edge"></line><line x1="340.0" y1="62" x2="500.0" y2="108" class="mm-edge"></line><line x1="180.0" y1="152" x2="100.0" y2="198" class="mm-edge"></line><line x1="180.0" y1="152" x2="260.0" y2="198" class="mm-edge"></line><line x1="500.0" y1="152" x2="420.0" y2="198" class="mm-edge"></line><line x1="500.0" y1="152" x2="580.0" y2="198" class="mm-edge"></line><line x1="100.0" y1="242" x2="60" y2="288" class="mm-edge"></line><line x1="100.0" y1="242" x2="140" y2="288" class="mm-edge"></line><line x1="260.0" y1="242" x2="220" y2="288" class="mm-edge"></line><line x1="260.0" y1="242" x2="300" y2="288" class="mm-edge"></line><line x1="420.0" y1="242" x2="380" y2="288" class="mm-edge"></line><line x1="420.0" y1="242" x2="460" y2="288" class="mm-edge"></line><line x1="580.0" y1="242" x2="540" y2="288" class="mm-edge"></line><line x1="580.0" y1="242" x2="620" y2="288" class="mm-edge"></line><g class="mm-node max"><ellipse cx="340.0" cy="40" rx="23.0" ry="22"></ellipse><text x="340.0" y="40" class="">3</text></g><g class="mm-node min"><ellipse cx="180.0" cy="130" rx="23.0" ry="22"></ellipse><text x="180.0" y="130" class="">3</text></g><g class="mm-node min"><ellipse cx="500.0" cy="130" rx="23.0" ry="22"></ellipse><text x="500.0" y="130" class="">-4</text></g><g class="mm-node max"><ellipse cx="100.0" cy="220" rx="23.0" ry="22"></ellipse><text x="100.0" y="220" class="">3</text></g><g class="mm-node max"><ellipse cx="260.0" cy="220" rx="23.0" ry="22"></ellipse><text x="260.0" y="220" class="">5</text></g><g class="mm-node max"><ellipse cx="420.0" cy="220" rx="23.0" ry="22"></ellipse><text x="420.0" y="220" class="">-4</text></g><g class="mm-node max"><ellipse cx="580.0" cy="220" rx="23.0" ry="22"></ellipse><text x="580.0" y="220" class="">9</text></g><g class="mm-node min"><ellipse cx="60" cy="310" rx="23.0" ry="22"></ellipse><text x="60" y="310" class="">-1</text></g><g class="mm-node min"><ellipse cx="140" cy="310" rx="23.0" ry="22"></ellipse><text x="140" y="310" class="">3</text></g><g class="mm-node min"><ellipse cx="220" cy="310" rx="23.0" ry="22"></ellipse><text x="220" y="310" class="">5</text></g><g class="mm-node min"><ellipse cx="300" cy="310" rx="23.0" ry="22"></ellipse><text x="300" y="310" class="">1</text></g><g class="mm-node min"><ellipse cx="380" cy="310" rx="23.0" ry="22"></ellipse><text x="380" y="310" class="">-6</text></g><g class="mm-node min"><ellipse cx="460" cy="310" rx="23.0" ry="22"></ellipse><text x="460" y="310" class="">-4</text></g><g class="mm-node min"><ellipse cx="540" cy="310" rx="23.0" ry="22"></ellipse><text x="540" y="310" class="">0</text></g><g class="mm-node min"><ellipse cx="620" cy="310" rx="23.0" ry="22"></ellipse><text x="620" y="310" class="">9</text></g></svg></div>
+      </div>
+      <p class="mm-legend"><span class="lg-max">MAX node</span><span class="lg-min">MIN node</span></p>
+    </div>
+
+    <details class="code-card">
+      <summary>
+        <span class="code-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="code-file">minimax.py</span>
+        <span class="code-lang">Python</span>
+        <button type="button" class="code-copy">Copy</button>
+        <span class="code-chevron" aria-hidden="true">▾</span>
+      </summary>
+      <pre class="code-body"><code class="lang-py">import numpy as np
+
+def is_terminal(node):
+    # implement logic to check if the game is over
+    return isinstance(node, int)
+
+def evaluate(node):
+    # if we are evaluating a board for example, this function should calculate a score
+    return node
+
+def get_children(node):
+    # computing next options from current node
+    return node
+
+def minimax(node, maximizingPlayer):
+    if is_terminal(node):
+        return evaluate(node)
+
+    if maximizingPlayer:
+        maxEval = -np.inf
+        for child in get_children(node):
+            eval = minimax(child, False)
+            maxEval = max(maxEval, eval)
+        return maxEval
+    else:
+        minEval = np.inf
+        for child in get_children(node):
+            eval = minimax(child, True)
+            minEval = min(minEval, eval)
+        return minEval
+
+game_tree = [
+    [
+        [-1, 3],
+        [5, 1]
+    ],
+    [
+        [-6, -4],
+        [0, 9]
+    ]
+]
+
+optimal_score = minimax(game_tree, True)
+print(f&quot;The Optimal Score for the starting MAX player is: {optimal_score}&quot;)  # 3</code></pre>
+    </details>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:2rem;">Properties of minimax</h3>
+    <div class="algo-stats ids">
+      <div class="algo-stat">
+        <div class="label">Complete?</div>
+        <div class="value">Yes*</div>
+        <div class="detail">If the tree is finite.</div>
+      </div>
+      <div class="algo-stat">
+        <div class="label">Optimal?</div>
+        <div class="value">Yes</div>
+        <div class="detail">Against an optimal opponent.</div>
+      </div>
+      <div class="algo-stat">
+        <div class="label">Time complexity</div>
+        <div class="value">O(b<sup>m</sup>)</div>
+      </div>
+      <div class="algo-stat">
+        <div class="label">Space complexity</div>
+        <div class="value">O(bm)</div>
+      </div>
+    </div>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:2rem;">Conditions for minimax optimality</h3>
+    <p class="section-lede">The minimax algorithm guarantees the optimal move <i>for the worst-case scenario</i> against a rational opponent, provided the following conditions hold true:</p>
+    <div class="cond-grid">
+      <div class="cond"><h4>👥 Two-player</h4><p>Only two players are involved. The core max / min structure breaks down with more players.</p></div>
+      <div class="cond"><h4>⚖️ Zero-sum</h4><p>The gain of one player is exactly the loss of the other. The max player's goal (maximize my score) is exactly the inverse of the min player's goal (minimize my opponent's score).</p></div>
+      <div class="cond"><h4>👁️ Perfect information</h4><p>Both players know the entire state of the game (e.g., chess, checkers, tic-tac-toe). If the game involves hidden information (e.g., poker), minimax is no longer guaranteed to be optimal; other methods like expected minimax are needed.</p></div>
+      <div class="cond"><h4>🎯 Deterministic</h4><p>There is no element of chance (no dice, shuffled cards, etc.). If chance is involved, a variant called <b>Expectimax</b> is used, where the minimax layers are interspersed with "chance nodes" that calculate expected values.</p></div>
+      <div class="cond"><h4>🌳 Complete search</h4><p>The algorithm must be able to search all the way to a terminal (game-ending) state. In real-world games like chess this is impossible: the algorithm stops at a fixed depth (the search horizon) and uses a heuristic evaluation function to estimate non-terminal nodes, making the result only heuristically optimal (an approximation).</p></div>
+    </div>
+    <p class="caption-note"><i>Minimax is typically used in classical games like chess, checkers, and tic-tac-toe.</i></p>
+
+    <p class="section-lede" style="margin-top:1.4rem;">The moment any of the above conditions are violated, or a practical limitation is introduced, minimax ceases to be the "optimal" strategy:</p>
+    <ul class="concept-list">
+      <li><b>Against a suboptimal opponent:</b> minimax will still win, but it might miss an opportunity to win faster or more decisively. If you know your opponent is weak, you could choose a "trap" move that minimax rejects (because a perfect opponent would avoid the trap), but that an imperfect opponent is likely to fall for.</li>
+      <li><b>Limited search depth:</b> if the search is cut short by an arbitrary depth limit (which is necessary for complex games), the result is only as good as the heuristic evaluation function used at the leaves.</li>
+    </ul>
+  </section>
+
+  <!-- ===== ALPHA-BETA ===== -->
+  <section class="block algo-section dfs" id="alphabeta">
+    <span class="badge dfs" style="margin-bottom:0.6rem; display:inline-block;">Alpha-beta</span>
+    <h2 class="section-title">Alpha-beta pruning</h2>
+
+    <h3 class="section-title" style="font-size:1.15rem;">Do we need to evaluate the whole game tree?</h3>
+    <div class="sim-panel"><svg class="ga-fig mm-fig" viewBox="0 0 740 350" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Partially evaluated tree: the second MAX node is at least 5"><line x1="20" y1="85" x2="660" y2="85" class="mm-sep"></line><line x1="20" y1="175" x2="660" y2="175" class="mm-sep"></line><line x1="20" y1="265" x2="660" y2="265" class="mm-sep"></line><text x="700" y="45" class="mm-level">MAX</text><text x="700" y="135" class="mm-level">MIN</text><text x="700" y="225" class="mm-level">MAX</text><text x="700" y="315" class="mm-level">MIN</text><line x1="340.0" y1="62" x2="180.0" y2="108" class="mm-edge"></line><line x1="340.0" y1="62" x2="500.0" y2="108" class="mm-edge"></line><line x1="180.0" y1="152" x2="100.0" y2="198" class="mm-edge"></line><line x1="180.0" y1="152" x2="260.0" y2="198" class="mm-edge"></line><line x1="500.0" y1="152" x2="420.0" y2="198" class="mm-edge"></line><line x1="500.0" y1="152" x2="580.0" y2="198" class="mm-edge"></line><line x1="100.0" y1="242" x2="60" y2="288" class="mm-edge"></line><line x1="100.0" y1="242" x2="140" y2="288" class="mm-edge"></line><line x1="260.0" y1="242" x2="220" y2="288" class="mm-edge"></line><line x1="260.0" y1="242" x2="300" y2="288" class="mm-edge"></line><line x1="420.0" y1="242" x2="380" y2="288" class="mm-edge"></line><line x1="420.0" y1="242" x2="460" y2="288" class="mm-edge"></line><line x1="580.0" y1="242" x2="540" y2="288" class="mm-edge"></line><line x1="580.0" y1="242" x2="620" y2="288" class="mm-edge"></line><g class="mm-node max"><ellipse cx="340.0" cy="40" rx="23.0" ry="22"></ellipse><text x="340.0" y="40" class=""></text></g><g class="mm-node min"><ellipse cx="180.0" cy="130" rx="23.0" ry="22"></ellipse><text x="180.0" y="130" class=""></text></g><g class="mm-node min"><ellipse cx="500.0" cy="130" rx="23.0" ry="22"></ellipse><text x="500.0" y="130" class=""></text></g><g class="mm-node max"><ellipse cx="100.0" cy="220" rx="23.0" ry="22"></ellipse><text x="100.0" y="220" class="">3</text></g><g class="mm-node max"><ellipse cx="260.0" cy="220" rx="23.0" ry="22"></ellipse><text x="260.0" y="220" class="">≥5</text></g><g class="mm-node max"><ellipse cx="420.0" cy="220" rx="23.0" ry="22"></ellipse><text x="420.0" y="220" class=""></text></g><g class="mm-node max"><ellipse cx="580.0" cy="220" rx="23.0" ry="22"></ellipse><text x="580.0" y="220" class=""></text></g><g class="mm-node min"><ellipse cx="60" cy="310" rx="23.0" ry="22"></ellipse><text x="60" y="310" class="">-1</text></g><g class="mm-node min"><ellipse cx="140" cy="310" rx="23.0" ry="22"></ellipse><text x="140" y="310" class="">3</text></g><g class="mm-node min"><ellipse cx="220" cy="310" rx="23.0" ry="22"></ellipse><text x="220" y="310" class="">5</text></g><g class="mm-node min"><ellipse cx="300" cy="310" rx="23.0" ry="22"></ellipse><text x="300" y="310" class="">?</text></g><g class="mm-node min"><ellipse cx="380" cy="310" rx="23.0" ry="22"></ellipse><text x="380" y="310" class=""></text></g><g class="mm-node min"><ellipse cx="460" cy="310" rx="23.0" ry="22"></ellipse><text x="460" y="310" class=""></text></g><g class="mm-node min"><ellipse cx="540" cy="310" rx="23.0" ry="22"></ellipse><text x="540" y="310" class=""></text></g><g class="mm-node min"><ellipse cx="620" cy="310" rx="23.0" ry="22"></ellipse><text x="620" y="310" class=""></text></g></svg></div>
+    <div class="answer-card" style="margin-top:1.2rem;">
+      <div class="answer-no">NO</div>
+      <div><p style="margin:0;">The MIN node already has a child worth <b>3</b>. The second MAX child is <b>≥ 5</b> after its first leaf — MIN will never choose it, so its last leaf does not matter.</p></div>
+    </div>
+    <div class="sim-panel" style="margin-top:1.2rem;"><svg class="ga-fig mm-fig" viewBox="0 0 740 350" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="MIN node already has 3, so the last leaf under the at-least-5 node is pruned"><line x1="20" y1="85" x2="660" y2="85" class="mm-sep"></line><line x1="20" y1="175" x2="660" y2="175" class="mm-sep"></line><line x1="20" y1="265" x2="660" y2="265" class="mm-sep"></line><text x="700" y="45" class="mm-level">MAX</text><text x="700" y="135" class="mm-level">MIN</text><text x="700" y="225" class="mm-level">MAX</text><text x="700" y="315" class="mm-level">MIN</text><line x1="340.0" y1="62" x2="180.0" y2="108" class="mm-edge"></line><line x1="340.0" y1="62" x2="500.0" y2="108" class="mm-edge"></line><line x1="180.0" y1="152" x2="100.0" y2="198" class="mm-edge"></line><line x1="180.0" y1="152" x2="260.0" y2="198" class="mm-edge"></line><line x1="500.0" y1="152" x2="420.0" y2="198" class="mm-edge"></line><line x1="500.0" y1="152" x2="580.0" y2="198" class="mm-edge"></line><line x1="100.0" y1="242" x2="60" y2="288" class="mm-edge"></line><line x1="100.0" y1="242" x2="140" y2="288" class="mm-edge"></line><line x1="260.0" y1="242" x2="220" y2="288" class="mm-edge"></line><line x1="260.0" y1="242" x2="300" y2="288" class="mm-edge"></line><line x1="262.0" y1="273.0" x2="298.0" y2="257.0" class="mm-cut"></line><line x1="264.0" y1="278.0" x2="300.0" y2="262.0" class="mm-cut"></line><line x1="420.0" y1="242" x2="380" y2="288" class="mm-edge"></line><line x1="420.0" y1="242" x2="460" y2="288" class="mm-edge"></line><line x1="580.0" y1="242" x2="540" y2="288" class="mm-edge"></line><line x1="580.0" y1="242" x2="620" y2="288" class="mm-edge"></line><g class="mm-node max"><ellipse cx="340.0" cy="40" rx="23.0" ry="22"></ellipse><text x="340.0" y="40" class=""></text></g><g class="mm-node min"><ellipse cx="180.0" cy="130" rx="23.0" ry="22"></ellipse><text x="180.0" y="130" class="red">3</text></g><g class="mm-node min"><ellipse cx="500.0" cy="130" rx="23.0" ry="22"></ellipse><text x="500.0" y="130" class=""></text></g><g class="mm-node max"><ellipse cx="100.0" cy="220" rx="23.0" ry="22"></ellipse><text x="100.0" y="220" class="">3</text></g><g class="mm-node max"><ellipse cx="260.0" cy="220" rx="23.0" ry="22"></ellipse><text x="260.0" y="220" class="">≥5</text></g><g class="mm-node max"><ellipse cx="420.0" cy="220" rx="23.0" ry="22"></ellipse><text x="420.0" y="220" class=""></text></g><g class="mm-node max"><ellipse cx="580.0" cy="220" rx="23.0" ry="22"></ellipse><text x="580.0" y="220" class=""></text></g><g class="mm-node min"><ellipse cx="60" cy="310" rx="23.0" ry="22"></ellipse><text x="60" y="310" class="">-1</text></g><g class="mm-node min"><ellipse cx="140" cy="310" rx="23.0" ry="22"></ellipse><text x="140" y="310" class="">3</text></g><g class="mm-node min"><ellipse cx="220" cy="310" rx="23.0" ry="22"></ellipse><text x="220" y="310" class="">5</text></g><g class="mm-node min"><ellipse cx="300" cy="310" rx="23.0" ry="22"></ellipse><text x="300" y="310" class="">?</text></g><g class="mm-node min"><ellipse cx="380" cy="310" rx="23.0" ry="22"></ellipse><text x="380" y="310" class=""></text></g><g class="mm-node min"><ellipse cx="460" cy="310" rx="23.0" ry="22"></ellipse><text x="460" y="310" class=""></text></g><g class="mm-node min"><ellipse cx="540" cy="310" rx="23.0" ry="22"></ellipse><text x="540" y="310" class=""></text></g><g class="mm-node min"><ellipse cx="620" cy="310" rx="23.0" ry="22"></ellipse><text x="620" y="310" class=""></text></g></svg></div>
+    <div class="sim-panel" style="margin-top:1.2rem;"><svg class="ga-fig mm-fig" viewBox="0 0 740 350" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Right MIN node is at most -4, worse than 3 for MAX, so its second subtree is pruned"><line x1="20" y1="85" x2="660" y2="85" class="mm-sep"></line><line x1="20" y1="175" x2="660" y2="175" class="mm-sep"></line><line x1="20" y1="265" x2="660" y2="265" class="mm-sep"></line><text x="700" y="45" class="mm-level">MAX</text><text x="700" y="135" class="mm-level">MIN</text><text x="700" y="225" class="mm-level">MAX</text><text x="700" y="315" class="mm-level">MIN</text><line x1="340.0" y1="62" x2="180.0" y2="108" class="mm-edge"></line><line x1="340.0" y1="62" x2="500.0" y2="108" class="mm-edge"></line><line x1="180.0" y1="152" x2="100.0" y2="198" class="mm-edge"></line><line x1="180.0" y1="152" x2="260.0" y2="198" class="mm-edge"></line><line x1="500.0" y1="152" x2="420.0" y2="198" class="mm-edge"></line><line x1="500.0" y1="152" x2="580.0" y2="198" class="mm-edge"></line><line x1="522.0" y1="183.0" x2="558.0" y2="167.0" class="mm-cut"></line><line x1="524.0" y1="188.0" x2="560.0" y2="172.0" class="mm-cut"></line><line x1="100.0" y1="242" x2="60" y2="288" class="mm-edge"></line><line x1="100.0" y1="242" x2="140" y2="288" class="mm-edge"></line><line x1="260.0" y1="242" x2="220" y2="288" class="mm-edge"></line><line x1="260.0" y1="242" x2="300" y2="288" class="mm-edge"></line><line x1="262.0" y1="273.0" x2="298.0" y2="257.0" class="mm-cut"></line><line x1="264.0" y1="278.0" x2="300.0" y2="262.0" class="mm-cut"></line><line x1="420.0" y1="242" x2="380" y2="288" class="mm-edge"></line><line x1="420.0" y1="242" x2="460" y2="288" class="mm-edge"></line><line x1="580.0" y1="242" x2="540" y2="288" class="mm-edge"></line><line x1="580.0" y1="242" x2="620" y2="288" class="mm-edge"></line><g class="mm-node max"><ellipse cx="340.0" cy="40" rx="23.0" ry="22"></ellipse><text x="340.0" y="40" class=""></text></g><g class="mm-node min"><ellipse cx="180.0" cy="130" rx="23.0" ry="22"></ellipse><text x="180.0" y="130" class="red">3</text></g><g class="mm-node min"><ellipse cx="500.0" cy="130" rx="30.0" ry="22"></ellipse><text x="500.0" y="130" class="red">≤-4</text></g><g class="mm-node max"><ellipse cx="100.0" cy="220" rx="23.0" ry="22"></ellipse><text x="100.0" y="220" class="">3</text></g><g class="mm-node max"><ellipse cx="260.0" cy="220" rx="23.0" ry="22"></ellipse><text x="260.0" y="220" class="">≥5</text></g><g class="mm-node max"><ellipse cx="420.0" cy="220" rx="23.0" ry="22"></ellipse><text x="420.0" y="220" class="red">-4</text></g><g class="mm-node max"><ellipse cx="580.0" cy="220" rx="23.0" ry="22"></ellipse><text x="580.0" y="220" class="">?</text></g><g class="mm-node min"><ellipse cx="60" cy="310" rx="23.0" ry="22"></ellipse><text x="60" y="310" class="">-1</text></g><g class="mm-node min"><ellipse cx="140" cy="310" rx="23.0" ry="22"></ellipse><text x="140" y="310" class="">3</text></g><g class="mm-node min"><ellipse cx="220" cy="310" rx="23.0" ry="22"></ellipse><text x="220" y="310" class="">5</text></g><g class="mm-node min"><ellipse cx="300" cy="310" rx="23.0" ry="22"></ellipse><text x="300" y="310" class="">?</text></g><g class="mm-node min"><ellipse cx="380" cy="310" rx="23.0" ry="22"></ellipse><text x="380" y="310" class="">-6</text></g><g class="mm-node min"><ellipse cx="460" cy="310" rx="23.0" ry="22"></ellipse><text x="460" y="310" class="">-4</text></g><g class="mm-node min"><ellipse cx="540" cy="310" rx="23.0" ry="22"></ellipse><text x="540" y="310" class="">?</text></g><g class="mm-node min"><ellipse cx="620" cy="310" rx="23.0" ry="22"></ellipse><text x="620" y="310" class="">?</text></g></svg></div>
+    <p class="caption-note">On the right, MIN can already force <b>≤ −4</b>, which is worse for MAX than the 3 it has on the left — the whole second subtree is pruned. <b>Pruning depends on what order the moves are in.</b></p>
+
+    <div class="tree-panel" style="grid-template-columns:1fr 1fr; margin-top:1.6rem;">
+      <div class="ab-def alpha">
+        <h4>α (alpha)</h4>
+        <p>The best value that <b>MAX</b> can guarantee at the current level and the levels above.</p>
+      </div>
+      <div class="ab-def beta">
+        <h4>β (beta)</h4>
+        <p>The best value that <b>MIN</b> can guarantee at the current level and the levels above.</p>
+      </div>
+    </div>
+    <div class="definition-box" style="margin-top:1.2rem;">
+      <div class="dbox-label">✂️ Requirement for pruning</div>
+      <p><b>β ≤ α</b> — MIN had a better option available earlier in the tree.</p>
+    </div>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:2rem;">Step through minimax and alpha-beta</h3>
+    <p class="section-lede">The same tree as above. Each node shows its current <b>α / β</b> (green box for MAX, red for MIN); pruned branches get a red cut. Switch to plain minimax to compare how many leaves are evaluated, or change the leaves to see how <b>move ordering</b> changes the pruning.</p>
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="strategy-pick">
+          <button class="strat-btn ab-mode active" data-mode="ab">Alpha-beta</button>
+          <button class="strat-btn ab-mode" data-mode="mm">Minimax</button>
+        </div>
+        <div class="play-btns">
+          <button class="icon-btn" id="ab-prev" title="Step back">⏮</button>
+          <button class="icon-btn" id="ab-play" title="Play / pause">▶</button>
+          <button class="icon-btn" id="ab-next" title="Step forward">⏭</button>
+          <button class="icon-btn" id="ab-reset" title="Reset">↺</button>
+        </div>
+      </div>
+      <div class="toggle-row" style="margin-bottom:0.8rem;">
+        <button class="toggle-btn" id="ab-lab">Lab example</button>
+        <button class="toggle-btn" id="ab-best">Best ordering</button>
+        <button class="toggle-btn" id="ab-worst">Worst ordering</button>
+        <button class="toggle-btn" id="ab-random">Random leaves</button>
+      </div>
+      <div class="fig-scroll"><svg id="ab-tree" class="ga-fig mm-fig" viewBox="0 0 740 380" xmlns="http://www.w3.org/2000/svg" aria-label="Alpha-beta search tree"></svg></div>
+      <div class="pg-grid" style="margin-top:1rem;">
+        <div class="frontier-box">
+          <h5>Search log</h5>
+          <div class="log-box" id="ab-log"></div>
+        </div>
+        <div>
+          <div class="sa-readout" style="margin-top:0;">
+            <div class="stat"><div class="n" id="ab-leaves">0 / 8</div><div class="l">leaves evaluated</div></div>
+            <div class="stat"><div class="n" id="ab-value">–</div><div class="l">root value</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <details class="code-card">
+      <summary>
+        <span class="code-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="code-file">alpha_beta.py</span>
+        <span class="code-lang">Python</span>
+        <button type="button" class="code-copy">Copy</button>
+        <span class="code-chevron" aria-hidden="true">▾</span>
+      </summary>
+      <pre class="code-body"><code class="lang-py">import numpy as np
+
+def is_terminal(node):
+    # implement logic to check if the game is over
+    return isinstance(node, int)
+
+def evaluate(node):
+    # if we are evaluating a board for example, this function should calculate a score
+    return node
+
+def get_children(node):
+    # computing next options from current node
+    return node
+
+def minimax(node, alpha, beta, maximizingPlayer):
+    if is_terminal(node):
+        return evaluate(node)
+
+    if maximizingPlayer:
+        maxEval = -np.inf
+        for child in get_children(node):
+            eval = minimax(child, alpha, beta, False)
+            maxEval = max(maxEval, eval)
+            alpha = max(alpha, eval)
+            print(f&quot;eval: {eval}, maxEval: {maxEval}, alpha: {alpha}, beta: {beta}&quot;)
+            if beta &lt;= alpha:
+                break
+        return maxEval
+    else:
+        minEval = np.inf
+        for child in get_children(node):
+            eval = minimax(child, alpha, beta, True)
+            minEval = min(minEval, eval)
+            beta = min(beta, eval)
+            print(f&quot;eval: {eval}, minEval: {minEval}, alpha: {alpha}, beta: {beta}&quot;)
+            if beta &lt;= alpha:
+                break
+        return minEval
+
+game_tree = [
+    [
+        [-1, 3],
+        [5, 1]
+    ],
+    [
+        [-6, -4],
+        [0, 9]
+    ]
+]
+
+optimal_score = minimax(game_tree, -np.inf, np.inf, True)  # the root is MAX
+print(f&quot;The Optimal Score for the starting MAX player is: {optimal_score}&quot;)  # 3</code></pre>
+    </details>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:2rem;">Properties of alpha-beta pruning</h3>
+    <ul class="concept-list">
+      <li>Pruning <b>does not affect the final result</b>.</li>
+      <li>Good <b>move ordering</b> improves effectiveness of pruning.</li>
+    </ul>
+    <p class="section-lede" style="margin-top:1rem;">For real games that cannot be searched to the end, the search is limited by:</p>
+    <ul class="concept-list">
+      <li><b>Cutoff test</b> — e.g., a depth limit (perhaps add quiescence search).</li>
+      <li><b>Evaluation function</b> — the estimated desirability of a position.</li>
+    </ul>
+  </section>
+
+  <!-- ===== PLAY ===== -->
+  <section class="block algo-section bfs" id="play">
+    <span class="badge bfs" style="margin-bottom:0.6rem; display:inline-block;">Try it</span>
+    <h2 class="section-title">Play tic-tac-toe against minimax</h2>
+    <p class="section-lede">You are <b>X (MAX)</b>, the computer is <b>O (MIN)</b> and searches the whole game tree before every move, with the evaluation function above. It never loses — the best you can do is a draw. Turn on the hints to see the minimax value of each of your moves.</p>
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="strategy-pick">
+          <button class="strat-btn ttt-hint">Show minimax values</button>
+        </div>
+        <div class="play-btns">
+          <button class="toggle-btn" id="ttt-lecture">Load the lecture position</button>
+          <button class="toggle-btn" id="ttt-new">New game</button>
+          <button class="toggle-btn" id="ttt-ofirst">Computer starts</button>
+        </div>
+      </div>
+      <div class="pg-grid">
+        <div class="ttt-wrap"><div id="ttt-board" class="ttt-board" role="grid" aria-label="Tic-tac-toe board"></div></div>
+        <div>
+          <p id="ttt-status" class="ttt-status"></p>
+          <div class="sa-readout">
+            <div class="stat"><div class="n" id="ttt-mm">–</div><div class="l">positions searched · minimax</div></div>
+            <div class="stat"><div class="n" id="ttt-ab">–</div><div class="l">positions searched · alpha-beta</div></div>
+          </div>
+          <p style="font-size:0.85rem; color:var(--ink-soft); margin:0;">Both searches pick an equally good move — alpha-beta just looks at far fewer positions to find it.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== MATERIALS ===== -->
+  <section class="block" id="materials">
+    <h2 class="section-title">Additional materials</h2>
+    <ol class="concept-list">
+      <li>Tic-tac-toe and minimax — <a href="https://www.neverstopbuilding.com/blog/minimax" target="_blank" rel="noopener">here</a></li>
+    </ol>
+  </section>
+
+</div>
+
+<footer>Class notes by Elitsa Yotkova · Lab 05 · built with plain HTML, CSS &amp; JS</footer>
+
+<script src="code-cards.js"></script>
+<script src="lab05.js"></script>
+</body>
+</html>
