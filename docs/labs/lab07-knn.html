@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lab 07 — K-Nearest Neighbours | Class Notes</title>
+<meta name="description" content="Interactive notes on K-nearest neighbours: global vs local, instance-based vs model-based and lazy vs eager learning, distance metrics, choosing K, and KNN classification and regression.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+
+<header class="site-nav">
+  <span class="brand"><span class="dot"></span> Class Notes</span>
+  <nav>
+    <a href="../index.html">Home</a>
+    <a href="lab01-uninformed-search.html">Lab 01</a>
+    <a href="lab02-informed-search.html">Lab 02</a>
+    <a href="lab03-csp.html">Lab 03</a>
+    <a href="lab04-genetic-algorithms.html">Lab 04</a>
+    <a href="lab05-games.html">Lab 05</a>
+    <a href="lab06-intro-ml.html">Lab 06</a>
+    <a href="lab065-linear-logistic.html">Lab 6.5</a>
+  </nav>
+</header>
+
+<section class="hero art-hero art-knn">
+  <svg id="knn-hero-bg" class="hero-art" viewBox="0 0 1200 300" preserveAspectRatio="xMidYMid slice" aria-hidden="true"></svg>
+  <div class="wrap">
+    <p class="eyebrow">Lab 07</p>
+    <h1>K-Nearest Neighbours</h1>
+    <div class="badges">
+      <span class="badge bfs">Local learning</span>
+      <span class="badge ucs">Instance-based</span>
+      <span class="badge dfs">Lazy learning</span>
+      <span class="badge ids">KNN</span>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+
+  <!-- ===== OVERVIEW ===== -->
+  <section class="block" id="overview">
+    <h2 class="section-title">Overview of the lab</h2>
+    <ol class="concept-list">
+      <li><a href="#global-local">Global learning vs. local learning</a></li>
+      <li><a href="#instance-model">Instance-based learning vs. model-based learning</a></li>
+      <li><a href="#lazy-eager">Lazy learning vs. eager learning</a></li>
+      <li><a href="#knn">KNN</a> — how it works, distance metrics, choosing K, advantages and disadvantages</li>
+    </ol>
+  </section>
+
+  <!-- ===== GLOBAL VS LOCAL ===== -->
+  <section class="block" id="global-local">
+    <h2 class="section-title">Global learning vs. local learning</h2>
+    <div class="table-wrap">
+      <table class="summary">
+        <thead><tr><th>Paradigm</th><th>Idea</th><th>Examples</th></tr></thead>
+        <tbody>
+          <tr data-s="ids"><td><b>Global learning</b></td><td>Learning from <b>all</b> instances in the dataset.</td><td>Linear regression, Naïve Bayes classifier</td></tr>
+          <tr data-s="bfs"><td><b>Local learning</b></td><td>Learning from <b>some</b> of the instances in the dataset.</td><td>kNN</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="section-lede" style="margin-top:1.4rem;">Compare the two on the same data. <b>Linear regression</b> fits one line using every point, so a single global equation has to describe the whole curve. <b>KNN regression</b> predicts each value from only the K training points closest to it — the average of its local neighbourhood. Hover or tap the plot to see which neighbours a prediction uses.</p>
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="strategy-pick">
+          <button class="strat-btn gl-mode active" data-mode="both">Both</button>
+          <button class="strat-btn gl-mode" data-mode="global">Global: linear regression</button>
+          <button class="strat-btn gl-mode" data-mode="local">Local: KNN regression</button>
+        </div>
+        <div class="beam-control show" style="margin:0;"><label>K</label><input type="range" id="gl-k" min="1" max="40" value="5" step="1"><span class="val" id="gl-k-val">5</span></div>
+      </div>
+      <svg id="gl-plot" class="ml-plot gl-plot" viewBox="0 0 640 300" aria-label="Global linear fit versus local KNN regression"></svg>
+      <p id="gl-msg" class="bv-verdict" style="margin-top:0.8rem;"></p>
+    </div>
+  </section>
+
+  <!-- ===== INSTANCE VS MODEL ===== -->
+  <section class="block" id="instance-model">
+    <h2 class="section-title">Instance-based learning vs. model-based learning</h2>
+    <div class="table-wrap">
+      <table class="summary">
+        <thead><tr><th>Paradigm</th><th>Idea</th><th>Examples</th></tr></thead>
+        <tbody>
+          <tr data-s="ucs"><td><b>Instance-based learning</b></td><td>Use the <b>entire dataset as the model</b>.</td><td>kNN</td></tr>
+          <tr data-s="ids"><td><b>Model-based learning</b></td><td>Use the training data to create a model that has <b>parameters learned from the training data</b>.</td><td>Linear regression, Naïve Bayes classifier</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="caption-note" style="margin-top:1rem;">After training, linear regression can throw the data away and keep only its parameters \(\beta_0, \beta_1, \dots\) — see <a href="lab065-linear-logistic.html">Lab 6.5</a>. KNN has no parameters to learn: to make a prediction it needs the training instances themselves.</p>
+  </section>
+
+  <!-- ===== LAZY VS EAGER ===== -->
+  <section class="block" id="lazy-eager">
+    <h2 class="section-title">Lazy learning vs. eager learning</h2>
+    <div class="table-wrap">
+      <table class="summary">
+        <thead><tr><th>Paradigm</th><th>Idea</th><th>Examples</th></tr></thead>
+        <tbody>
+          <tr data-s="dfs"><td><b>Lazy learning</b></td><td>Simply stores the training data (or does only minor processing) and <b>waits until it is given a test tuple</b>.</td><td>Instance-based learning, e.g. kNN</td></tr>
+          <tr data-s="bfs"><td><b>Eager learning</b></td><td>Given a training set, <b>constructs a classification model before receiving new</b> (e.g., test) data to classify.</td><td>Decision trees, SVM, neural networks</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="caption-note" style="margin-top:1rem;">The work moves in time: an eager learner pays the cost up front during training and predicts quickly; a lazy learner "trains" instantly but does the work at prediction time — for every query KNN has to compute the distance to every stored training point.</p>
+  </section>
+
+  <!-- ===== KNN ===== -->
+  <section class="block algo-section ids" id="knn">
+    <span class="badge ids" style="margin-bottom:0.6rem; display:inline-block;">KNN</span>
+    <h2 class="section-title">KNN: K-nearest neighbours</h2>
+    <p class="section-lede">KNN is used for both <b>classification</b> and <b>regression</b>. To make a prediction for a new point, it finds the <b>K training points closest to it</b> and lets them decide: the most common class among them (classification) or the average of their values (regression). It is a <b>lazy learner</b>: it stores the training data instead of building a model in advance, and it measures "closeness" with a distance metric such as the Euclidean distance.</p>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.8rem;">What does the "K" mean?</h3>
+    <p class="section-lede">K is the number of neighbours the algorithm looks at. For example, when classifying a fruit with \(K = 3\): if 2 of its 3 nearest neighbours are apples and 1 is a banana, the fruit is predicted to be an <b>apple</b> — the majority vote.</p>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.8rem;">How KNN works</h3>
+    <ol class="concept-list">
+      <li><b>Choose K</b> — the number of neighbours to consider.</li>
+      <li><b>Compute the distance</b> from the new point to every point in the training data (most often the Euclidean distance).</li>
+      <li><b>Find the K nearest neighbours</b> — the K training points with the smallest distances.</li>
+      <li><b>Predict</b> — by majority vote of their classes (classification) or by averaging their values (regression).</li>
+    </ol>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Worked example</h4>
+    <p class="section-lede">Five training points — \([1,2], [2,3], [3,4]\) with label <b>A</b> and \([6,7], [7,8]\) with label <b>B</b> — and a new point \([4,5]\) with \(K = 3\):</p>
+    <div class="playground">
+      <div class="pg-grid">
+        <svg id="ex-plot" class="ml-plot" viewBox="0 0 360 330" aria-label="Worked example: the three nearest neighbours of point (4, 5)"></svg>
+        <div id="ex-table"></div>
+      </div>
+    </div>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:2rem;">Distance metrics</h3>
+    <ul class="concept-list">
+      <li><b>Euclidean distance</b> — the straight-line distance between two points:
+        <div class="math-block">\[ d(x, y) = \sqrt{\sum_{i=1}^{n} (x_i - y_i)^2} \]</div></li>
+      <li><b>Manhattan distance</b> — the distance travelled along the axes, like moving through a grid of city blocks ("taxicab" distance):
+        <div class="math-block">\[ d(x, y) = \sum_{i=1}^{n} |x_i - y_i| \]</div></li>
+      <li><b>Minkowski distance</b> — a family of distances with a parameter \(p\); \(p = 2\) gives the Euclidean and \(p = 1\) the Manhattan distance:
+        <div class="math-block">\[ d(x, y) = \left( \sum_{i=1}^{n} |x_i - y_i|^p \right)^{1/p} \]</div></li>
+    </ul>
+
+    <p class="section-lede">Each metric has its own idea of a "circle" — all the points at the same distance from the centre. Move the Minkowski \(p\) and click the plot to move point <b>Y</b>.</p>
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="beam-control show" style="margin:0;"><label>Minkowski \(p\)</label><input type="range" id="ds-p" min="1" max="8" value="2" step="0.1"><span class="val" id="ds-p-val">2.0</span></div>
+        <div class="strategy-pick">
+          <button class="strat-btn ds-preset" data-p="1">p = 1 (Manhattan)</button>
+          <button class="strat-btn ds-preset active" data-p="2">p = 2 (Euclidean)</button>
+          <button class="strat-btn ds-preset" data-p="8">p large (→ max)</button>
+        </div>
+      </div>
+      <div class="pg-grid">
+        <svg id="ds-plot" class="ml-plot ds-plot" viewBox="0 0 340 340" aria-label="Distance explorer"></svg>
+        <div>
+          <div class="sa-readout" style="margin-top:0;">
+            <div class="stat"><div class="n" id="ds-e">–</div><div class="l">Euclidean</div></div>
+            <div class="stat"><div class="n" id="ds-m">–</div><div class="l">Manhattan</div></div>
+            <div class="stat"><div class="n" id="ds-k">–</div><div class="l" id="ds-k-l">Minkowski</div></div>
+          </div>
+          <p id="ds-msg" class="bv-verdict"></p>
+        </div>
+      </div>
+    </div>
+    <p class="caption-note">Because KNN is built on distances, features measured on large scales (e.g. income in euros) dominate features on small scales (e.g. age in years). Features are therefore usually <b>scaled</b> to similar ranges before using KNN — see <i>feature scaling</i> in <a href="lab06-intro-ml.html#concepts">Lab 06</a>.</p>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:2rem;">How to choose the value of K</h3>
+    <p class="section-lede">K controls a trade-off:</p>
+    <ul class="concept-list">
+      <li>A <b>small K</b> follows the training data very closely and is sensitive to noise — a single mislabelled point can change a prediction (<b>overfitting</b>).</li>
+      <li>A <b>large K</b> averages over many points and is robust to noise, but if K is too large the local structure is lost (<b>underfitting</b>).</li>
+    </ul>
+    <p class="section-lede">Common ways to pick K:</p>
+    <ul class="concept-list">
+      <li><b>Cross-validation</b> — split the data into parts, repeatedly train on some parts and validate on the remaining one, and choose the K with the best average validation performance.</li>
+      <li><b>Elbow method</b> — plot the error rate for different values of K and choose the K where the curve bends and stops improving much (the "elbow").</li>
+      <li><b>Odd values of K</b> — for classification with two classes, an odd K avoids ties in the majority vote.</li>
+    </ul>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Try it: KNN classifier</h4>
+    <p class="section-lede">The shading shows what KNN would predict at every location; circles are training points and diamonds are held-out validation points. Change K to see the boundary go from jagged (small K) to overly smooth (large K), and watch the validation error — the elbow chart below plots it for every K. Click anywhere to classify a new point and see its K neighbours.</p>
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="beam-control show" style="margin:0;"><label>K</label><input type="range" id="kc-k" min="1" max="51" value="7" step="1"><span class="val" id="kc-k-val">7</span></div>
+        <div class="play-btns">
+          <button class="toggle-btn" id="kc-new">New data</button>
+        </div>
+      </div>
+      <div class="pg-grid">
+        <svg id="kc-plot" class="ml-plot kc-plot" viewBox="0 0 400 400" aria-label="KNN decision regions"></svg>
+        <div>
+          <div class="sa-readout" style="margin-top:0;">
+            <div class="stat"><div class="n" id="kc-train">–</div><div class="l">training error</div></div>
+            <div class="stat"><div class="n" id="kc-val">–</div><div class="l">validation error</div></div>
+          </div>
+          <p id="kc-msg" class="bv-verdict"></p>
+          <div class="frontier-box">
+            <h5>Elbow chart — error rate vs. K</h5>
+            <svg id="kc-elbow" class="ml-plot" viewBox="0 0 300 150" aria-label="Validation error for each K"></svg>
+            <p class="bv-legend"><span class="tr">training</span><span class="te">validation</span></p>
+          </div>
+          <p id="kc-query" class="kc-query"></p>
+        </div>
+      </div>
+    </div>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:2rem;">Implementing KNN from scratch</h3>
+    <p class="section-lede">The worked example above in a few lines of Python:</p>
+    <details class="code-card">
+      <summary>
+        <span class="code-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="code-file">knn.py</span>
+        <span class="code-lang">Python</span>
+        <button type="button" class="code-copy">Copy</button>
+        <span class="code-chevron" aria-hidden="true">▾</span>
+      </summary>
+      <pre class="code-body"><code class="lang-py">import numpy as np
+from collections import Counter
+
+def euclidean_distance(a, b):
+    return np.sqrt(np.sum((np.array(a) - np.array(b)) ** 2))
+
+def knn_predict(training_data, training_labels, test_point, k):
+    # 1. distance from the test point to every training point
+    distances = [euclidean_distance(test_point, x) for x in training_data]
+    # 2. indexes of the k closest points
+    nearest = np.argsort(distances)[:k]
+    # 3. majority vote among their labels
+    labels = [training_labels[i] for i in nearest]
+    return Counter(labels).most_common(1)[0][0]
+
+training_data = [[1, 2], [2, 3], [3, 4], [6, 7], [7, 8]]
+training_labels = ['A', 'A', 'A', 'B', 'B']
+
+print(knn_predict(training_data, training_labels, [4, 5], k=3))  # A</code></pre>
+    </details>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:2rem;">Advantages</h3>
+    <ul class="concept-list">
+      <li><b>Simplicity and intuition</b>: KNN is very easy to understand and implement. The core concept — that similar points are close to each other — is highly intuitive.</li>
+      <li><b>No training phase (lazy learner)</b>: since it's a lazy learning algorithm, KNN simply stores the entire training dataset. There is no complex training or model-building process upfront, which can make it very fast to "train".</li>
+      <li><b>Adaptable to new data</b>: the model is not fixed after a training period. New data can be added seamlessly without requiring a full retraining process.</li>
+      <li><b>Non-parametric</b>: KNN makes no underlying assumptions about the data's distribution (e.g., that the data is linear or normally distributed). This makes it effective for data where decision boundaries are non-linear or complex.</li>
+      <li><b>Versatility</b>: it can be used effectively for both classification (majority vote) and regression (averaging neighbour values) tasks.</li>
+    </ul>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:2rem;">Disadvantages</h3>
+    <ul class="concept-list">
+      <li><b>Slow predictions on large datasets</b>: the work happens at prediction time — every new point is compared with every stored training point, so predictions get slower as the dataset grows, and the whole dataset must be kept in memory.</li>
+      <li><b>Curse of dimensionality</b>: with many features, points become far apart and distances become less meaningful, so "nearest" neighbours are no longer really similar and accuracy drops.</li>
+      <li><b>Overfitting with a small K</b>: with K = 1 or other very small values, the prediction follows noise and outliers in the training data.</li>
+      <li><b>Sensitive to the scale of the features</b>: without scaling, features with larger ranges dominate the distance.</li>
+    </ul>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:2rem;">Applications</h3>
+    <ul class="concept-list">
+      <li><b>Recommendation systems</b> — suggest items liked by users with similar tastes.</li>
+      <li><b>Spam detection</b> — classify an email by the most similar known emails.</li>
+      <li><b>Customer segmentation</b> — group customers with similar behaviour.</li>
+      <li><b>Speech recognition</b> — match a spoken sample to the most similar known patterns.</li>
+    </ul>
+  </section>
+
+  <p class="credits">Resource: <a href="https://www.geeksforgeeks.org/machine-learning/k-nearest-neighbours/" target="_blank" rel="noopener">GeeksforGeeks — K-Nearest Neighbor (KNN) Algorithm</a></p>
+
+</div>
+
+<footer>Class notes by Elitsa Yotkova · Lab 07 · built with plain HTML, CSS &amp; JS</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="code-cards.js"></script>
+<script src="lab07.js"></script>
+</body>
+</html>

@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lab 6.5 — Linear &amp; Logistic Regression | Class Notes</title>
+<meta name="description" content="Interactive notes on linear and logistic regression: cost function, gradient descent, closed form, R² and RMSE, logit and sigmoid, cross-entropy, one-vs-rest and softmax.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+
+<header class="site-nav">
+  <span class="brand"><span class="dot"></span> Class Notes</span>
+  <nav>
+    <a href="../index.html">Home</a>
+    <a href="lab01-uninformed-search.html">Lab 01</a>
+    <a href="lab02-informed-search.html">Lab 02</a>
+    <a href="lab03-csp.html">Lab 03</a>
+    <a href="lab04-genetic-algorithms.html">Lab 04</a>
+    <a href="lab05-games.html">Lab 05</a>
+    <a href="lab06-intro-ml.html">Lab 06</a>
+  </nav>
+</header>
+
+<section class="hero art-hero art-reg">
+  <svg id="reg-hero-bg" class="hero-art" viewBox="0 0 1200 300" preserveAspectRatio="xMidYMid slice" aria-hidden="true"></svg>
+  <div class="wrap">
+    <p class="eyebrow">Lab 6.5</p>
+    <h1>Linear &amp; Logistic Regression</h1>
+    <div class="badges">
+      <span class="badge bfs">Linear regression</span>
+      <span class="badge ucs">Gradient descent</span>
+      <span class="badge dfs">Logistic regression</span>
+      <span class="badge ids">Softmax</span>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+
+  <!-- ===== OVERVIEW ===== -->
+  <section class="block" id="overview">
+    <h2 class="section-title">Overview of the lab</h2>
+    <ol class="concept-list">
+      <li><a href="#linear">Linear regression</a> — model, error term, cost function, gradient descent and the closed form, multiple regression, assumptions, evaluation</li>
+      <li><a href="#logistic">Logistic regression</a> — regression for classification, logit and sigmoid, likelihood and cross-entropy, gradient descent</li>
+      <li><a href="#multiclass">Multiple classes</a> — one-vs-rest and softmax regression</li>
+    </ol>
+    <p class="caption-note">Notation: the slides write the coefficients as \(w_0, w_1, \dots, w_n\); the linear regression notes use \(\beta_0, \beta_1, \dots, \beta_n\). They are the same parameters.</p>
+  </section>
+
+  <!-- ===================================================== -->
+  <!-- ===== LINEAR REGRESSION ===== -->
+  <!-- ===================================================== -->
+  <section class="block algo-section bfs" id="linear">
+    <span class="badge bfs" style="margin-bottom:0.6rem; display:inline-block;">Part 1</span>
+    <h2 class="section-title">Linear regression — predicting continuous values</h2>
+    <p class="section-lede">Linear regression is a statistical and machine learning method used to model the relationship between a <b>dependent variable</b> and one or more <b>independent variables</b>. Its goal is to find a line (or hyperplane) that best fits the data.</p>
+    <div class="math-block">\[ y = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \beta_3 x_3 + \dots + \beta_n x_n + \varepsilon \]</div>
+    <ul class="concept-list">
+      <li>\(y\) — dependent variable (the output value we predict)</li>
+      <li>\(x_1, x_2, \dots, x_n\) — independent variables (input values for the features)</li>
+      <li>\(\beta_0, \beta_1, \dots, \beta_n\) — the coefficients we learn (\(w_0, w_1, \dots, w_n\) on the slides)</li>
+      <li>residual: \(y_{actual} - y_{pred}\)</li>
+    </ul>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.8rem;">1. Simple linear regression</h3>
+    <p class="section-lede">In simple linear regression, we model the relationship between an input variable \(x\) and an output variable \(y\) with the equation \(y = \beta_0 + \beta_1 x + \varepsilon\), where:</p>
+    <ul class="concept-list">
+      <li>\(\beta_0\) is the <b>intercept</b></li>
+      <li>\(\beta_1\) is the <b>slope</b></li>
+      <li>\(\varepsilon\) is the <b>error term</b></li>
+    </ul>
+    <p class="section-lede">The predicted value is written as \(\hat{y} = \beta_0 + \beta_1 x\).</p>
+    <div class="table-wrap">
+      <table class="summary">
+        <thead><tr><th>Goal function</th><th>Approximation with the model</th></tr></thead>
+        <tbody><tr><td>\(y = \beta_0 + \beta_1 x + \varepsilon\)</td><td>\(\hat{y} = \beta_0 + \beta_1 x\)</td></tr></tbody>
+      </table>
+    </div>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.8rem;">2. Interpretation</h3>
+    <ul class="concept-list">
+      <li>The intercept \(\beta_0\) is the predicted value of \(y\) when \(x = 0\).</li>
+      <li>The slope \(\beta_1\) tells us how much \(y\) changes when \(x\) increases by 1 unit.</li>
+    </ul>
+    <p class="section-lede">For example, if \(\hat{y} = 2 + 3x\), then when \(x = 0\), \(\hat{y} = 2\), and for every increase of 1 in \(x\), \(\hat{y}\) increases by 3.</p>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Meaning of the error term</h4>
+    <p class="section-lede">\(\varepsilon\) (the error term) is the difference between the actual value and the value predicted by the linear model: \(\varepsilon = y - \hat{y}\). It exists because real-world data is never perfectly linear. Even if \(x\) strongly influences \(y\), there are always other factors affecting the outcome. The error term captures:</p>
+    <ol class="concept-list">
+      <li><b>Missing variables</b>: variables that affect \(y\) but are not included in the model. <i>Example:</i> predicting salary from education, \(salary = \beta_0 + \beta_1 \cdot education + \varepsilon\). But salary also depends on experience, skills, location, industry — these influences appear inside \(\varepsilon\).</li>
+      <li><b>Random noise</b>: natural randomness in measurements or behaviour. <i>Example:</i> two people with the same study hours may get different exam scores due to stress, luck, or question difficulty.</li>
+      <li><b>Model imperfection</b>: the true relationship might not be perfectly linear. <i>Example:</i> the real relationship might be \(y = 2 + 3x + 0.5x^2\), but if we fit a linear model, the difference is absorbed into \(\varepsilon\).</li>
+    </ol>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Intuition</h4>
+    <p class="section-lede">Actual value = predictable part + unpredictable part: \(y = (\beta_0 + \beta_1 x) + \varepsilon\). The model tries to estimate \(\beta_0\) and \(\beta_1\) so that the errors \(\varepsilon\) are as small as possible.</p>
+    <p class="section-lede">In practice, we do not directly observe \(\varepsilon\) — we estimate it using the <b>residual</b> \(= y - \hat{y}\). Residuals are our observed approximations of the true error terms. Without the error term, the model would assume perfect predictions, which almost never happens in real data. The error term makes the model statistically realistic and allows us to analyse uncertainty.</p>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Try it: residuals</h4>
+    <p class="section-lede">Sales vs. TV advertising budget, like the figure on the slides (simulated data of the same shape). Every grey line is one residual \(y - \hat{y}\). Move the line and watch the error metrics from section 7.</p>
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="beam-control show" style="margin:0;"><label>\(\beta_0\) intercept</label><input type="range" id="res-b0" min="0" max="16" value="12" step="0.01"><span class="val" id="res-b0-val">12.00</span></div>
+        <div class="beam-control show" style="margin:0;"><label>\(\beta_1\) slope</label><input type="range" id="res-b1" min="-0.03" max="0.12" value="0.0" step="0.0005"><span class="val" id="res-b1-val">0.000</span></div>
+        <div class="play-btns"><button class="toggle-btn" id="res-fit">Closed-form fit</button></div>
+      </div>
+      <div class="pg-grid">
+        <svg id="res-plot" class="ml-plot" viewBox="0 0 540 340" aria-label="Sales against TV budget with a regression line and residuals"></svg>
+        <div>
+          <div class="sa-readout" style="margin-top:0;">
+            <div class="stat"><div class="n" id="res-mse">–</div><div class="l">MSE — cost \(J\)</div></div>
+            <div class="stat"><div class="n" id="res-rmse">–</div><div class="l">RMSE</div></div>
+            <div class="stat"><div class="n" id="res-r2">–</div><div class="l">\(R^2\)</div></div>
+          </div>
+          <p id="res-eq" class="bv-verdict"></p>
+        </div>
+      </div>
+    </div>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:2rem;">3. Cost function</h3>
+    <p class="section-lede">To find the best-fitting line, linear regression minimizes the <b>sum of squared errors</b>. For \(n\) data points, the cost function is:</p>
+    <div class="math-block">\[ J(\beta_0, \beta_1) = \frac{1}{n} \sum_{i=1}^{n} (\hat{y}_i - y_i)^2 \]</div>
+    <p class="section-lede">Since \(\hat{y}_i = \beta_0 + \beta_1 x_i\), this becomes:</p>
+    <div class="math-block">\[ J(\beta_0, \beta_1) = \frac{1}{n} \sum_{i=1}^{n} (\beta_0 + \beta_1 x_i - y_i)^2 \]</div>
+    <p class="section-lede">This is also called the <b>mean squared error</b> (MSE), up to a constant factor depending on convention.</p>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:2rem;">4. Finding the best line</h3>
+    <p class="section-lede">The optimal values of \(\beta_0\) and \(\beta_1\) are chosen so that the cost function is as small as possible. To find them, we minimize the cost function using <b>partial derivatives</b> — commonly with <b>gradient descent</b>.</p>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Partial derivative with respect to \(\beta_0\)</h4>
+    <div class="derivation">
+      <p>Apply the chain rule to each term \(i = 1 \dots n\):</p>
+      \[ \frac{\partial}{\partial \beta_0}(\beta_0 + \beta_1 x_i - y_i)^2 = 2(\beta_0 + \beta_1 x_i - y_i) \cdot \frac{\partial}{\partial \beta_0}(\beta_0 + \beta_1 x_i - y_i) \]
+      <p>Differentiate the inner expression:</p>
+      \[ \frac{\partial}{\partial \beta_0}(\beta_0 + \beta_1 x_i - y_i) = 1 \]
+      <p>Apply this to the entire sum and factor out constants:</p>
+      \[ \frac{\partial J}{\partial \beta_0} = \frac{1}{n}\sum_{i=1}^{n}2(\beta_0 + \beta_1 x_i - y_i) = \frac{2}{n}\sum_{i=1}^{n}(\beta_0 + \beta_1 x_i - y_i) \]
+    </div>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Partial derivative with respect to \(\beta_1\)</h4>
+    <div class="derivation">
+      \[ \frac{\partial}{\partial \beta_1}(\beta_0 + \beta_1 x_i - y_i)^2 = 2(\beta_0 + \beta_1 x_i - y_i) \cdot \frac{\partial}{\partial \beta_1}(\beta_0 + \beta_1 x_i - y_i) \]
+      <p>Differentiate the inner expression:</p>
+      \[ \frac{\partial}{\partial \beta_1}(\beta_0 + \beta_1 x_i - y_i) = x_i \]
+      <p>Combine the results and apply to the full cost function:</p>
+      \[ \frac{\partial J}{\partial \beta_1} = \frac{1}{n}\sum_{i=1}^{n}2(\beta_0 + \beta_1 x_i - y_i)\,x_i = \frac{2}{n}\sum_{i=1}^{n}(\beta_0 + \beta_1 x_i - y_i)\,x_i \]
+    </div>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Gradient descent update rules</h4>
+    <p class="section-lede">After computing the gradients, we update the parameters in the <b>opposite direction of the gradient</b>, where \(\alpha\) is the <b>learning rate</b>:</p>
+    <div class="math-block">\[ \beta_0 := \beta_0 - \alpha \frac{\partial J}{\partial \beta_0} \qquad \beta_1 := \beta_1 - \alpha \frac{\partial J}{\partial \beta_1} \]</div>
+    <p class="section-lede">Substituting the derivatives:</p>
+    <div class="math-block">\[ \beta_0 := \beta_0 - \alpha \frac{2}{n}\sum_{i=1}^{n}(\beta_0 + \beta_1 x_i - y_i) \qquad \beta_1 := \beta_1 - \alpha \frac{2}{n}\sum_{i=1}^{n}(\beta_0 + \beta_1 x_i - y_i)\,x_i \]</div>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Intuition</h4>
+    <p class="section-lede">The partial derivatives measure <b>how much the cost function changes</b> when we slightly change a parameter.</p>
+    <ul class="concept-list">
+      <li>If the derivative is <b>positive</b>, increasing the parameter increases the cost.</li>
+      <li>If the derivative is <b>negative</b>, increasing the parameter decreases the cost.</li>
+    </ul>
+    <p class="section-lede">Gradient descent repeatedly updates the parameters to move <b>downhill on the cost surface</b>, gradually finding the best-fitting line.</p>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Try it: gradient descent on the cost surface</h4>
+    <p class="section-lede">The ellipses are contour lines of \(J(\beta_0, \beta_1)\) for the TV data above (with TV measured in hundreds — a simple feature scaling that makes gradient descent behave). The ★ is the closed-form minimum. Press play and watch each update step downhill; then raise the learning rate \(\alpha\) until the steps overshoot and diverge.</p>
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="beam-control show" style="margin:0;"><label>Learning rate \(\alpha\)</label><input type="range" id="gd-lr" min="0.01" max="0.30" value="0.10" step="0.01"><span class="val" id="gd-lr-val">0.10</span></div>
+        <div class="play-btns">
+          <button class="icon-btn" id="gd-play" title="Run / pause">▶</button>
+          <button class="icon-btn" id="gd-step" title="One step">⏭</button>
+          <button class="icon-btn" id="gd-reset" title="Reset">↺</button>
+        </div>
+      </div>
+      <div class="pg-grid">
+        <svg id="gd-contour" class="ml-plot gd-contour" viewBox="0 0 420 340" aria-label="Contour plot of the cost function with the gradient descent path"></svg>
+        <div>
+          <svg id="gd-fit" class="ml-plot" viewBox="0 0 300 200" aria-label="Current regression line"></svg>
+          <div class="sa-readout">
+            <div class="stat"><div class="n" id="gd-iter">0</div><div class="l">iterations</div></div>
+            <div class="stat"><div class="n" id="gd-cost">–</div><div class="l">cost \(J\)</div></div>
+          </div>
+          <p id="gd-msg" class="bv-verdict"></p>
+        </div>
+      </div>
+    </div>
+
+    <h4 style="margin:1.6rem 0 0.4rem;">Closed-form solution</h4>
+    <p class="section-lede">For simple linear regression, the closed-form solution is obtained directly by solving \(\frac{\partial J}{\partial \beta_0} = 0\) and \(\frac{\partial J}{\partial \beta_1} = 0\):</p>
+    <div class="math-block">\[ \beta_1 = \frac{\sum_{i=1}^{n}(x_i - \bar{x})(y_i - \bar{y})}{\sum_{i=1}^{n}(x_i - \bar{x})^2} \qquad \beta_0 = \bar{y} - \beta_1 \bar{x} \]</div>
+    <p class="section-lede">where \(\bar{x}\) is the mean of the input values and \(\bar{y}\) is the mean of the output values.</p>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Comparing closed form with gradient descent</h4>
+    <div class="table-wrap">
+      <table class="summary">
+        <thead><tr><th>Method</th><th>Idea</th><th>Parameters</th><th>Rule</th></tr></thead>
+        <tbody>
+          <tr data-s="ucs"><td><b>Gradient descent</b></td><td>Move gradually downhill</td><td>Updated repeatedly using \(\alpha\)</td><td>\(\beta \leftarrow \beta - \alpha \nabla J(\beta)\)</td></tr>
+          <tr data-s="bfs"><td><b>Closed form</b></td><td>Solve derivative = 0 directly</td><td>Computed once</td><td>\(\nabla J(\beta) = 0\)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="section-lede" style="margin-top:1rem;">The closed form works well for small linear regression problems, but it becomes expensive when there are many features because it requires matrix inversion. Gradient descent:</p>
+    <ul class="concept-list">
+      <li>works for large datasets</li>
+      <li>works for neural networks</li>
+      <li>works for models without closed-form solutions</li>
+    </ul>
+    <p class="section-lede">That is why machine learning libraries usually rely on gradient-based optimization.</p>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:2rem;">5. Multiple linear regression</h3>
+    <p class="section-lede">When there are multiple input variables, the model becomes:</p>
+    <div class="math-block">\[ y = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \cdots + \beta_p x_p + \varepsilon \qquad \hat{y} = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \cdots + \beta_p x_p \]</div>
+    <p class="section-lede">In matrix form, this is often written as \(\hat{y} = X\beta\), where \(X\) is the <b>design matrix</b> and \(\beta\) is the vector of coefficients. The <b>normal equation</b> gives the solution:</p>
+    <div class="math-block">\[ \beta = (X^T X)^{-1} X^T y \]</div>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:2rem;">6. Assumptions of linear regression</h3>
+    <p class="section-lede">Linear regression works best when several assumptions are approximately true:</p>
+    <ol class="concept-list">
+      <li><b>Linearity</b>: an approximately linear relationship between the input data and the output.</li>
+      <li><b>Independence</b>: observations should be independent; the error for one data point should not depend on another.</li>
+      <li><b>Homoscedasticity</b>: the variance of the errors must be constant for all predictor values.</li>
+      <li><b>Normality of errors</b>: errors are approximately normally distributed.</li>
+      <li><b>No strong multicollinearity</b>: predictors are not highly correlated with each other.</li>
+    </ol>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:2rem;">7. Evaluating the model</h3>
+    <p class="section-lede">A common metric is the <b>coefficient of determination</b> \(R^2\):</p>
+    <div class="math-block">\[ R^2 = 1 - \frac{\sum_{i=1}^{n}(y_i - \hat{y}_i)^2}{\sum_{i=1}^{n}(y_i - \bar{y})^2} \]</div>
+    <ul class="concept-list">
+      <li>\(R^2 = 1\) means a perfect fit.</li>
+      <li>\(R^2 = 0\) means the model does no better than predicting the mean. (Try a flat line through the mean in the residual playground above.)</li>
+    </ul>
+    <p class="section-lede">Another common metric is the <b>root mean squared error</b>:</p>
+    <div class="math-block">\[ RMSE = \sqrt{\frac{1}{n} \sum_{i=1}^{n}(y_i - \hat{y}_i)^2} \]</div>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:2rem;">8. Example</h3>
+    <p class="section-lede">Suppose we want to predict exam score \(y\) from study hours \(x\). A fitted model might be \(\hat{y} = 40 + 5x\). This means:</p>
+    <ul class="concept-list">
+      <li>a student who studies 0 hours is predicted to score 40;</li>
+      <li>each additional study hour increases the predicted score by 5 points.</li>
+    </ul>
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="beam-control show" style="margin:0;"><label>Study hours \(x\)</label><input type="range" id="ex-h" min="0" max="12" value="6" step="0.5"><span class="val" id="ex-h-val">6</span></div>
+      </div>
+      <p id="ex-out" class="ex-out"></p>
+    </div>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:2rem;">9. Advantages and limitations</h3>
+    <div class="table-wrap">
+      <table class="summary proscons">
+        <thead><tr><th>Advantages</th><th>Limitations</th></tr></thead>
+        <tbody>
+          <tr><td>Simple to understand</td><td>Cannot model complex nonlinear relationships well</td></tr>
+          <tr><td>Fast to train &amp; easy to interpret</td><td>Sensitive to outliers</td></tr>
+          <tr><td>Works well when relationships are approximately linear</td><td>Assumes a linear relationship between variables; performance can degrade if assumptions are violated</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ===================================================== -->
+  <!-- ===== LOGISTIC REGRESSION ===== -->
+  <!-- ===================================================== -->
+  <section class="block algo-section dfs" id="logistic">
+    <span class="badge dfs" style="margin-bottom:0.6rem; display:inline-block;">Part 2</span>
+    <h2 class="section-title">Logistic regression — classification</h2>
+
+    <h3 class="section-title" style="font-size:1.15rem;">Using regression for classification</h3>
+    <p class="section-lede">Although regression is typically used to predict continuous values, <b>any regression technique can also be adapted for classification</b>. Instead of predicting a numeric quantity, we train a separate regression model for each class.</p>
+    <p class="section-lede"><b>Training phase</b> — for each class, perform a regression model specific to that class, with the training outputs:</p>
+    <ul class="concept-list">
+      <li><b>1</b> for training instances that belong to the class;</li>
+      <li><b>0</b> for instances that do not belong to the class.</li>
+    </ul>
+    <p class="section-lede">Each model learns how strongly an instance belongs to its corresponding class.</p>
+    <p class="section-lede"><b>Prediction phase</b> — to classify a new instance:</p>
+    <ol class="concept-list">
+      <li>Evaluate all regression models.</li>
+      <li>Each model produces a <b>membership value</b> (a score).</li>
+      <li>The predicted class is the one whose model produces the <b>largest output value</b>: \(\hat{y} = \arg\max_k f_k(x)\), where \(f_k(x)\) is the regression output for class \(k\).</li>
+    </ol>
+    <p class="section-lede">When <b>linear regression</b> is used in this framework, the method is called <b>multi-response linear regression</b>: multiple outputs are predicted simultaneously — one for each class.</p>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Problem with regression-based classification</h4>
+    <p class="section-lede">A key limitation is that the <b>membership values are not guaranteed to lie in the range \([0, 1]\)</b>. As a result, they cannot be interpreted as valid probabilities — outputs may even be negative or greater than 1. In practice, the outputs are often adjusted using simple heuristics:</p>
+    <ol class="concept-list">
+      <li>clip values into the range \([0, 1]\);</li>
+      <li>normalize them so that the values sum to 1.</li>
+    </ol>
+    <p class="section-lede">This produces values that resemble probability estimates, although they are not theoretically well-founded probabilities.</p>
+
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="strategy-pick">
+          <button class="strat-btn cmp-mode active" data-mode="lin">Linear regression on 0/1 labels</button>
+          <button class="strat-btn cmp-mode" data-mode="log">Logistic regression</button>
+        </div>
+      </div>
+      <svg id="cmp-plot" class="ml-plot" viewBox="0 0 640 300" aria-label="Linear versus logistic fit to binary labels"></svg>
+      <p id="cmp-msg" class="bv-verdict" style="margin-top:0.8rem;"></p>
+    </div>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:2rem;">Moving to logistic regression</h3>
+    <p class="section-lede">Linear regression can be adapted for classification, but its predictions are <b>not restricted to the range \([0, 1]\)</b>. To address this issue, we use <b>logistic regression</b>, a model specifically designed for classification.</p>
+    <p class="section-lede"><b>Key idea:</b> logistic regression builds a linear model for a <i>transformed</i> target variable instead of modeling the probability directly. With two classes (class 0 and class 1), the model predicts the probability that an instance belongs to class 1, \(P(1 \mid a_1, a_2, \dots, a_k)\), where \(a_1, \dots, a_k\) are the input features.</p>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Odds, log-odds and the logit transformation</h4>
+    <ul class="concept-list">
+      <li>The <b>odds</b> of class 1 are the ratio between the probability of class 1 and the probability of class 0: \(\dfrac{P(1 \mid a_1,\dots,a_k)}{1 - P(1 \mid a_1,\dots,a_k)}\).</li>
+      <li>Taking the logarithm of the odds gives the <b>log-odds</b>, or <b>logit</b>: \(\text{logit}(p) = \log\left(\dfrac{p}{1-p}\right)\).</li>
+    </ul>
+    <p class="section-lede"><b>Why use the logit transformation?</b> Probabilities are restricted to \(p \in [0, 1]\), but a linear model can produce values anywhere in \((-\infty, +\infty)\). The logit solves this mismatch: \(\text{logit}: [0,1] \rightarrow (-\infty, +\infty)\). After the transformation, the target is no longer restricted and can be modeled with a linear function.</p>
+
+    <div class="definition-box">
+      <div class="dbox-label">📐 Linear model in logistic regression</div>
+      <p>Logistic regression assumes that the <b>log-odds are a linear function of the features</b>:</p>
+      \[ \log\left(\frac{p}{1-p}\right) = w_0 + w_1 x_1 + \dots + w_n x_n \]
+      <p>The model is still <b>linear in the parameters</b>, but it operates on the <b>transformed probability</b>.</p>
+    </div>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Recovering the probability: the sigmoid</h4>
+    <p class="section-lede">To convert the linear output back to a probability, we apply the inverse logit — the logistic (sigmoid) function. With the linear score \(z = w_0 + w_1 x_1 + \dots + w_n x_n\):</p>
+    <div class="math-block">\[ P(z) = \frac{1}{1 + e^{-z}} \qquad 0 \le P \le 1 \]</div>
+    <p class="section-lede">The model outputs a probability \(p\); to convert it to a class prediction we threshold it:</p>
+    <div class="math-block">\[ \hat{y} = \begin{cases} 1 & \text{if } p \ge 0.5 \\ 0 & \text{if } p < 0.5 \end{cases} \]</div>
+
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="beam-control show" style="margin:0;"><label>Linear score \(z\)</label><input type="range" id="sg-z" min="-10" max="10" value="1.5" step="0.1"><span class="val" id="sg-z-val">1.5</span></div>
+      </div>
+      <div class="pg-grid">
+        <svg id="sg-plot" class="ml-plot" viewBox="0 0 440 300" aria-label="Sigmoid curve"></svg>
+        <div>
+          <div class="sg-chain" id="sg-chain"></div>
+        </div>
+      </div>
+    </div>
+    <p class="section-lede" style="margin-top:1rem;">Parameters are found from training data using <b>maximum likelihood</b>.</p>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:2rem;">The model</h3>
+    <p class="section-lede">Given input features \(x\), logistic regression computes a linear score \(z = w^T x + b\), converted into a probability using the sigmoid function:</p>
+    <div class="math-block">\[ \hat{p} = \sigma(z) = \frac{1}{1 + e^{-z}} \qquad \hat{p} = P(y = 1 \mid x) \qquad P(y = 0 \mid x) = 1 - \hat{p} \]</div>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Probability of one training example</h4>
+    <p class="section-lede">The probability the model assigns to the observed label is \(\hat{p}\) if the true label is <b>1</b>, and \(1 - \hat{p}\) if the true label is <b>0</b>. This simply means the model should assign <b>high probability to the correct label</b>.</p>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Probability of the whole dataset — the likelihood</h4>
+    <p class="section-lede">With \(n\) training examples that are independent given the model parameters, the probability of observing the entire dataset is the product of the probabilities of each example — the <b>likelihood</b>:</p>
+    <div class="math-block">\[ L(w) = \prod_{i=1}^{n} P(y_i \mid x_i) = \left(\prod_{i : y_i = 1} \hat{p}_i \right)\left(\prod_{i : y_i = 0} (1 - \hat{p}_i)\right) \]</div>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Log-likelihood</h4>
+    <p class="section-lede">Using the compact form \(P(y_i \mid x_i) = \hat{p}_i^{\,y_i} (1-\hat{p}_i)^{1-y_i}\) with \(y_i \in \{0, 1\}\), the likelihood is \(L(w) = \prod_{i=1}^{n} \hat{p}_i^{\,y_i}(1-\hat{p}_i)^{1-y_i}\), and taking the logarithm converts the product into a sum:</p>
+    <div class="math-block">\[ \log L(w) = \sum_{i=1}^{n} \left[ y_i \log(\hat{p}_i) + (1-y_i)\log(1-\hat{p}_i) \right] \]</div>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Loss function: binary cross-entropy</h4>
+    <p class="section-lede">Machine learning models are trained by minimizing a loss function, so we minimize the <b>negative log-likelihood</b>:</p>
+    <div class="math-block">\[ J(w) = -\frac{1}{n} \sum_{i=1}^{n} \left[ y_i \log(\hat{p}_i) + (1 - y_i)\log(1 - \hat{p}_i) \right] \]</div>
+    <p class="section-lede">This loss is called <b>binary cross-entropy</b>. Intuition:</p>
+    <ul class="concept-list">
+      <li>If the true label is <b>1</b>: loss \(= -\log(\hat{p})\) — a prediction close to 1 gives a small loss, close to 0 a very large loss.</li>
+      <li>If the true label is <b>0</b>: loss \(= -\log(1 - \hat{p})\) — a prediction close to 0 gives a small loss, close to 1 a very large loss.</li>
+    </ul>
+    <p class="section-lede">Therefore the loss strongly penalizes <b>confident but incorrect predictions</b>.</p>
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="beam-control show" style="margin:0;"><label>Predicted \(\hat{p}\)</label><input type="range" id="ce-p" min="0.01" max="0.99" value="0.8" step="0.01"><span class="val" id="ce-p-val">0.80</span></div>
+      </div>
+      <div class="pg-grid">
+        <svg id="ce-plot" class="ml-plot" viewBox="0 0 440 280" aria-label="Binary cross-entropy loss curves"></svg>
+        <div>
+          <div class="sa-readout" style="margin-top:0;">
+            <div class="stat"><div class="n" id="ce-l1">–</div><div class="l">loss if \(y = 1\)</div></div>
+            <div class="stat"><div class="n" id="ce-l0">–</div><div class="l">loss if \(y = 0\)</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:2rem;">Gradient descent</h3>
+    <p class="section-lede">Gradient descent updates parameters in the direction that reduces the loss. General update rule, where \(\theta\) is a parameter and \(\eta\) is the <b>learning rate</b>:</p>
+    <div class="math-block">\[ \theta = \theta - \eta \frac{\partial J}{\partial \theta} \]</div>
+    <p class="section-lede">For logistic regression, the derivative simplifies nicely. For one example, \(\dfrac{\partial L}{\partial z} = \hat{y} - y\) — the gradient depends on the <b>prediction error</b>. Using the chain rule:</p>
+    <div class="math-block">\[ \frac{\partial L}{\partial w} = (\hat{y} - y)\,x \qquad \frac{\partial J}{\partial w} = \frac{1}{n} \sum_{i=1}^{n} (\hat{y}_i - y_i)\,x_i \qquad \frac{\partial J}{\partial b} = \frac{1}{n} \sum_{i=1}^{n} (\hat{y}_i - y_i) \]</div>
+    <p class="section-lede"><b>Parameter update rules:</b></p>
+    <div class="math-block">\[ w := w - \eta \frac{1}{n} \sum_{i=1}^{n} (\hat{y}_i - y_i)\,x_i \qquad b := b - \eta \frac{1}{n} \sum_{i=1}^{n} (\hat{y}_i - y_i) \]</div>
+    <p class="section-lede"><b>Intuition:</b> the term \((\hat{y} - y)\) is the prediction error. If the model predicts too high → weights decrease; if it predicts too low → weights increase. Each feature \(x\) scales how much the weight changes.</p>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Try it: training logistic regression</h4>
+    <p class="section-lede">Two features, two classes. The shading is \(\hat{p} = P(y = 1 \mid x)\) and the line is the decision boundary \(\hat{p} = 0.5\). Watch gradient descent lower the cross-entropy loss.</p>
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="strategy-pick">
+          <button class="strat-btn lg-data active" data-d="overlap">Overlapping classes</button>
+          <button class="strat-btn lg-data" data-d="separable">Perfectly separable</button>
+        </div>
+        <div class="beam-control show" style="margin:0;"><label>\(\eta\)</label><input type="range" id="lg-lr" min="0.1" max="3" value="1" step="0.1"><span class="val" id="lg-lr-val">1.0</span></div>
+        <div class="play-btns">
+          <button class="icon-btn" id="lg-play" title="Run / pause">▶</button>
+          <button class="icon-btn" id="lg-step" title="10 steps">⏭</button>
+          <button class="icon-btn" id="lg-reset" title="Reset">↺</button>
+        </div>
+      </div>
+      <div class="pg-grid">
+        <svg id="lg-plot" class="ml-plot" viewBox="0 0 400 400" aria-label="Logistic regression decision boundary"></svg>
+        <div>
+          <div class="sa-readout" style="margin-top:0;">
+            <div class="stat"><div class="n" id="lg-iter">0</div><div class="l">iterations</div></div>
+            <div class="stat"><div class="n" id="lg-loss">–</div><div class="l">cross-entropy \(J\)</div></div>
+            <div class="stat"><div class="n" id="lg-w">–</div><div class="l">weight size \(\lVert w \rVert\)</div></div>
+          </div>
+          <div class="frontier-box">
+            <h5>Loss over iterations</h5>
+            <svg id="lg-curve" class="ml-plot" viewBox="0 0 300 120" aria-label="Loss curve"></svg>
+          </div>
+          <p id="lg-msg" class="bv-verdict"></p>
+        </div>
+      </div>
+    </div>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:2rem;">What happens with perfectly separable data?</h3>
+    <p class="section-lede">With \(p(y_i = 1 \mid x_i) = \sigma(w^T x_i + b)\), logistic regression maximizes the log-likelihood</p>
+    <div class="math-block">\[ \ell(w, b) = \sum_{i=1}^{n} \left[ y_i \log(p_i) + (1 - y_i)\log(1 - p_i) \right] \]</div>
+    <p class="section-lede">If the data is perfectly separable, logistic regression can <b>always increase the likelihood further by making the weights larger</b>, because larger weights push the probabilities closer to \(p = 1\) for positives and \(p = 0\) for negatives. It keeps thinking: <i>"If I increase the weights, I can make my predictions more confident."</i> Switch the playground above to <b>Perfectly separable</b> and watch \(\lVert w \rVert\) keep growing.</p>
+    <div class="table-wrap">
+      <table class="summary">
+        <thead><tr><th>Weight</th><th>Probability</th></tr></thead>
+        <tbody>
+          <tr><td>small</td><td>0.8</td></tr>
+          <tr><td>larger</td><td>0.95</td></tr>
+          <tr><td>larger</td><td>0.999</td></tr>
+          <tr><td>larger</td><td>0.999999</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ===================================================== -->
+  <!-- ===== MULTICLASS ===== -->
+  <!-- ===================================================== -->
+  <section class="block algo-section ids" id="multiclass">
+    <span class="badge ids" style="margin-bottom:0.6rem; display:inline-block;">Part 3</span>
+    <h2 class="section-title">Logistic regression with multiple classes</h2>
+
+    <h3 class="section-title" style="font-size:1.15rem;">One-vs-Rest (OvR)</h3>
+    <p class="section-lede">If there are \(K\) classes, we train \(K\) separate logistic regression models. Each model predicts the probability \(P(y = k \mid x)\): <i>is input example \(x\) from class \(k\) or not?</i></p>
+    <ol class="concept-list">
+      <li>Compute the probability from each model.</li>
+      <li>Choose the class with the highest probability — the class where \(x\) belongs: \(\hat{y} = \arg\max_k P(y = k \mid x)\).</li>
+    </ol>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:2rem;">Multinomial logistic regression (softmax)</h3>
+    <p class="section-lede">Instead of training separate models, we use the <b>softmax function</b> to compute probabilities for all classes at once. This extension is called <b>multiclass logistic regression</b> or <b>softmax regression</b>: the model predicts a probability distribution over all classes.</p>
+    <p class="section-lede"><b>Problem setup:</b> input features \(x \in \mathbb{R}^d\), \(K\) classes, labels \(y \in \{1, 2, \dots, K\}\). For each class \(k\), the model learns a weight vector \(w_k\) and a bias \(b_k\).</p>
+    <p class="section-lede"><b>Linear scores (logits):</b> for every class we compute \(z_k = w_k^T x + b_k\) (on the slides: \(z_k = w_{k0} + w_{k1} x_1 + \dots + w_{kn} x_n\)). Collecting all scores gives the vector \(z = [z_1, z_2, \dots, z_K]\) — the <b>logits</b>.</p>
+
+    <div class="definition-box">
+      <div class="dbox-label">📐 Softmax</div>
+      \[ P(y = k \mid x) = \frac{e^{z_k}}{\sum_{j=1}^{K} e^{z_j}} \qquad \sum_{k=1}^{K} P(y = k \mid x) = 1 \]
+      <p>This ensures the probabilities are positive and sum to 1. The prediction is the class with the largest probability: \(\hat{y} = \arg\max_k P(y = k \mid x)\).</p>
+    </div>
+
+    <p class="section-lede" style="margin-top:1.2rem;"><b>Likelihood and loss:</b> assuming independent examples, \(L(W) = \prod_{i=1}^{n} P(y_i \mid x_i)\), and the log-likelihood is</p>
+    <div class="math-block">\[ \log L(W) = \sum_{i=1}^{n} \log P(y_i \mid x_i) = \sum_{i=1}^{n} \left( z_{i,y_i} - \log \sum_{k=1}^{K} e^{z_{i,k}} \right) \]</div>
+    <p class="section-lede">We minimize the negative log-likelihood — the <b>multiclass cross-entropy</b>:</p>
+    <div class="math-block">\[ J(W) = -\frac{1}{n} \sum_{i=1}^{n} \log P(y_i \mid x_i) = -\frac{1}{n} \sum_{i=1}^{n} \log \left( \frac{e^{z_{i,y_i}}}{\sum_{k=1}^{K} e^{z_{i,k}}} \right) \]</div>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Example: classifying fruit</h4>
+    <p class="section-lede">We classify fruit into \(K = 3\) classes — apple, banana, orange — using the features weight and sweetness. For one fruit \(x = [2, 1]\), the model computes the logits \(z = [1.2, 0.3, 2.1]\). The calculator starts from these values; drag the logits or change the true label.</p>
+    <div class="playground">
+      <div class="sm-controls">
+        <label>\(z_{apple}\)<input type="range" id="sm-z0" min="-3" max="4" value="1.2" step="0.1"><span class="val" id="sm-z0-val">1.2</span></label>
+        <label>\(z_{banana}\)<input type="range" id="sm-z1" min="-3" max="4" value="0.3" step="0.1"><span class="val" id="sm-z1-val">0.3</span></label>
+        <label>\(z_{orange}\)<input type="range" id="sm-z2" min="-3" max="4" value="2.1" step="0.1"><span class="val" id="sm-z2-val">2.1</span></label>
+      </div>
+      <div class="strategy-pick" style="margin:0.8rem 0;">
+        <span style="font-weight:700; font-size:0.85rem; align-self:center;">True label:</span>
+        <button class="strat-btn sm-true" data-k="0">🍎 Apple</button>
+        <button class="strat-btn sm-true" data-k="1">🍌 Banana</button>
+        <button class="strat-btn sm-true active" data-k="2">🍊 Orange</button>
+      </div>
+      <div id="sm-out" class="sm-out"></div>
+    </div>
+    <p class="section-lede" style="margin-top:1rem;"><b>What happens if the model is wrong?</b> If the model predicted \(P(apple) = 0.7,\ P(banana) = 0.2,\ P(orange) = 0.1\) but the true class is orange, the loss becomes \(-\log(0.1) \approx 2.30\). This large loss strongly penalizes confident incorrect predictions.</p>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:2rem;">Assumptions of logistic regression</h3>
+    <ol class="concept-list">
+      <li>The training examples should be <b>independent</b> of each other.</li>
+      <li><b>Linear relationship with the log-odds</b>: \(\log\left(\frac{p}{1-p}\right) = w_0 + w_1 x_1 + \dots + w_n x_n\).</li>
+      <li>Predictor variables should <b>not be highly correlated</b> with each other.</li>
+      <li><b>Large sample size.</b></li>
+      <li><b>No extreme outliers</b> in predictors — extreme values in the features can strongly affect the estimated coefficients.</li>
+    </ol>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:2rem;">Advantages and disadvantages</h3>
+    <div class="table-wrap">
+      <table class="summary proscons">
+        <thead><tr><th>Advantages</th><th>Disadvantages</th></tr></thead>
+        <tbody>
+          <tr><td>Simple and easy to implement</td><td>Cannot capture complex nonlinear relationships unless features are transformed</td></tr>
+          <tr><td>Interpretable model</td><td>Sensitive to multicollinearity: highly correlated predictors can make coefficients unstable and difficult to interpret</td></tr>
+          <tr><td>Produces probabilities</td><td>Requires feature engineering for complex problems</td></tr>
+          <tr><td>Works well for linearly separable data</td><td>Sensitive to outliers</td></tr>
+          <tr><td>Efficient for large datasets</td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="caption-note" style="margin-top:1.4rem;"><b>To be explored:</b> L1 and L2 regularization of logistic regression.</p>
+  </section>
+
+</div>
+
+<footer>Class notes by Elitsa Yotkova · Lab 6.5 · built with plain HTML, CSS &amp; JS</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="lab065.js"></script>
+</body>
+</html>

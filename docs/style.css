@@ -993,3 +993,93 @@ body.home .wrap { max-width: 1040px; }
 .art-csp .hero-art line { stroke: var(--ink-soft); stroke-width: 1.4; opacity: 0.25; }
 .art-csp .hero-art circle { opacity: 0.45; }
 .art-csp .hero-art .c0 { fill: #d9546e; } .art-csp .hero-art .c1 { fill: #5c9a6a; } .art-csp .hero-art .c2 { fill: #4d7ea8; }
+
+/* ---- Lab 6.5: linear & logistic regression ---- */
+.art-reg .hero-art .pt { fill: var(--indigo); opacity: 0.4; }
+.art-reg .hero-art .reg { stroke: var(--indigo); stroke-width: 3; opacity: 0.55; }
+.art-reg .hero-art .sig { fill: none; stroke: #d9546e; stroke-width: 3; opacity: 0.55; }
+.art-reg .hero-art .c0 { fill: var(--indigo); opacity: 0.45; }
+.art-reg .hero-art .c1 { fill: #d9546e; opacity: 0.45; }
+.math-block { overflow-x: auto; overflow-y: hidden; margin: 0.4rem 0 1.2rem; padding: 0.2rem 0; }
+.derivation { background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--ucs); border-radius: var(--radius-sm); padding: 0.6rem 1.1rem; margin: 0 0 1rem; overflow-x: auto; }
+.derivation p { margin: 0.6rem 0 0; font-size: 0.9rem; color: var(--ink-soft); }
+.definition-box .katex-display { margin: 0.6rem 0; }
+.ml-plot .grid-line { stroke: var(--line); stroke-width: 1.2; }
+.ml-plot .grid-line.dashed { stroke-dasharray: 5 5; stroke: var(--ink-soft); opacity: 0.5; }
+.ml-plot .guide { stroke: var(--ink); stroke-width: 1.4; stroke-dasharray: 4 4; opacity: 0.6; }
+.ml-plot .resid-grey { stroke: #8f9ab8; stroke-width: 1.2; }
+.ml-plot .reg-blue { stroke: #2356d8; stroke-width: 2.8; fill: none; }
+.ml-plot .reg-blue.thick { stroke-width: 3.2; }
+.ml-plot .tv-pt { fill: #a8323f; }
+.ml-plot .contour { fill: none; stroke: var(--ucs); stroke-width: 1.5; }
+.ml-plot .gd-path { fill: none; stroke: #d9546e; stroke-width: 2; }
+.ml-plot .gd-dot { fill: #d9546e; }
+.ml-plot .gd-now { fill: #d9546e; stroke: var(--surface); stroke-width: 2.5; }
+.ml-plot .gd-star { fill: var(--bfs); stroke: var(--surface); stroke-width: 1; }
+.ml-plot .oob { fill: color-mix(in srgb, #d9546e 9%, transparent); }
+.ml-plot .oob-l { fill: #b8394f; font-style: italic; }
+.ml-plot .sig-red { fill: none; stroke: #d9546e; stroke-width: 3.2; }
+.ml-plot .cls0 { fill: var(--indigo); stroke: var(--surface); stroke-width: 1.5; }
+.ml-plot .cls1 { fill: #d9546e; stroke: var(--surface); stroke-width: 1.5; }
+.ml-plot .ce1 { fill: none; stroke: #d9546e; stroke-width: 3; }
+.ml-plot .ce0 { fill: none; stroke: var(--indigo); stroke-width: 3; }
+.ml-plot .ce1-l { fill: #b8394f; font-weight: 700; }
+.ml-plot .ce0-l { fill: var(--indigo); font-weight: 700; }
+.ml-plot .shade0 { fill: var(--indigo); }
+.ml-plot .shade1 { fill: #d9546e; }
+.ml-plot .boundary { stroke: var(--ink); stroke-width: 2.5; stroke-dasharray: 8 5; }
+.ml-plot .loss-line { fill: none; stroke: #d9546e; stroke-width: 2.2; }
+.ex-out { font-size: 1.1rem; margin: 0; }
+.sg-chain { display: grid; gap: 0.45rem; }
+.sg-row { display: flex; justify-content: space-between; gap: 0.8rem; flex-wrap: wrap; padding: 0.5rem 0.8rem; border-radius: 8px; background: color-mix(in srgb, var(--ink) 4%, var(--surface)); font-size: 0.9rem; }
+.sg-row span { color: var(--ink-soft); }
+.sg-row.pred.c1 { background: color-mix(in srgb, #d9546e 14%, var(--surface)); }
+.sg-row.pred.c0 { background: color-mix(in srgb, var(--indigo) 14%, var(--surface)); }
+.sm-controls { display: grid; gap: 0.5rem; }
+.sm-controls label { display: grid; grid-template-columns: 90px 1fr 42px; align-items: center; gap: 0.7rem; font-weight: 700; font-size: 0.9rem; }
+.sm-controls .val { font-family: 'Poppins', sans-serif; font-weight: 800; color: var(--indigo); text-align: right; }
+.sm-table td, .sm-table th { padding: 0.55rem 0.7rem; }
+.sm-table tr.sm-pred td { background: color-mix(in srgb, var(--bfs) 10%, transparent); }
+.sm-true-tag { font-size: 0.66rem; font-weight: 800; text-transform: uppercase; color: #fff; background: var(--ink-soft); border-radius: 999px; padding: 0.05rem 0.4rem; margin-left: 0.3rem; vertical-align: 2px; }
+.sm-barcell { width: 35%; }
+.sm-bar { height: 14px; background: var(--bg); border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+.sm-bar span { display: block; height: 100%; transition: width 0.25s ease; }
+.sm-line { margin: 0.5rem 0 0; font-size: 0.93rem; }
+.sm-loss { color: #b8394f; font-size: 1.05rem; }
+/* keep KaTeX's hidden MathML (for screen readers) from widening the page on phones */
+.math-block, .derivation, .definition-box { position: relative; }
+.katex { position: relative; }
+.katex .katex-mathml { width: 1px; height: 1px; overflow: hidden; }
+.katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }
+
+/* ---- Lab 07: KNN ---- */
+.art-knn .hero-art .c0 { fill: var(--indigo); opacity: 0.5; }
+.art-knn .hero-art .c1 { fill: #d9546e; opacity: 0.5; }
+.art-knn .hero-art .c2 { fill: var(--bfs); opacity: 0.5; }
+.art-knn .hero-art .q { fill: var(--ucs); opacity: 0.8; }
+.art-knn .hero-art .ring { fill: none; stroke: var(--ucs); stroke-width: 2; stroke-dasharray: 7 6; opacity: 0.6; }
+.art-knn .hero-art .link { stroke: var(--ucs); stroke-width: 1.5; stroke-dasharray: 4 4; opacity: 0.55; }
+.gl-plot, .ds-plot, .kc-plot { cursor: crosshair; }
+.ml-plot .gl-pt { fill: var(--ink-soft); opacity: 0.55; }
+.ml-plot .gl-pt.nb { fill: var(--ucs); opacity: 1; stroke: var(--ink); stroke-width: 1.2; }
+.ml-plot .gl-window { fill: color-mix(in srgb, var(--ucs) 12%, transparent); }
+.ml-plot .gl-lin { stroke: var(--indigo); stroke-width: 3; }
+.ml-plot .gl-knn { fill: none; stroke: #d9546e; stroke-width: 3; }
+.ml-plot .gl-q { fill: #d9546e; stroke: var(--surface); stroke-width: 2; }
+.ml-plot .ex-ring, .ml-plot .kc-ring { fill: color-mix(in srgb, var(--bfs) 8%, transparent); stroke: var(--ink); stroke-width: 1.6; stroke-dasharray: 6 5; }
+.ml-plot .ex-link { stroke: var(--ink); stroke-width: 1.4; stroke-dasharray: 4 4; opacity: 0.75; }
+.ml-plot .ex-q { fill: var(--bfs); stroke: var(--surface); stroke-width: 2.5; }
+.ml-plot .ex-lbl { fill: var(--ink); font-weight: 700; font-size: 12px; }
+.ex-table td, .ex-table th { padding: 0.55rem 0.7rem; font-size: 0.86rem; }
+.ex-table tr.in-k td { background: color-mix(in srgb, var(--bfs) 12%, transparent); }
+.ex-note { font-size: 0.9rem; margin: 0.8rem 0 0; }
+.ml-plot .ds-grid { stroke: var(--line); stroke-width: 1; }
+.ml-plot .ds-ball { fill: color-mix(in srgb, var(--ucs) 16%, transparent); stroke: var(--ucs); stroke-width: 2.5; }
+.ml-plot .ds-manh { fill: none; stroke: var(--indigo); stroke-width: 2.5; stroke-dasharray: 6 5; }
+.ml-plot .ds-eucl { stroke: #d9546e; stroke-width: 2.5; }
+.ml-plot .ds-lbl { font-weight: 800; font-size: 13px; fill: var(--ink); }
+.ml-plot .val-pt { stroke: var(--ink); stroke-width: 1.4; }
+.ml-plot .kc-q { stroke: var(--ink); stroke-width: 3; }
+.ml-plot .kc-q.c0 { fill: var(--indigo); } .ml-plot .kc-q.c1 { fill: #d9546e; }
+.kc-query { font-size: 0.9rem; margin: 0.8rem 0 0; }
+.kc-query .red { color: #b8394f; } .kc-query .blue { color: var(--indigo); }
