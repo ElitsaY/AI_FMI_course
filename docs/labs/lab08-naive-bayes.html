@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lab 08 — Naive Bayes Classifier | Class Notes</title>
+<meta name="description" content="Interactive notes on the Naive Bayes classifier: Bayes' theorem, the conditional independence assumption, spam filtering, the zero-probability problem and Laplace smoothing, and Gaussian Naive Bayes.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+
+<header class="site-nav">
+  <span class="brand"><span class="dot"></span> Class Notes</span>
+  <nav>
+    <a href="../index.html">Home</a>
+    <a href="lab01-uninformed-search.html">Lab 01</a>
+    <a href="lab02-informed-search.html">Lab 02</a>
+    <a href="lab03-csp.html">Lab 03</a>
+    <a href="lab04-genetic-algorithms.html">Lab 04</a>
+    <a href="lab05-games.html">Lab 05</a>
+    <a href="lab06-intro-ml.html">Lab 06</a>
+    <a href="lab065-linear-logistic.html">Lab 6.5</a>
+    <a href="lab07-knn.html">Lab 07</a>
+  </nav>
+</header>
+
+<section class="hero art-hero art-nb">
+  <svg id="nb-hero-bg" class="hero-art" viewBox="0 0 1200 300" preserveAspectRatio="xMidYMid slice" aria-hidden="true"></svg>
+  <div class="wrap">
+    <p class="eyebrow">Lab 08</p>
+    <h1>Naive Bayes Classifier</h1>
+    <div class="badges">
+      <span class="badge ids">Bayes' theorem</span>
+      <span class="badge dfs">Spam filtering</span>
+      <span class="badge ucs">Laplace smoothing</span>
+      <span class="badge bfs">Gaussian NB</span>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+
+  <!-- ===== OVERVIEW ===== -->
+  <section class="block" id="overview">
+    <h2 class="section-title">Overview of the lab</h2>
+    <ol class="concept-list">
+      <li><a href="#bayes">Bayesian statistics &amp; Bayes' theorem</a></li>
+      <li><a href="#classifier">Naive Bayes classifier</a></li>
+      <li><a href="#naive">Conditional independence assumption</a></li>
+      <li><a href="#zero">Zero-probability problem &amp; Laplace smoothing</a></li>
+      <li><a href="#practice">Practical implementation</a></li>
+      <li><a href="#gaussian">Gaussian Naive Bayes</a></li>
+    </ol>
+  </section>
+
+  <!-- ===== INTRO ===== -->
+  <section class="block" id="intro">
+    <h2 class="section-title">Introduction to Naive Bayes</h2>
+    <p class="section-lede">The <b>Naive Bayes classifier</b> is a probabilistic machine learning algorithm based on <b>Bayes' theorem</b>. It is called "naive" because it makes a strong assumption that all features are <b>conditionally independent</b> given the class label.</p>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.6rem;">Where does it fit in machine learning?</h3>
+    <ul class="concept-list">
+      <li><b>Supervised learning</b>: uses labeled training data in the format &lt;input data, true label&gt;.</li>
+      <li><b>Classification</b>: predicts the class / category of new examples.</li>
+      <li><b>Probabilistic approach</b>: unlike <a href="lab07-knn.html">KNN</a> (which uses distance), Naive Bayes uses probability theory.</li>
+    </ul>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.6rem;">Common applications</h3>
+    <ul class="concept-list">
+      <li>Spam email detection</li>
+      <li>Sentiment analysis</li>
+      <li>Document classification</li>
+      <li>Medical diagnosis</li>
+      <li>Real-time prediction (fast training and prediction)</li>
+    </ul>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.6rem;">Machine learning recap: data terminology</h3>
+    <ul class="concept-list">
+      <li><b>Training data</b>: data used to train the algorithm.</li>
+      <li><b>Validation data</b>: data used to tune hyperparameters.</li>
+      <li><b>Test data</b>: previously unseen data used to test how well the algorithm generalizes predictions.</li>
+      <li><b>k-cross validation</b>: method for finding the best results (typically k = 5 or k = 10).</li>
+      <li><b>Bias</b>: the model's inability to capture the relationship between data.</li>
+      <li><b>Variance</b>: difference in prediction on unseen data.</li>
+    </ul>
+  </section>
+
+  <!-- ===== BAYES ===== -->
+  <section class="block algo-section ids" id="bayes">
+    <span class="badge ids" style="margin-bottom:0.6rem; display:inline-block;">Foundation</span>
+    <h2 class="section-title">Bayes' theorem</h2>
+    <p class="section-lede"><b>Bayes' theorem</b> is the foundation of the Naive Bayes classifier. It allows us to calculate the probability of an event based on prior knowledge of conditions related to that event.</p>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.4rem;">Probability basics</h3>
+    <p class="section-lede">For two events A and B:</p>
+    <div class="math-block">\[ P(A \mid B) = \frac{P(A \cap B)}{P(B)} \qquad P(B \mid A) = \frac{P(A \cap B)}{P(A)} \]</div>
+    <p class="section-lede">From these, we get:</p>
+    <div class="math-block">\[ P(A \cap B) = P(B \mid A) \cdot P(A) = P(A \mid B) \cdot P(B) \]</div>
+
+    <div class="definition-box">
+      <div class="dbox-label">📐 Bayes' theorem</div>
+      <p>Rearranging the equation above gives us Bayes' theorem:</p>
+      \[ P(A \mid B) = \frac{P(B \mid A) \cdot P(A)}{P(B)} \]
+    </div>
+    <ul class="concept-list" style="margin-top:1rem;">
+      <li>\(P(A \mid B)\) = <b>posterior probability</b>: probability of A given B</li>
+      <li>\(P(B \mid A)\) = <b>likelihood</b>: probability of B given A</li>
+      <li>\(P(A)\) = <b>prior probability</b>: probability of A</li>
+      <li>\(P(B)\) = <b>evidence</b>: probability of B</li>
+    </ul>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">See it with 100 emails</h4>
+    <p class="section-lede">Let A = "the email is spam" and B = "the email contains the word <i>free</i>". Each envelope below is one email; the ones with a dot contain "free". Bayes' theorem just asks: <b>of all the emails that contain "free", what fraction are spam?</b></p>
+    <div class="playground">
+      <div class="nb-sliders">
+        <label>Prior \(P(\text{spam})\)<input type="range" id="bt-prior" min="0.05" max="0.95" value="0.4" step="0.05"><span class="val" id="bt-prior-val">0.40</span></label>
+        <label>Likelihood \(P(\text{free} \mid \text{spam})\)<input type="range" id="bt-ls" min="0" max="1" value="0.3" step="0.05"><span class="val" id="bt-ls-val">0.30</span></label>
+        <label>\(P(\text{free} \mid \text{ham})\)<input type="range" id="bt-lh" min="0" max="1" value="0.05" step="0.05"><span class="val" id="bt-lh-val">0.05</span></label>
+      </div>
+      <div class="pg-grid" style="margin-top:1rem;">
+        <div id="bt-grid" class="bt-grid" aria-label="100 emails"></div>
+        <div id="bt-out" class="bt-out"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== CLASSIFIER ===== -->
+  <section class="block algo-section bfs" id="classifier">
+    <span class="badge bfs" style="margin-bottom:0.6rem; display:inline-block;">Classifier</span>
+    <h2 class="section-title">Naive Bayes classifier — general formula</h2>
+    <p class="section-lede">For classes \(C_1, C_2, \dots, C_K\) and attributes / features \(\vec{x} = (x_1, x_2, \dots, x_n)\), Bayes' theorem gives:</p>
+    <div class="math-block">\[ P(C_i \mid x_1, x_2, \dots, x_n) = \frac{P(x_1, x_2, \dots, x_n \mid C_i) \cdot P(C_i)}{P(x_1, x_2, \dots, x_n)}, \quad i = 1, \dots, K \]</div>
+    <p class="section-lede"><b>What does this mean?</b> \(P(C_i \mid x_1, \dots, x_n)\) represents: <i>"Given that we observe features \(x_1, x_2, \dots, x_n\), what is the probability that the example belongs to class \(C_i\)?"</i></p>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Example: medical diagnosis</h4>
+    <p class="section-lede">We want to diagnose whether a patient has a disease based on symptoms. Classes: \(C_1\) = has disease, \(C_2\) = healthy. Features: \(x_1\) = fever (yes / no), \(x_2\) = cough (yes / no), \(x_3\) = fatigue (yes / no). For a patient with \(\vec{x}\) = (fever = yes, cough = yes, fatigue = no):</p>
+    <ul class="concept-list">
+      <li>\(P(C_1 \mid \vec{x})\) = "what is the probability the patient has the disease, given these symptoms?"</li>
+      <li>\(P(C_2 \mid \vec{x})\) = "what is the probability the patient is healthy, given these symptoms?"</li>
+    </ul>
+    <p class="section-lede">We classify the patient into whichever class has the higher probability. <b>Goal:</b> for a new example with features \(\vec{x}\), find the class \(C_i\) that maximizes \(P(C_i \mid \vec{x})\).</p>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">The problem</h4>
+    <p class="section-lede">Computing \(P(x_1, x_2, \dots, x_n \mid C_i)\) directly is <b>computationally expensive</b>: we need the joint probability of all features, which requires exponentially many combinations — for \(n\) features with \(d\) values each, we need \(d^n\) probabilities. With 10 binary features, that is already \(2^{10} = 1024\) probability values per class.</p>
+  </section>
+
+  <!-- ===== NAIVE ASSUMPTION ===== -->
+  <section class="block algo-section ucs" id="naive">
+    <span class="badge ucs" style="margin-bottom:0.6rem; display:inline-block;">The "naive" part</span>
+    <h2 class="section-title">The naive assumption — conditional independence</h2>
+    <div class="definition-box">
+      <div class="dbox-label">📐 Conditional independence assumption</div>
+      <p><b>All features are conditionally independent given the class.</b> Mathematically, for a given class \(C_i\):</p>
+      \[ P(x_j \mid x_{j+1}, x_{j+2}, \dots, x_n, C_i) = P(x_j \mid C_i) \]
+      <p>This means: <i>given we know the class, knowing one feature tells us nothing about another feature.</i></p>
+    </div>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Why is this "naive"?</h4>
+    <p class="section-lede">This assumption is often <b>not true in reality</b>. In spam detection, feature 1 = the email contains "free" and feature 2 = the email contains "money" are actually correlated (they often appear together in spam), but Naive Bayes assumes they are independent given the class.</p>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">The benefit</h4>
+    <p class="section-lede">Despite being unrealistic, the assumption allows us to <b>decompose</b> the joint probability:</p>
+    <div class="math-block">\[ P(x_1, x_2, \dots, x_n \mid C_i) = P(x_1 \mid C_i) \cdot P(x_2 \mid C_i) \cdots P(x_n \mid C_i) = \prod_{j=1}^{n} P(x_j \mid C_i) \]</div>
+    <p class="section-lede">This reduces the complexity from \(d^n\) to just \(n \cdot d\) probability values per class.</p>
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="beam-control show" style="margin:0;"><label>Number of features \(n\)</label><input type="range" id="cx-n" min="1" max="30" value="10" step="1"><span class="val" id="cx-n-val">10</span></div>
+        <div class="beam-control show" style="margin:0;"><label>Values per feature \(d\)</label><input type="range" id="cx-d" min="2" max="5" value="2" step="1"><span class="val" id="cx-d-val">2</span></div>
+      </div>
+      <div id="cx-out" class="cx-out"></div>
+    </div>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:2rem;">Naive Bayes — final formula</h3>
+    <p class="section-lede">Combining Bayes' theorem with the conditional independence assumption:</p>
+    <div class="math-block">\[ P(C_i \mid x_1, \dots, x_n) \propto P(C_i) \cdot \prod_{j=1}^{n} P(x_j \mid C_i) \]</div>
+    <p class="section-lede"><b>Note:</b> we ignore the denominator \(P(x_1, \dots, x_n)\) because it is the same for all classes \(C_i\), we only care about which class has the highest probability, and we can compare classes without computing it.</p>
+    <div class="definition-box">
+      <div class="dbox-label">📐 Classification decision</div>
+      <p>To classify a new example \(\vec{x} = (x_1, \dots, x_n)\), choose the class that <b>maximizes</b>:</p>
+      \[ \hat{C} = \arg\max_{C_i} \; P(C_i) \cdot \prod_{j=1}^{n} P(x_j \mid C_i) \]
+    </div>
+    <p class="section-lede" style="margin-top:1rem;"><b>What we need to learn from the training data:</b></p>
+    <ol class="concept-list">
+      <li><b>Prior probabilities</b> \(P(C_i)\) for each class — simply count:
+        <div class="math-block">\[ P(C_i) = \frac{\text{count of examples in class } C_i}{\text{total count of examples}} \]</div></li>
+      <li><b>Conditional probabilities</b> \(P(x_j \mid C_i)\) for each feature value given each class — count:
+        <div class="math-block">\[ P(x_j \mid C_i) = \frac{\text{count of times feature } x_j \text{ appears in class } C_i}{\text{count of examples in class } C_i} \]</div></li>
+    </ol>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:2rem;">Example: email spam classification</h3>
+    <p class="section-lede">Classes: \(C_1\) = spam, \(C_2\) = not spam (ham). Features (words in the email): \(x_1\) = contains "free", \(x_2\) = contains "money", \(x_3\) = contains "meeting". Suppose we have 100 training emails: 40 are spam and 60 are ham, so the <b>priors</b> are \(P(\text{Spam}) = 40/100 = 0.4\) and \(P(\text{Ham}) = 60/100 = 0.6\). The <b>conditional probabilities</b> counted from the training data:</p>
+    <div class="table-wrap">
+      <table class="summary">
+        <thead><tr><th>Word</th><th>P(word | Spam)</th><th>P(word | Ham)</th></tr></thead>
+        <tbody>
+          <tr data-s="dfs"><td>"free"</td><td>0.30</td><td>0.05</td></tr>
+          <tr data-s="dfs"><td>"money"</td><td>0.25</td><td>0.10</td></tr>
+          <tr data-s="bfs"><td>"meeting"</td><td>0.05</td><td>0.40</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="section-lede" style="margin-top:1rem;"><b>Classification task:</b> a new email contains the words <b>"free"</b> and <b>"money"</b> (but not "meeting").</p>
+    <div class="math-block">\[ P(\text{Spam} \mid \text{free, money}) \propto P(\text{Spam}) \cdot P(\text{free} \mid \text{Spam}) \cdot P(\text{money} \mid \text{Spam}) = 0.4 \times 0.30 \times 0.25 = 0.03 \]</div>
+    <div class="math-block">\[ P(\text{Ham} \mid \text{free, money}) \propto P(\text{Ham}) \cdot P(\text{free} \mid \text{Ham}) \cdot P(\text{money} \mid \text{Ham}) = 0.6 \times 0.05 \times 0.10 = 0.003 \]</div>
+    <p class="section-lede"><b>Decision:</b> since \(0.03 > 0.003\), classify as <b>Spam</b> ✉️.</p>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Try it: build the email</h4>
+    <p class="section-lede">Click the words to put them in (or take them out of) the new email. By default, as in the example above, only the words that <b>appear</b> in the email are multiplied. The second mode also uses the words that are <b>missing</b>, multiplying \(1 - P(\text{word} \mid C)\) for each of them (the Bernoulli variant of Naive Bayes).</p>
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="strategy-pick" id="sp-words">
+          <button class="strat-btn sp-word active" data-w="free">free</button>
+          <button class="strat-btn sp-word active" data-w="money">money</button>
+          <button class="strat-btn sp-word" data-w="meeting">meeting</button>
+        </div>
+        <div class="strategy-pick">
+          <button class="strat-btn sp-mode active" data-m="present">Present words only</button>
+          <button class="strat-btn sp-mode" data-m="bernoulli">Also absent words</button>
+        </div>
+      </div>
+      <div id="sp-out" class="sp-out"></div>
+    </div>
+  </section>
+
+  <!-- ===== ZERO PROBABILITY ===== -->
+  <section class="block algo-section dfs" id="zero">
+    <span class="badge dfs" style="margin-bottom:0.6rem; display:inline-block;">Pitfall</span>
+    <h2 class="section-title">Zero-probability problem</h2>
+    <p class="section-lede"><b>What happens if a feature value never appears in the training data for a particular class?</b> Suppose the word "discount" never appeared in any spam email in the training data: \(P(\text{"discount"} \mid \text{Spam}) = 0/40 = 0\). Then</p>
+    <div class="math-block">\[ P(\text{Spam} \mid \text{contains "discount"}) \propto P(\text{Spam}) \cdot P(\text{"discount"} \mid \text{Spam}) \cdots = 0.4 \times \mathbf{0} \times \dots = \mathbf{0} \]</div>
+    <p class="section-lede">The entire probability becomes <b>zero</b>, regardless of the other features — this is <b>catastrophic</b>. It is called the <b>zero-probability problem</b> (or zero-frequency problem). Why is it a problem?</p>
+    <ul class="concept-list">
+      <li><b>Lack of training data</b>: just because we didn't see "discount" in spam during training doesn't mean it can never appear in spam.</li>
+      <li><b>Probability multiplication</b>: a single zero makes the entire product zero.</li>
+      <li><b>Loss of information</b>: all other features are ignored.</li>
+    </ul>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:2rem;">Solution: Laplace smoothing</h3>
+    <p class="section-lede"><b>Laplace smoothing</b> (also called <b>additive smoothing</b>) solves the zero-probability problem by adding a small constant to all counts. Instead of</p>
+    <div class="math-block">\[ P(x_j \mid C_i) = \frac{\text{Count}(x_j, C_i)}{\text{Count}(C_i)} \]</div>
+    <p class="section-lede">we use</p>
+    <div class="definition-box">
+      <div class="dbox-label">📐 Laplace (additive) smoothing</div>
+      \[ P(x_j \mid C_i) = \frac{\text{Count}(x_j, C_i) + \alpha}{\text{Count}(C_i) + \alpha \cdot V} \]
+    </div>
+    <ul class="concept-list" style="margin-top:1rem;">
+      <li>\(\alpha\) = smoothing parameter (typically \(\alpha = 1\), called <b>Laplace smoothing</b> or <b>add-one smoothing</b>)</li>
+      <li>\(V\) = number of different possible values for the feature (vocabulary size)</li>
+      <li>\(\text{Count}(x_j, C_i)\) = number of times feature value \(x_j\) appears in class \(C_i\)</li>
+      <li>\(\text{Count}(C_i)\) = total count of all feature values in class \(C_i\)</li>
+    </ul>
+    <p class="section-lede"><b>Why does this work?</b></p>
+    <ol class="concept-list">
+      <li><b>Guarantees non-zero probabilities</b>: even if \(\text{Count}(x_j, C_i) = 0\), we get \(P(x_j \mid C_i) = \frac{\alpha}{\text{Count}(C_i) + \alpha V} > 0\).</li>
+      <li><b>Maintains a probability distribution</b>: the probabilities still sum to 1.</li>
+      <li><b>Minimal impact on frequent features</b>: for features that appear often, adding \(\alpha\) has a negligible effect.</li>
+    </ol>
+    <p class="section-lede"><b>Example:</b> "discount" never appeared in 40 spam emails, the vocabulary size is \(V = 1000\) words, and \(\alpha = 1\):</p>
+    <div class="math-block">\[ \text{without smoothing: } \frac{0}{40} = 0 \qquad \text{with Laplace smoothing: } \frac{0 + 1}{40 + 1 \times 1000} = \frac{1}{1040} \approx 0.00096 \]</div>
+    <p class="section-lede">Now the probability is small but <b>not zero</b>.</p>
+
+    <h4 style="margin:1.6rem 0 0.4rem;">Try it: train a spam filter</h4>
+    <p class="section-lede">Below is a tiny training set of 11 labelled emails. The classifier counts every word per class and scores a new email with the smoothed formula above. Start with \(\alpha = 0\) and the email "free money meeting": "meeting" never occurs in spam, so the spam score is 0 — however spammy "free" and "money" are. And "free" and "money" never occur in ham, so the ham score is 0 too: the classifier cannot decide at all. Then raise \(\alpha\).</p>
+    <div class="playground">
+      <div class="nb-train" id="tr-list"></div>
+      <div class="pg-controls" style="margin-top:1rem;">
+        <label class="tr-input-l">New email<input type="text" id="tr-input" value="free money meeting" autocomplete="off" spellcheck="false"></label>
+        <div class="beam-control show" style="margin:0;"><label>\(\alpha\)</label><input type="range" id="tr-alpha" min="0" max="2" value="0" step="0.1"><span class="val" id="tr-alpha-val">0.0</span></div>
+      </div>
+      <div class="strategy-pick" style="margin:0.2rem 0 0.8rem;">
+        <span class="tr-try">Try:</span>
+        <button class="strat-btn tr-sample">free money meeting</button>
+        <button class="strat-btn tr-sample">claim your free prize now</button>
+        <button class="strat-btn tr-sample">meeting about the project report</button>
+        <button class="strat-btn tr-sample">free lunch with the team</button>
+      </div>
+      <div id="tr-out" class="tr-out"></div>
+    </div>
+  </section>
+
+  <!-- ===== PRACTICAL ===== -->
+  <section class="block" id="practice">
+    <h2 class="section-title">Practical implementation</h2>
+    <p class="section-lede">Two details matter when you implement Naive Bayes on real text:</p>
+    <ul class="concept-list">
+      <li><b>Multiply small numbers → sum logarithms.</b> An email has many words, and a product of many probabilities smaller than 1 quickly becomes too small for the computer to represent (numerical <i>underflow</i>). Because the logarithm is increasing, the arg max does not change, so we compare \(\log P(C_i) + \sum_j \log P(x_j \mid C_i)\) instead. The spam filter above shows both.</li>
+      <li><b>Words never seen in training</b> have no count in any class, so they are usually simply ignored.</li>
+    </ul>
+    <details class="code-card">
+      <summary>
+        <span class="code-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="code-file">naive_bayes.py</span>
+        <span class="code-lang">Python</span>
+        <button type="button" class="code-copy">Copy</button>
+        <span class="code-chevron" aria-hidden="true">▾</span>
+      </summary>
+      <pre class="code-body"><code class="lang-py">import math
+from collections import Counter
+
+def train(emails, labels, alpha=1.0):
+    classes = set(labels)
+    priors = {c: labels.count(c) / len(labels) for c in classes}
+    counts = {c: Counter() for c in classes}           # word counts per class
+    for text, c in zip(emails, labels):
+        counts[c].update(text.lower().split())
+    vocab = set(w for c in classes for w in counts[c])
+    return priors, counts, vocab, alpha
+
+def predict(model, text):
+    priors, counts, vocab, alpha = model
+    V = len(vocab)
+    scores = {}
+    for c in priors:
+        total = sum(counts[c].values())
+        score = math.log(priors[c])                    # log P(C)
+        for w in text.lower().split():
+            if w not in vocab:                         # unseen word: ignore
+                continue
+            p = (counts[c][w] + alpha) / (total + alpha * V)   # Laplace smoothing
+            score += math.log(p)                       # + log P(word | C)
+        scores[c] = score
+    return max(scores, key=scores.get)
+
+emails = ["win free money now", "meeting tomorrow at ten"]
+labels = ["spam", "ham"]
+model = train(emails, labels, alpha=1)
+print(predict(model, "free money"))   # spam</code></pre>
+    </details>
+    <details class="code-card">
+      <summary>
+        <span class="code-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="code-file">sklearn_naive_bayes.py</span>
+        <span class="code-lang">Python</span>
+        <button type="button" class="code-copy">Copy</button>
+        <span class="code-chevron" aria-hidden="true">▾</span>
+      </summary>
+      <pre class="code-body"><code class="lang-py">from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.naive_bayes import MultinomialNB, GaussianNB
+
+# word counts -> multinomial Naive Bayes with Laplace smoothing (alpha)
+vectorizer = CountVectorizer()
+X = vectorizer.fit_transform(emails)
+clf = MultinomialNB(alpha=1.0).fit(X, labels)
+print(clf.predict(vectorizer.transform(["free money"])))
+
+# continuous features -> Gaussian Naive Bayes
+X_num = [[35, 6], [10, 1]]   # e.g. % capital letters, number of links
+gnb = GaussianNB().fit(X_num, ["spam", "ham"])
+print(gnb.predict([[30, 5]]))</code></pre>
+    </details>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:2rem;">Advantages and disadvantages</h3>
+    <div class="table-wrap">
+      <table class="summary proscons">
+        <thead><tr><th>Advantages ✅</th><th>Disadvantages ❌</th></tr></thead>
+        <tbody>
+          <tr><td><b>Fast training and prediction</b>: only needs to count frequencies</td><td><b>Naive independence assumption</b>: assumes features are independent, which is often unrealistic</td></tr>
+          <tr><td><b>Simple to implement</b>: easy to understand and code</td><td><b>Zero-frequency problem</b>: requires smoothing techniques</td></tr>
+          <tr><td><b>Works well with high-dimensional data</b>: scales well with the number of features</td><td><b>Poor probability estimates</b>: the actual probability values can be inaccurate (though classification can still be good)</td></tr>
+          <tr><td><b>Requires a small amount of training data</b>: can work with limited data</td><td><b>Sensitive to irrelevant features</b>: irrelevant features can affect predictions</td></tr>
+          <tr><td><b>Handles missing values well</b>: can easily skip missing features</td><td><b>Cannot learn feature interactions</b>: misses relationships between features</td></tr>
+          <tr><td><b>Probabilistic predictions</b>: provides probability estimates for classes</td><td><b>Continuous features</b>: requires assumptions about the distribution (e.g., Gaussian — see below)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:2rem;">When to use Naive Bayes?</h3>
+    <p class="section-lede"><b>Good for:</b></p>
+    <ul class="concept-list">
+      <li>Text classification (spam detection, sentiment analysis, document categorization)</li>
+      <li>Real-time prediction (very fast)</li>
+      <li>Multi-class prediction</li>
+      <li>When features are relatively independent</li>
+      <li>When you have limited training data</li>
+    </ul>
+    <p class="section-lede"><b>Not ideal for:</b></p>
+    <ul class="concept-list">
+      <li>Problems with strong feature dependencies</li>
+      <li>When you need accurate probability estimates</li>
+      <li>Regression problems (it's a classifier)</li>
+    </ul>
+  </section>
+
+  <!-- ===== GAUSSIAN ===== -->
+  <section class="block algo-section bfs" id="gaussian">
+    <span class="badge bfs" style="margin-bottom:0.6rem; display:inline-block;">Continuous features</span>
+    <h2 class="section-title">Gaussian Naive Bayes</h2>
+    <p class="section-lede">Counting works for words and other categorical features. But many features are <b>continuous</b> — e.g. the percentage of capital letters in an email, its length, or a patient's temperature. We cannot count how often "exactly 23.7 % capital letters" appeared in spam. <b>Gaussian Naive Bayes</b> instead assumes that, <b>within each class, each feature follows a normal (Gaussian) distribution</b>, and uses its density as \(P(x_j \mid C_i)\):</p>
+    <div class="definition-box">
+      <div class="dbox-label">📐 Gaussian likelihood</div>
+      \[ P(x_j \mid C_i) = \frac{1}{\sqrt{2\pi\sigma_{ij}^2}} \exp\!\left( -\frac{(x_j - \mu_{ij})^2}{2\sigma_{ij}^2} \right) \]
+      <p>\(\mu_{ij}\) and \(\sigma_{ij}^2\) are the mean and variance of feature \(j\) among the training examples of class \(C_i\).</p>
+    </div>
+    <p class="section-lede" style="margin-top:1rem;"><b>Training</b> no longer counts — it estimates, for every class and every feature:</p>
+    <div class="math-block">\[ \mu_{ij} = \frac{1}{N_i} \sum_{x \in C_i} x_j \qquad \sigma_{ij}^2 = \frac{1}{N_i} \sum_{x \in C_i} (x_j - \mu_{ij})^2 \]</div>
+    <p class="section-lede">where \(N_i\) is the number of training examples in class \(C_i\). <b>Prediction</b> is exactly the same Naive Bayes rule, with the densities plugged in:</p>
+    <div class="math-block">\[ \hat{C} = \arg\max_{C_i} \; P(C_i) \cdot \prod_{j=1}^{n} \mathcal{N}(x_j;\, \mu_{ij}, \sigma_{ij}^2) \]</div>
+    <p class="caption-note">A density can be larger than 1 — it is not a probability. That is fine: we only compare the scores of the classes, just as before. The naive assumption still applies: each feature has its own 1-D Gaussian per class, so there is no correlation between features within a class.</p>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:2rem;">Worked example: % capital letters</h3>
+    <p class="section-lede">One continuous feature — the percentage of capital letters in an email — with the priors from the spam example, \(P(\text{Spam}) = 0.4\) and \(P(\text{Ham}) = 0.6\). Training values:</p>
+    <div class="table-wrap">
+      <table class="summary">
+        <thead><tr><th>Class</th><th>Training values (%)</th><th>Mean \(\mu\)</th><th>Variance \(\sigma^2\)</th><th>Std. dev. \(\sigma\)</th></tr></thead>
+        <tbody>
+          <tr data-s="dfs"><td><b>Spam</b></td><td>30, 42, 35, 28, 40</td><td>35</td><td>29.6</td><td>5.44</td></tr>
+          <tr data-s="ids"><td><b>Ham</b></td><td>8, 12, 5, 15, 10</td><td>10</td><td>11.6</td><td>3.41</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="section-lede" style="margin-top:1rem;">A new email has <b>20 %</b> capital letters:</p>
+    <div class="math-block">\[ P(\text{Spam}) \cdot \mathcal{N}(20;\, 35, 29.6) = 0.4 \times 0.00164 = 0.000656 \]</div>
+    <div class="math-block">\[ P(\text{Ham}) \cdot \mathcal{N}(20;\, 10, 11.6) = 0.6 \times 0.00157 = 0.000944 \]</div>
+    <p class="section-lede"><b>Decision: Ham</b>, with \(P(\text{Spam} \mid 20\%) = \frac{0.000656}{0.000656 + 0.000944} \approx 0.41\). The two likelihoods are almost equal — 20 % is roughly as far from both means, measured in standard deviations — so the <b>prior</b> tips the decision towards ham. At 25 % the spam likelihood dominates and \(P(\text{Spam} \mid 25\%) \approx 0.999\).</p>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Try it: one feature</h4>
+    <p class="section-lede">The two curves are \(P(C) \cdot \mathcal{N}(x;\, \mu, \sigma^2)\) for spam and ham from the table above; the dashed line is the posterior \(P(\text{Spam} \mid x)\). Move \(x\) and the prior.</p>
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="beam-control show" style="margin:0;"><label>% capital letters \(x\)</label><input type="range" id="g1-x" min="0" max="60" value="20" step="0.5"><span class="val" id="g1-x-val">20</span></div>
+        <div class="beam-control show" style="margin:0;"><label>\(P(\text{Spam})\)</label><input type="range" id="g1-p" min="0.05" max="0.95" value="0.4" step="0.05"><span class="val" id="g1-p-val">0.40</span></div>
+      </div>
+      <div class="pg-grid">
+        <svg id="g1-plot" class="ml-plot" viewBox="0 0 460 300" aria-label="Gaussian class curves and posterior"></svg>
+        <div id="g1-out" class="g1-out"></div>
+      </div>
+    </div>
+
+    <h4 style="margin:1.6rem 0 0.4rem;">Try it: two features</h4>
+    <p class="section-lede">Now each email has two continuous features: % capital letters and number of links. Gaussian NB fits one Gaussian <b>per feature per class</b>, so each class's density contours are ellipses aligned with the axes (the naive assumption: no correlation inside a class). The shading is \(P(\text{Spam} \mid x)\); click anywhere to classify a new email.</p>
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="play-btns"><button class="toggle-btn" id="g2-new">New training data</button></div>
+      </div>
+      <div class="pg-grid">
+        <svg id="g2-plot" class="ml-plot g2-plot" viewBox="0 0 420 380" aria-label="Gaussian Naive Bayes with two features"></svg>
+        <div>
+          <div id="g2-params"></div>
+          <div id="g2-out" class="g1-out" style="margin-top:0.8rem;"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SUMMARY ===== -->
+  <section class="block" id="summary">
+    <h2 class="section-title">Summary: key takeaways</h2>
+    <ol class="concept-list">
+      <li><b>Naive Bayes</b> is a <b>probabilistic classifier</b> based on <b>Bayes' theorem</b>.</li>
+      <li><b>The "naive" assumption</b>: all features are <b>conditionally independent</b> given the class. This is usually not true in reality, but it makes computation tractable and often works well in practice.</li>
+      <li><b>Classification formula</b>: \(\hat{C} = \arg\max_{C_i} P(C_i) \cdot \prod_{j=1}^{n} P(x_j \mid C_i)\)</li>
+      <li><b>Training</b>: just count frequencies — \(P(C_i)\) = fraction of training examples in class \(C_i\); \(P(x_j \mid C_i)\) = fraction of times feature \(x_j\) appears in class \(C_i\). For continuous features, <b>Gaussian Naive Bayes</b> estimates a mean and variance instead.</li>
+      <li><b>Zero-probability problem</b>: solved by <b>Laplace smoothing</b>, \(P(x_j \mid C_i) = \frac{\text{Count}(x_j, C_i) + \alpha}{\text{Count}(C_i) + \alpha V}\).</li>
+    </ol>
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.6rem;">Why Naive Bayes works despite being "naive"</h3>
+    <p class="section-lede">Even though the independence assumption is often violated:</p>
+    <ul class="concept-list">
+      <li>it simplifies computation dramatically;</li>
+      <li>the classification decision often remains correct even if the probability estimates are wrong;</li>
+      <li>it works surprisingly well in many real-world applications (especially text classification).</li>
+    </ul>
+  </section>
+
+</div>
+
+<footer>Class notes by Elitsa Yotkova · Lab 08 · built with plain HTML, CSS &amp; JS</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="code-cards.js"></script>
+<script src="lab08.js"></script>
+</body>
+</html>

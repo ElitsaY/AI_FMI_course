@@ -1083,3 +1083,68 @@ body.home .wrap { max-width: 1040px; }
 .ml-plot .kc-q.c0 { fill: var(--indigo); } .ml-plot .kc-q.c1 { fill: #d9546e; }
 .kc-query { font-size: 0.9rem; margin: 0.8rem 0 0; }
 .kc-query .red { color: #b8394f; } .kc-query .blue { color: var(--indigo); }
+
+/* ---- Lab 08: Naive Bayes ---- */
+.art-nb .hero-art .env rect, .art-nb .hero-art .env path { fill: none; stroke: var(--indigo); stroke-width: 2.2; opacity: 0.45; }
+.art-nb .hero-art .env.spam rect, .art-nb .hero-art .env.spam path { stroke: #d9546e; opacity: 0.55; }
+.nb-sliders { display: grid; gap: 0.5rem; }
+.nb-sliders label { display: grid; grid-template-columns: minmax(150px, 220px) 1fr 44px; align-items: center; gap: 0.7rem; font-weight: 700; font-size: 0.88rem; }
+.nb-sliders .val { font-family: 'Poppins', sans-serif; font-weight: 800; color: var(--indigo); text-align: right; }
+@media (max-width: 520px) { .nb-sliders label { grid-template-columns: 1fr 44px; } .nb-sliders label input { grid-column: 1 / -1; grid-row: 2; } }
+.bt-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 5px; align-self: start; }
+.bt-env { position: relative; aspect-ratio: 1.4; border-radius: 4px; background: color-mix(in srgb, var(--indigo) 22%, var(--surface)); border: 1.5px solid var(--indigo); }
+.bt-env::after { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 55%; border-bottom: 1.5px solid currentColor; clip-path: polygon(0 0, 50% 100%, 100% 0); background: color-mix(in srgb, var(--indigo) 30%, var(--surface)); color: var(--indigo); }
+.bt-env.spam { background: color-mix(in srgb, #d9546e 22%, var(--surface)); border-color: #d9546e; }
+.bt-env.spam::after { background: color-mix(in srgb, #d9546e 30%, var(--surface)); color: #d9546e; }
+.bt-env.free::before { content: ''; position: absolute; right: 3px; bottom: 3px; width: 7px; height: 7px; border-radius: 50%; background: var(--ink); z-index: 1; }
+.bt-out p { margin: 0 0 0.6rem; font-size: 0.92rem; }
+.bt-big { font-size: 1.05rem !important; }
+.bt-formula { font-size: 0.85rem !important; color: var(--ink-soft); overflow-wrap: anywhere; }
+.bt-note { font-size: 0.82rem !important; color: var(--ink-soft); }
+.bt-legend { font-size: 0.82rem !important; color: var(--ink-soft); }
+.bt-legend .k { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -1px; margin-right: 0.2rem; }
+.bt-legend .k.spam { background: #d9546e; } .bt-legend .k.ham { background: var(--indigo); }
+.bt-legend .k.dot { background: var(--ink); border-radius: 50%; width: 8px; height: 8px; }
+.bt-legend .k.post { background: var(--ink); height: 3px; width: 16px; vertical-align: 3px; }
+.cx-out { display: grid; gap: 0.6rem; }
+.cx-row { display: grid; grid-template-columns: 190px 1fr 110px; gap: 0.7rem; align-items: center; font-size: 0.88rem; }
+.cx-row b { text-align: right; font-variant-numeric: tabular-nums; }
+.cx-bar { height: 16px; background: var(--bg); border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+.cx-bar span { display: block; height: 100%; border-radius: 999px; transition: width 0.25s ease; }
+.cx-bar .joint { background: #d9546e; } .cx-bar .naive { background: var(--bfs); }
+.cx-note { font-size: 0.8rem; color: var(--ink-soft); margin: 0; }
+@media (max-width: 520px) { .cx-row { grid-template-columns: 1fr 80px; } .cx-row .cx-bar { grid-column: 1 / -1; grid-row: 2; } }
+.sp-out p, .tr-out p, .g1-out p { margin: 0 0 0.5rem; font-size: 0.92rem; overflow-wrap: anywhere; }
+.sp-email { font-size: 1rem !important; }
+.sp-chip { display: inline-block; padding: 0.1rem 0.55rem; border-radius: 999px; background: color-mix(in srgb, var(--ucs) 22%, var(--surface)); border: 1px solid var(--ucs); font-weight: 700; font-size: 0.85rem; }
+.sp-chip.grey { background: var(--bg); border-color: var(--line); color: var(--ink-soft); }
+.sp-line { padding: 0.45rem 0.7rem; border-radius: 8px; }
+.sp-line.spam { background: color-mix(in srgb, #d9546e 10%, var(--surface)); }
+.sp-line.ham { background: color-mix(in srgb, var(--indigo) 10%, var(--surface)); }
+.sp-decision span { color: var(--ink-soft); font-size: 0.82rem; }
+b.spam, .sp-decision .spam { color: #b8394f; } b.ham, .sp-decision .ham { color: var(--indigo); }
+.nb-train { font-size: 0.88rem; }
+.tr-cols { display: grid; gap: 0.8rem; }
+.tr-cols h5 { margin: 0 0 0.4rem; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-soft); }
+.tr-email { display: inline-block; margin: 0 0.35rem 0.35rem 0; padding: 0.2rem 0.6rem; border-radius: 6px; font-size: 0.84rem; }
+.tr-email.spam { background: color-mix(in srgb, #d9546e 12%, var(--surface)); border: 1px solid color-mix(in srgb, #d9546e 45%, var(--line)); }
+.tr-email.ham { background: color-mix(in srgb, var(--indigo) 12%, var(--surface)); border: 1px solid color-mix(in srgb, var(--indigo) 45%, var(--line)); }
+.tr-meta { font-size: 0.84rem; color: var(--ink-soft); margin: 0.5rem 0 0; }
+.tr-input-l { display: flex; flex: 1 1 260px; align-items: center; gap: 0.6rem; font-weight: 700; font-size: 0.88rem; }
+.tr-input-l input { flex: 1; min-width: 0; font: inherit; font-weight: 500; font-size: 0.95rem; color: var(--ink); background: var(--surface); border: 1.5px solid var(--line); border-radius: 8px; padding: 0.45rem 0.7rem; }
+.tr-input-l input:focus { outline: none; border-color: var(--indigo); }
+.tr-try { font-weight: 700; font-size: 0.85rem; align-self: center; }
+.tr-table td, .tr-table th { padding: 0.5rem 0.7rem; font-size: 0.84rem; }
+.tr-table td.zero { background: color-mix(in srgb, #d9546e 16%, transparent); color: #b8394f; }
+.ml-plot .g-spam { fill: color-mix(in srgb, #d9546e 18%, transparent); stroke: #d9546e; stroke-width: 2.5; }
+.ml-plot .g-ham { fill: color-mix(in srgb, var(--indigo) 18%, transparent); stroke: var(--indigo); stroke-width: 2.5; }
+.ml-plot .g-post { fill: none; stroke: var(--ink); stroke-width: 2; stroke-dasharray: 6 5; }
+.ml-plot .g-post-dot { fill: var(--ink); }
+.ml-plot .g-ell { fill: none; stroke-width: 1.8; stroke-dasharray: 5 4; }
+.ml-plot .g-ell.spam { stroke: #b8394f; } .ml-plot .g-ell.ham { stroke: var(--indigo); }
+.ml-plot .g-mu { stroke-width: 3; } .ml-plot .g-mu.spam { stroke: #b8394f; } .ml-plot .g-mu.ham { stroke: var(--indigo); }
+.ml-plot .g-q { stroke: var(--ink); stroke-width: 3; } .ml-plot .g-q.spam { fill: #d9546e; } .ml-plot .g-q.ham { fill: var(--indigo); }
+.g2-plot { cursor: crosshair; }
+/* grid children may shrink below their content, so wide formulas scroll instead of widening the page */
+.concept-list > li { min-width: 0; }
+@media (max-width: 520px) { .nb-sliders label { grid-template-columns: minmax(0, 1fr) 44px; } }
