@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lab 09 — Decision Trees | Class Notes</title>
+<meta name="description" content="Interactive notes on decision trees: classification and regression trees, recursive construction, entropy as expected surprise, information gain, a Python implementation, overfitting and pruning.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+
+<header class="site-nav">
+  <span class="brand"><span class="dot"></span> Class Notes</span>
+  <nav>
+    <a href="../index.html">Home</a>
+    <a href="lab01-uninformed-search.html">Lab 01</a>
+    <a href="lab02-informed-search.html">Lab 02</a>
+    <a href="lab03-csp.html">Lab 03</a>
+    <a href="lab04-genetic-algorithms.html">Lab 04</a>
+    <a href="lab05-games.html">Lab 05</a>
+    <a href="lab06-intro-ml.html">Lab 06</a>
+    <a href="lab065-linear-logistic.html">Lab 6.5</a>
+    <a href="lab07-knn.html">Lab 07</a>
+    <a href="lab08-naive-bayes.html">Lab 08</a>
+  </nav>
+</header>
+
+<section class="hero art-hero art-dt">
+  <svg id="dt-hero-bg" class="hero-art" viewBox="0 0 1200 300" preserveAspectRatio="xMidYMid slice" aria-hidden="true"></svg>
+  <div class="wrap">
+    <p class="eyebrow">Lab 09</p>
+    <h1>Decision Trees</h1>
+    <div class="badges">
+      <span class="badge ids">Recursive splitting</span>
+      <span class="badge dfs">Entropy</span>
+      <span class="badge ucs">Information gain</span>
+      <span class="badge bfs">Pruning</span>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+
+  <!-- ===== OVERVIEW ===== -->
+  <section class="block" id="overview">
+    <h2 class="section-title">Overview of the lab</h2>
+    <ol class="concept-list">
+      <li><a href="#intro">What are decision trees used for?</a></li>
+      <li><a href="#example">A decision tree in action: Play Tennis</a></li>
+      <li><a href="#build">How a tree is built: recursive splitting</a></li>
+      <li><a href="#entropy">Entropy: expected surprise</a></li>
+      <li><a href="#exercises">Exercises: entropy</a></li>
+      <li><a href="#gain">Information gain</a></li>
+      <li><a href="#python">Decision tree in Python</a></li>
+      <li><a href="#overfit">Disadvantages and overfitting</a></li>
+      <li><a href="#pruning">Dealing with overfitting</a></li>
+    </ol>
+  </section>
+
+  <!-- ===== INTRO ===== -->
+  <section class="block" id="intro">
+    <h2 class="section-title">What are decision trees used for?</h2>
+    <p class="section-lede">A <b>decision tree</b> is a supervised model that predicts by asking a sequence of simple <b>yes/no (or multiple-choice) questions</b> about the features. Each answer sends the example down one branch, until it reaches a <b>leaf</b> that holds the prediction. You saw the animal tree in <a href="lab06-intro-ml.html">Lab 06</a>. Trees are used for both kinds of supervised task:</p>
+    <ul class="concept-list">
+      <li><b>Classification tree</b>: the leaf predicts a <b>class</b>, the majority class of the training examples that reach it. Example: will we play tennis today, <i>Yes</i> or <i>No</i>?</li>
+      <li><b>Regression tree</b>: the leaf predicts a <b>number</b>, the mean target value of the training examples that reach it. Example: the price of a flat from its size.</li>
+    </ul>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.6rem;">Anatomy of a tree</h3>
+    <ul class="concept-list">
+      <li><b>Root node</b>: the first question; all examples start here.</li>
+      <li><b>Internal (decision) node</b>: a test on one feature, e.g. \(x_1 \le 4.5\) or "Outlook = ?".</li>
+      <li><b>Branch</b>: one outcome of the test.</li>
+      <li><b>Leaf (terminal) node</b>: no more questions, only the prediction.</li>
+      <li><b>Depth</b>: the number of questions on the longest root-to-leaf path.</li>
+    </ul>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">See it: one idea, two tasks</h4>
+    <p class="section-lede">Each question on a numeric feature cuts the feature space with a line <b>parallel to an axis</b>, so a tree splits the space into rectangles and gives one answer per rectangle. Switch between the two tasks and click the plot to send a new example down the tree.</p>
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="strategy-pick" id="uses-pick">
+          <button class="strat-btn active" data-m="cls">Classification</button>
+          <button class="strat-btn" data-m="reg">Regression</button>
+        </div>
+      </div>
+      <div class="pg-grid">
+        <svg id="uses-plot" class="ml-plot uses-plot" viewBox="0 0 420 330" aria-label="Tree partition of the feature space"></svg>
+        <div>
+          <svg id="uses-tree" class="dt-tree" viewBox="0 0 360 250" aria-label="The tree"></svg>
+          <div id="uses-out" class="dt-out"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== EXAMPLE ===== -->
+  <section class="block algo-section ids" id="example">
+    <span class="badge ids" style="margin-bottom:0.6rem; display:inline-block;">Example</span>
+    <h2 class="section-title">A decision tree in action: Play Tennis</h2>
+    <p class="section-lede">The classic dataset: on 14 days we recorded the weather and whether tennis was played. Four categorical features, one class label.</p>
+    <div class="table-wrap">
+      <table class="summary dt-data" id="tennis-table">
+        <thead><tr><th>Day</th><th>Outlook</th><th>Temperature</th><th>Humidity</th><th>Wind</th><th>Play?</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <p class="section-lede" style="margin-top:1rem;">From this data a learning algorithm (we will build it below) produces the following tree. It classifies all 14 days correctly and uses only three questions. <b>Temperature</b> is never asked: it does not help.</p>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Try it: classify a day</h4>
+    <p class="section-lede">Choose the weather, or click a row of the table above. The highlighted path shows the questions the tree asks.</p>
+    <div class="playground">
+      <div class="dt-picks" id="cd-picks"></div>
+      <div class="fig-scroll" style="margin-top:1rem;"><svg id="cd-tree" class="dt-tree wide" viewBox="0 0 640 330" aria-label="Play Tennis decision tree"></svg></div>
+      <div id="cd-out" class="dt-out" style="margin-top:0.8rem;"></div>
+    </div>
+    <p class="caption-note">💡 A tree is easy to read as a set of <b>rules</b>, one per leaf: <i>IF Outlook = Sunny AND Humidity = Normal THEN Play = Yes</i>. This interpretability is the main reason trees are popular.</p>
+  </section>
+
+  <!-- ===== BUILD ===== -->
+  <section class="block algo-section bfs" id="build">
+    <span class="badge bfs" style="margin-bottom:0.6rem; display:inline-block;">Algorithm</span>
+    <h2 class="section-title">How a tree is built: recursive splitting</h2>
+    <p class="section-lede">Trees are learned <b>top-down</b> and <b>greedily</b> (algorithms ID3, C4.5, CART). Pick the best question for the current data, split the data by its answers, then solve each part the same way. It is a <b>recursive divide-and-conquer</b> algorithm.</p>
+    <div class="derivation dt-pseudo">
+<pre>BuildTree(S, features):
+    if all examples in S have the same class c:      <span># base case: pure node</span>
+        return Leaf(c)
+    if features is empty:                            <span># base case: nothing left to ask</span>
+        return Leaf(majority class of S)
+    A ← the best feature to split S                 <span># "best" = makes the children purest</span>
+    node ← Node(question on A)
+    for each value v of A:
+        S_v ← examples of S with A = v
+        if S_v is empty:
+            node.child[v] ← Leaf(majority class of S)
+        else:
+            node.child[v] ← BuildTree(S_v, features − {A})   <span># recursion</span>
+    return node</pre>
+    </div>
+    <ul class="concept-list">
+      <li><b>Greedy</b>: each split is chosen by looking only at the current node. The algorithm never goes back to change an earlier question.</li>
+      <li><b>Stopping</b>: a branch ends when its node is <b>pure</b> (one class only) or there is nothing left to ask.</li>
+      <li><b>Key question</b>: how do we measure which feature is "best"? We need a number for <b>impurity</b>. That number is <a href="#entropy">entropy</a>.</li>
+    </ul>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Try it: grow the Play Tennis tree step by step</h4>
+    <p class="section-lede">Each node shows its class counts [Yes, No]. The rows of the table that reach the current node are highlighted. Dashed nodes are children whose recursive call has not run yet; the call stack lists the calls that are currently active.</p>
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="play-btns" style="margin-left:0;">
+          <button class="icon-btn" id="bs-prev" title="Step back">⏮</button>
+          <button class="icon-btn" id="bs-play" title="Play / pause">▶</button>
+          <button class="icon-btn" id="bs-next" title="Step forward">⏭</button>
+          <button class="icon-btn" id="bs-reset" title="Reset">↺</button>
+        </div>
+        <span class="dt-step" id="bs-step"></span>
+      </div>
+      <div class="fig-scroll"><svg id="bs-tree" class="dt-tree wide" viewBox="0 0 640 330" aria-label="Tree being built"></svg></div>
+      <div class="pg-grid" style="grid-template-columns:1fr 1.4fr; margin-top:0.8rem;">
+        <div class="frontier-box"><h5>Call stack (active BuildTree calls)</h5><div class="chip-row" id="bs-stack"></div></div>
+        <div class="frontier-box"><h5>Log</h5><div class="log-box" id="bs-log"></div></div>
+      </div>
+      <div class="table-wrap" style="margin-top:1rem;">
+        <table class="summary dt-data dt-small" id="bs-table">
+          <thead><tr><th>Day</th><th>Outlook</th><th>Temp.</th><th>Humidity</th><th>Wind</th><th>Play?</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== ENTROPY ===== -->
+  <section class="block algo-section dfs" id="entropy">
+    <span class="badge dfs" style="margin-bottom:0.6rem; display:inline-block;">Impurity</span>
+    <h2 class="section-title">Entropy: expected surprise</h2>
+    <p class="section-lede">A node is <b>pure</b> when it contains one class only: we are certain of the answer. It is most <b>impure</b> when the classes are mixed equally: we can only guess. Entropy measures this uncertainty. It is easiest to build from the idea of <b>surprise</b>.</p>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.6rem;">Surprise of one outcome</h3>
+    <p class="section-lede">How surprised are we to see an outcome with probability \(p\)? We want:</p>
+    <ul class="concept-list">
+      <li><b>Certain events are no surprise</b>: \(p = 1 \Rightarrow\) surprise \(= 0\).</li>
+      <li><b>Rare events are very surprising</b>: as \(p \to 0\), surprise \(\to \infty\).</li>
+      <li><b>Surprises add up</b>: for two independent events, \(p = p_1 p_2\), and the surprise should be the sum of the two surprises. Only the logarithm turns products into sums.</li>
+    </ul>
+    <div class="definition-box">
+      <div class="dbox-label">📐 Surprise (information content)</div>
+      \[ I(x) = \log_2 \frac{1}{p(x)} = -\log_2 p(x) \quad \text{bits} \]
+      <p>With base 2 the unit is the <b>bit</b>: a fair coin flip gives \(-\log_2 \tfrac12 = 1\) bit of surprise.</p>
+    </div>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.8rem;">Entropy = the average surprise</h3>
+    <p class="section-lede">Before we look, we do not know which outcome will come. The <b>entropy</b> is the surprise we <b>expect</b> on average: each outcome's surprise weighted by its probability.</p>
+    <div class="definition-box">
+      <div class="dbox-label">📐 Entropy</div>
+      \[ H(X) = \mathbb{E}\big[I(X)\big] = \sum_{i=1}^{k} p_i \log_2 \frac{1}{p_i} = -\sum_{i=1}^{k} p_i \log_2 p_i \]
+      <p>For a node \(S\) of a tree, \(p_i\) is the fraction of examples in \(S\) of class \(i\). By convention \(0 \cdot \log_2 0 = 0\).</p>
+    </div>
+    <ul class="concept-list" style="margin-top:1rem;">
+      <li><b>Minimum</b> \(H = 0\): a pure node, one class with \(p = 1\). No surprise at all.</li>
+      <li><b>Maximum</b> \(H = \log_2 k\): all \(k\) classes equally likely. For two classes the maximum is <b>1 bit</b>.</li>
+      <li>A rare class has a <b>large</b> surprise but a <b>small</b> weight, so it adds little to the average.</li>
+      <li>Play Tennis root, 9 Yes and 5 No: \(H = -\tfrac{9}{14}\log_2\tfrac{9}{14} - \tfrac{5}{14}\log_2\tfrac{5}{14} = 0.940\) bits.</li>
+    </ul>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Try it: entropy of a bag of marbles</h4>
+    <p class="section-lede">Set how many marbles of each colour are in the bag (a node's class counts). Every colour sits on the surprise curve \(-\log_2 p\) at its probability; the bar below each point is its contribution \(p \cdot (-\log_2 p)\). The entropy is the sum of the bars. Start: the Play Tennis root, 9 and 5.</p>
+    <div class="playground">
+      <div class="nb-sliders">
+        <label><span><span class="dt-key c0"></span> Class A (Yes)</span><input type="range" id="en-a" min="0" max="16" value="9" step="1"><span class="val" id="en-a-val">9</span></label>
+        <label><span><span class="dt-key c1"></span> Class B (No)</span><input type="range" id="en-b" min="0" max="16" value="5" step="1"><span class="val" id="en-b-val">5</span></label>
+        <label><span><span class="dt-key c2"></span> Class C</span><input type="range" id="en-c" min="0" max="16" value="0" step="1"><span class="val" id="en-c-val">0</span></label>
+      </div>
+      <div class="dt-bag" id="en-bag"></div>
+      <div class="pg-grid">
+        <svg id="en-plot" class="ml-plot" viewBox="0 0 440 300" aria-label="Surprise curve with each class"></svg>
+        <div id="en-out" class="dt-out"></div>
+      </div>
+    </div>
+
+    <h4 style="margin:1.6rem 0 0.4rem;">Try it: the two-class entropy curve</h4>
+    <p class="section-lede">With two classes the entropy depends only on the fraction \(p\) of the first class: \(H(p) = -p\log_2 p - (1-p)\log_2(1-p)\). It is 0 at the pure ends and peaks at 1 bit for a 50/50 node.</p>
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="beam-control show" style="margin:0;"><label>\(p\) (fraction of Yes)</label><input type="range" id="bc-p" min="0" max="1" value="0.643" step="0.001"><span class="val" id="bc-p-val">0.643</span></div>
+      </div>
+      <div class="pg-grid">
+        <svg id="bc-plot" class="ml-plot" viewBox="0 0 440 280" aria-label="Binary entropy curve"></svg>
+        <div id="bc-out" class="dt-out"></div>
+      </div>
+    </div>
+    <p class="caption-note">💡 CART uses another impurity measure, the <b>Gini impurity</b> \(G = 1 - \sum_i p_i^2\) (the probability of mislabelling a random example if we label it randomly by the node's class distribution). It has the same shape: 0 when pure, largest when mixed. The dashed curve above shows \(2G\) for comparison. In practice both give very similar trees.</p>
+  </section>
+
+  <!-- ===== EXERCISES ===== -->
+  <section class="block" id="exercises">
+    <h2 class="section-title">Exercises: entropy</h2>
+    <p class="section-lede">Solve on paper first, then open the solution. Useful values: \(\log_2 3 \approx 1.585\), \(\log_2 5 \approx 2.322\), \(\log_2 6 \approx 2.585\), \(\log_2 7 \approx 2.807\). Check your numbers with the marble widget above.</p>
+    <div class="dt-ex-list">
+      <details class="dt-ex">
+        <summary><span class="dt-ex-no">1</span><span class="dt-ex-q">A node holds 8 examples of class Yes and 0 of class No. What is its entropy? What if it holds 4 Yes and 4 No?</span></summary>
+        <div class="dt-ex-sol">
+          <p>[8, 0]: one class with \(p = 1\), so \(H = -1 \cdot \log_2 1 = 0\). A pure node.</p>
+          <p>[4, 4]: \(H = -\tfrac12\log_2\tfrac12 - \tfrac12\log_2\tfrac12 = \tfrac12 + \tfrac12 = 1\) bit, the maximum for two classes.</p>
+        </div>
+      </details>
+      <details class="dt-ex">
+        <summary><span class="dt-ex-no">2</span><span class="dt-ex-q">A bag has 4 red, 2 blue and 2 green marbles. Compute the surprise of drawing each colour and the entropy of the bag.</span></summary>
+        <div class="dt-ex-sol">
+          <p>\(p = \tfrac12, \tfrac14, \tfrac14\). Surprises: red \(-\log_2\tfrac12 = 1\) bit, blue and green \(-\log_2\tfrac14 = 2\) bits each.</p>
+          <div class="math-block">\[ H = \tfrac12 \cdot 1 + \tfrac14 \cdot 2 + \tfrac14 \cdot 2 = 1.5 \text{ bits} \]</div>
+        </div>
+      </details>
+      <details class="dt-ex">
+        <summary><span class="dt-ex-no">3</span><span class="dt-ex-q">A biased coin lands heads with probability 0.9. Which outcome is more surprising? What is the entropy of one flip? Compare with a fair coin.</span></summary>
+        <div class="dt-ex-sol">
+          <p>Heads: \(-\log_2 0.9 = 0.152\) bits. Tails: \(-\log_2 0.1 = 3.322\) bits, much more surprising.</p>
+          <div class="math-block">\[ H = 0.9 \cdot 0.152 + 0.1 \cdot 3.322 = 0.137 + 0.332 = 0.469 \text{ bits} \]</div>
+          <p>A fair coin has 1 bit. The biased coin is more predictable, so on average it surprises us less: the big surprise of tails happens only 10% of the time.</p>
+        </div>
+      </details>
+      <details class="dt-ex">
+        <summary><span class="dt-ex-no">4</span><span class="dt-ex-q">Compute the entropy of the Play Tennis node <i>Outlook = Sunny</i>, which holds 2 Yes and 3 No.</span></summary>
+        <div class="dt-ex-sol">
+          <div class="math-block">\[ H = -\tfrac25\log_2\tfrac25 - \tfrac35\log_2\tfrac35 = 0.4 \cdot 1.322 + 0.6 \cdot 0.737 = 0.529 + 0.442 = 0.971 \text{ bits} \]</div>
+        </div>
+      </details>
+      <details class="dt-ex">
+        <summary><span class="dt-ex-no">5</span><span class="dt-ex-q">Which node is more impure: [3 Yes, 1 No] or [6 Yes, 2 No]?</span></summary>
+        <div class="dt-ex-sol">
+          <p>Neither. Both have \(p = \tfrac34, \tfrac14\), so both have \(H = \tfrac34 \cdot 0.415 + \tfrac14 \cdot 2 = 0.811\) bits. Entropy depends only on the <b>proportions</b>, not on the number of examples.</p>
+        </div>
+      </details>
+      <details class="dt-ex">
+        <summary><span class="dt-ex-no">6</span><span class="dt-ex-q">What is the entropy of a fair six-sided die? Of a node with 3 classes, 5 examples each? Can a two-class node have entropy larger than 1?</span></summary>
+        <div class="dt-ex-sol">
+          <p>Die: six outcomes with \(p = \tfrac16\), \(H = 6 \cdot \tfrac16 \log_2 6 = \log_2 6 \approx 2.585\) bits.</p>
+          <p>Three equal classes: \(H = \log_2 3 \approx 1.585\) bits.</p>
+          <p>No: with \(k\) classes \(H \le \log_2 k\), and \(\log_2 2 = 1\).</p>
+        </div>
+      </details>
+      <details class="dt-ex">
+        <summary><span class="dt-ex-no">7</span><span class="dt-ex-q">A node holds 7 examples: 5 Yes and 2 No. You add one more Yes. Does the entropy go up or down? Compute both.</span></summary>
+        <div class="dt-ex-sol">
+          <p>Before: \(H(\tfrac57) = -\tfrac57\log_2\tfrac57 - \tfrac27\log_2\tfrac27 = 0.347 + 0.516 = 0.863\) bits.</p>
+          <p>After, [6, 2]: \(H(\tfrac34) = 0.811\) bits. It goes <b>down</b>: the node moved further from 50/50, towards pure.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- ===== GAIN ===== -->
+  <section class="block algo-section ucs" id="gain">
+    <span class="badge ucs" style="margin-bottom:0.6rem; display:inline-block;">Splitting criterion</span>
+    <h2 class="section-title">Information gain</h2>
+    <p class="section-lede">A good question leaves the children <b>purer</b> than the parent. <b>Information gain</b> is the drop in entropy caused by a split: the parent's entropy minus the <b>weighted average</b> entropy of the children (weighted by how many examples go to each child).</p>
+    <div class="definition-box">
+      <div class="dbox-label">📐 Information gain of feature \(A\) on node \(S\)</div>
+      \[ \text{Gain}(S, A) = H(S) - \sum_{v \in \text{Values}(A)} \frac{|S_v|}{|S|}\, H(S_v) \]
+      <p>\(S_v\) is the subset of \(S\) with \(A = v\). At every node, ID3 splits on the feature with the <b>largest</b> gain.</p>
+    </div>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.8rem;">Worked example: the root of Play Tennis</h3>
+    <p class="section-lede">\(H(S) = 0.940\) for [9 Yes, 5 No]. Splitting on <b>Outlook</b>:</p>
+    <ul class="concept-list">
+      <li>Sunny [2, 3]: \(H = 0.971\) · Overcast [4, 0]: \(H = 0\) · Rain [3, 2]: \(H = 0.971\)</li>
+    </ul>
+    <div class="math-block">\[ \text{Gain}(S, \text{Outlook}) = 0.940 - \left(\tfrac{5}{14} \cdot 0.971 + \tfrac{4}{14} \cdot 0 + \tfrac{5}{14} \cdot 0.971\right) = 0.940 - 0.694 = 0.247 \]</div>
+    <p class="section-lede">Splitting on <b>Wind</b>: Weak [6, 2] with \(H = 0.811\), Strong [3, 3] with \(H = 1\):</p>
+    <div class="math-block">\[ \text{Gain}(S, \text{Wind}) = 0.940 - \left(\tfrac{8}{14} \cdot 0.811 + \tfrac{6}{14} \cdot 1\right) = 0.940 - 0.892 = 0.048 \]</div>
+    <div class="table-wrap">
+      <table class="summary">
+        <thead><tr><th>Feature</th><th>Children [Yes, No]</th><th>Weighted child entropy</th><th>Gain</th></tr></thead>
+        <tbody>
+          <tr data-s="bfs"><td><b>Outlook</b></td><td>Sunny [2,3] · Overcast [4,0] · Rain [3,2]</td><td>0.694</td><td><b>0.247</b></td></tr>
+          <tr><td>Humidity</td><td>High [3,4] · Normal [6,1]</td><td>0.788</td><td>0.152</td></tr>
+          <tr><td>Wind</td><td>Weak [6,2] · Strong [3,3]</td><td>0.892</td><td>0.048</td></tr>
+          <tr><td>Temperature</td><td>Hot [2,2] · Mild [4,2] · Cool [3,1]</td><td>0.911</td><td>0.029</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="section-lede" style="margin-top:1rem;"><b>Outlook</b> wins, which is why it is the root. Then we repeat on each child: on the Sunny node, <b>Humidity</b> has gain 0.971 (both children pure). On the Rain node, <b>Wind</b> has gain 0.971.</p>
+    <p class="caption-note">💡 Information gain is the <b>mutual information</b> between the feature and the class: how many bits of uncertainty about the class we remove, on average, by learning the feature's value.</p>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Try it: pick the split</h4>
+    <p class="section-lede">Choose a node and a feature. Each child is drawn as a row of marbles (Yes / No) with its entropy; the bars on the right rank every feature by gain. Try <b>Day</b> at the end.</p>
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="strategy-pick" id="ig-node">
+          <button class="strat-btn active" data-n="root">Root (all 14)</button>
+          <button class="strat-btn" data-n="Sunny">Outlook = Sunny</button>
+          <button class="strat-btn" data-n="Rain">Outlook = Rain</button>
+        </div>
+      </div>
+      <div class="pg-controls">
+        <div class="strategy-pick" id="ig-attr">
+          <button class="strat-btn active" data-a="Outlook">Outlook</button>
+          <button class="strat-btn" data-a="Temperature">Temperature</button>
+          <button class="strat-btn" data-a="Humidity">Humidity</button>
+          <button class="strat-btn" data-a="Wind">Wind</button>
+          <button class="strat-btn" data-a="Day">Day</button>
+        </div>
+      </div>
+      <div class="pg-grid">
+        <div id="ig-split" class="ig-split"></div>
+        <div id="ig-rank" class="dt-out"></div>
+      </div>
+      <div id="ig-formula" class="dt-out" style="margin-top:0.8rem;"></div>
+    </div>
+    <p class="caption-note">💡 <b>Bias towards many-valued features.</b> <i>Day</i> puts every example in its own child. Every child is pure, so the gain is the maximum possible (0.940), yet the question is useless for a new day. Drop ID-like features before training. C4.5 also divides the gain by the <b>split information</b> \(-\sum_v \frac{|S_v|}{|S|}\log_2\frac{|S_v|}{|S|}\) (the <b>gain ratio</b>), which penalises splits into many small children.</p>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.8rem;">Numeric features: thresholds</h3>
+    <p class="section-lede">For a numeric feature \(x\), the questions are of the form \(x \le t\). Sort the training values and try each threshold \(t\) halfway between two neighbouring values. Keep the one with the largest gain. This is how the trees in the <a href="#intro">first widget</a> and in the <a href="#overfit">overfitting section</a> are grown. For <b>regression</b> trees the entropy is replaced by the <b>variance</b> (mean squared error) of the targets in a node.</p>
+  </section>
+
+  <!-- ===== PYTHON ===== -->
+  <section class="block" id="python">
+    <h2 class="section-title">Decision tree in Python</h2>
+    <p class="section-lede">We implement ID3 from scratch, one function at a time, and check the numbers against the page. Each row is a dictionary, e.g. <code>{"Outlook": "Sunny", …, "Play": "No"}</code>.</p>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.4rem;">1. The data</h3>
+    <details class="code-card">
+      <summary>
+        <span class="code-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="code-file">data.py</span>
+        <span class="code-lang">Python</span>
+        <button type="button" class="code-copy">Copy</button>
+        <span class="code-chevron" aria-hidden="true">▾</span>
+      </summary>
+      <pre class="code-body"><code class="lang-py">FEATURES = ["Outlook", "Temperature", "Humidity", "Wind"]
+TARGET = "Play"
+
+raw = """Sunny Hot High Weak No
+Sunny Hot High Strong No
+Overcast Hot High Weak Yes
+Rain Mild High Weak Yes
+Rain Cool Normal Weak Yes
+Rain Cool Normal Strong No
+Overcast Cool Normal Strong Yes
+Sunny Mild High Weak No
+Sunny Cool Normal Weak Yes
+Rain Mild Normal Weak Yes
+Sunny Mild Normal Strong Yes
+Overcast Mild High Strong Yes
+Overcast Hot Normal Weak Yes
+Rain Mild High Strong No"""
+
+rows = [dict(zip(FEATURES + [TARGET], line.split())) for line in raw.splitlines()]</code></pre>
+    </details>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.6rem;">2. Entropy</h3>
+    <p class="section-lede">Count the classes, turn the counts into probabilities, sum \(-p \log_2 p\).</p>
+    <details class="code-card">
+      <summary>
+        <span class="code-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="code-file">entropy.py</span>
+        <span class="code-lang">Python</span>
+        <button type="button" class="code-copy">Copy</button>
+        <span class="code-chevron" aria-hidden="true">▾</span>
+      </summary>
+      <pre class="code-body"><code class="lang-py">import math
+from collections import Counter
+
+def entropy(rows):
+    n = len(rows)
+    counts = Counter(r[TARGET] for r in rows)
+    return -sum(c / n * math.log2(c / n) for c in counts.values())   # classes with count 0 never appear
+
+print(round(entropy(rows), 3))   # 0.94</code></pre>
+    </details>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.6rem;">3. Split and information gain</h3>
+    <details class="code-card">
+      <summary>
+        <span class="code-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="code-file">gain.py</span>
+        <span class="code-lang">Python</span>
+        <button type="button" class="code-copy">Copy</button>
+        <span class="code-chevron" aria-hidden="true">▾</span>
+      </summary>
+      <pre class="code-body"><code class="lang-py">def split(rows, feature):
+    groups = {}                                    # value -&gt; list of rows
+    for r in rows:
+        groups.setdefault(r[feature], []).append(r)
+    return groups
+
+def information_gain(rows, feature):
+    n = len(rows)
+    children = split(rows, feature).values()
+    weighted = sum(len(ch) / n * entropy(ch) for ch in children)
+    return entropy(rows) - weighted
+
+for f in FEATURES:
+    print(f, round(information_gain(rows, f), 3))
+# Outlook 0.247
+# Temperature 0.029
+# Humidity 0.152
+# Wind 0.048</code></pre>
+    </details>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.6rem;">4. Build the tree recursively (ID3)</h3>
+    <p class="section-lede">A leaf is a class label (a string); an internal node is a dictionary <code>{"feature": …, "children": {value: subtree}, "majority": …}</code>. The code follows the pseudocode from the <a href="#build">build section</a>.</p>
+    <details class="code-card">
+      <summary>
+        <span class="code-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="code-file">id3.py</span>
+        <span class="code-lang">Python</span>
+        <button type="button" class="code-copy">Copy</button>
+        <span class="code-chevron" aria-hidden="true">▾</span>
+      </summary>
+      <pre class="code-body"><code class="lang-py">def majority(rows):
+    return Counter(r[TARGET] for r in rows).most_common(1)[0][0]
+
+def build_tree(rows, features, max_depth=None, depth=0):
+    classes = set(r[TARGET] for r in rows)
+    if len(classes) == 1:                                  # pure node
+        return classes.pop()
+    if not features or (max_depth is not None and depth == max_depth):
+        return majority(rows)                              # nothing left to ask / depth limit
+    best = max(features, key=lambda f: information_gain(rows, f))
+    rest = [f for f in features if f != best]
+    return {
+        "feature": best,
+        "majority": majority(rows),                        # used for values unseen in training
+        "children": {v: build_tree(sub, rest, max_depth, depth + 1)
+                     for v, sub in split(rows, best).items()},
+    }
+
+tree = build_tree(rows, FEATURES)
+print(tree)
+# {'feature': 'Outlook', 'majority': 'Yes', 'children': {
+#     'Sunny': {'feature': 'Humidity', 'majority': 'No', 'children': {'High': 'No', 'Normal': 'Yes'}},
+#     'Overcast': 'Yes',
+#     'Rain': {'feature': 'Wind', 'majority': 'Yes', 'children': {'Weak': 'Yes', 'Strong': 'No'}}}}</code></pre>
+    </details>
+    <p class="caption-note">💡 <code>split</code> only creates children for values that occur in the node, so the "empty \(S_v\)" case of the pseudocode never happens here. A value that was not seen in training is handled at prediction time by the stored <code>majority</code>.</p>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.6rem;">5. Predict and print</h3>
+    <details class="code-card">
+      <summary>
+        <span class="code-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="code-file">predict.py</span>
+        <span class="code-lang">Python</span>
+        <button type="button" class="code-copy">Copy</button>
+        <span class="code-chevron" aria-hidden="true">▾</span>
+      </summary>
+      <pre class="code-body"><code class="lang-py">def predict(tree, x):
+    while isinstance(tree, dict):                          # walk down until we reach a leaf
+        tree = tree["children"].get(x[tree["feature"]], tree["majority"])
+    return tree
+
+def print_tree(tree, indent=""):
+    if not isinstance(tree, dict):
+        print(indent + "→ " + tree)
+        return
+    for value, child in tree["children"].items():
+        print(f"{indent}{tree['feature']} = {value}")
+        print_tree(child, indent + "    ")
+
+day = {"Outlook": "Sunny", "Temperature": "Cool", "Humidity": "High", "Wind": "Strong"}
+print(predict(tree, day))                                              # No
+print(sum(predict(tree, r) == r[TARGET] for r in rows), "/", len(rows))   # 14 / 14
+print_tree(tree)</code></pre>
+    </details>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.6rem;">6. Numeric features: best threshold</h3>
+    <details class="code-card">
+      <summary>
+        <span class="code-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="code-file">threshold.py</span>
+        <span class="code-lang">Python</span>
+        <button type="button" class="code-copy">Copy</button>
+        <span class="code-chevron" aria-hidden="true">▾</span>
+      </summary>
+      <pre class="code-body"><code class="lang-py">def entropy_of(labels):
+    n = len(labels)
+    return -sum(c / n * math.log2(c / n) for c in Counter(labels).values())
+
+def best_threshold(xs, ys):
+    """Best question 'x &lt;= t' for one numeric feature. Returns (t, gain)."""
+    pairs = sorted(zip(xs, ys))
+    parent, n = entropy_of(ys), len(ys)
+    best_t, best_gain = None, -1.0
+    for i in range(1, n):
+        if pairs[i - 1][0] == pairs[i][0]:
+            continue                                       # no threshold between equal values
+        t = (pairs[i - 1][0] + pairs[i][0]) / 2            # midpoint between neighbours
+        left = [y for _, y in pairs[:i]]
+        right = [y for _, y in pairs[i:]]
+        gain = parent - (len(left) / n * entropy_of(left) + len(right) / n * entropy_of(right))
+        if gain &gt; best_gain:
+            best_t, best_gain = t, gain
+    return best_t, best_gain
+
+temps = [64, 65, 68, 69, 70, 71, 72, 75, 80, 81, 83, 85]
+play  = ["Yes", "No", "Yes", "Yes", "Yes", "No", "No", "Yes", "No", "Yes", "Yes", "No"]
+t, g = best_threshold(temps, play)
+print(t, round(g, 3))   # 84.0 0.113</code></pre>
+    </details>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.6rem;">7. The same with scikit-learn</h3>
+    <p class="section-lede">scikit-learn implements CART: binary splits on numeric features. Categorical features must be encoded as numbers first (here one-hot). The pruning parameters are explained in the <a href="#pruning">last section</a>.</p>
+    <details class="code-card">
+      <summary>
+        <span class="code-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="code-file">sklearn_tree.py</span>
+        <span class="code-lang">Python</span>
+        <button type="button" class="code-copy">Copy</button>
+        <span class="code-chevron" aria-hidden="true">▾</span>
+      </summary>
+      <pre class="code-body"><code class="lang-py">import pandas as pd
+from sklearn.tree import DecisionTreeClassifier, export_text
+
+df = pd.DataFrame(rows)
+X = pd.get_dummies(df[FEATURES])           # Outlook_Sunny, Outlook_Rain, ... (0/1 columns)
+y = df[TARGET]
+
+clf = DecisionTreeClassifier(
+    criterion="entropy",     # or "gini" (the default)
+    max_depth=None,          # pre-pruning: limit the depth
+    min_samples_leaf=1,      # pre-pruning: minimum examples in a leaf
+    ccp_alpha=0.0,           # post-pruning: cost-complexity parameter
+    random_state=0,
+).fit(X, y)
+
+print(export_text(clf, feature_names=list(X.columns)))
+print("training accuracy:", clf.score(X, y))   # 1.0</code></pre>
+    </details>
+    <p class="caption-note">💡 The printed tree differs from ID3's: every question is binary, e.g. <code>Outlook_Overcast &lt;= 0.5</code> ("is it not overcast?"), so one three-way question on Outlook becomes two yes/no questions, and the greedy choices change.</p>
+  </section>
+
+  <!-- ===== OVERFITTING ===== -->
+  <section class="block algo-section dfs" id="overfit">
+    <span class="badge dfs" style="margin-bottom:0.6rem; display:inline-block;">Pitfall</span>
+    <h2 class="section-title">Disadvantages and overfitting</h2>
+    <p class="section-lede">If we let the recursion run until every leaf is pure, a tree can <b>always</b> reach 100% training accuracy (unless two identical examples have different labels). In the extreme, it puts every training example into its own leaf. That is memorising, not learning.</p>
+
+    <div class="table-wrap">
+      <table class="summary proscons">
+        <thead><tr><th>Advantages ✅</th><th>Disadvantages ❌</th></tr></thead>
+        <tbody>
+          <tr><td><b>Interpretable</b>: the model is a set of readable if-then rules</td><td><b>Overfitting</b>: a fully grown tree fits the noise in the training data</td></tr>
+          <tr><td><b>Little preprocessing</b>: no feature scaling or normalisation needed</td><td><b>High variance, unstable</b>: a small change in the data can give a completely different tree</td></tr>
+          <tr><td><b>Numeric and categorical</b> features, and multi-class problems, are handled naturally</td><td><b>Greedy</b>: each split is only locally best, so the tree is not guaranteed to be the best tree</td></tr>
+          <tr><td><b>Non-linear</b>: can model interactions between features</td><td><b>Axis-parallel boundaries</b>: a diagonal or round boundary becomes a staircase</td></tr>
+          <tr><td><b>Fast prediction</b>: only as many questions as the depth</td><td><b>Bias</b> towards features with many values (see <i>Day</i> above)</td></tr>
+          <tr><td><b>Built-in feature selection</b>: useless features are never asked (Temperature)</td><td><b>Regression trees</b> predict a step function and cannot extrapolate beyond the training range</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.8rem;">Why trees overfit</h3>
+    <ul class="concept-list">
+      <li><b>Deep nodes see few examples.</b> Each split divides the data, so after a few levels a node decides based on 2–3 examples. Its "best" split is often explained by noise.</li>
+      <li><b>No limit on complexity.</b> A deeper tree has more leaves, which means more rectangles and a more wiggly boundary. In <a href="lab06-intro-ml.html">Lab 06</a> terms, depth is the complexity knob: shallow trees have <b>high bias</b> (underfit), deep trees have <b>high variance</b> (overfit).</li>
+      <li><b>Instability.</b> A different split near the root changes everything beneath it.</li>
+    </ul>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Try it: grow the tree deeper</h4>
+    <p class="section-lede">120 training points in two classes. The true boundary is a circle, but 12% of the labels were flipped at random (noise). The tree is grown with information gain on the two numeric features. Accuracy is measured on the training points and on 1000 fresh test points from the same distribution. Increase the depth and watch the train and test curves separate. Click <i>New training data</i> at a large depth to see the instability.</p>
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="beam-control show" style="margin:0;"><label>Max depth</label><input type="range" id="of-depth" min="1" max="12" value="1" step="1"><span class="val" id="of-depth-val">1</span></div>
+        <div class="play-btns"><button class="toggle-btn" id="of-new">New training data</button></div>
+      </div>
+      <div class="pg-grid">
+        <svg id="of-plot" class="ml-plot of-plot" viewBox="0 0 400 400" aria-label="Decision regions of the tree"></svg>
+        <div>
+          <div id="of-stats" class="stat-strip dt-stats"></div>
+          <svg id="of-curve" class="ml-plot" viewBox="0 0 420 260" aria-label="Train and test accuracy vs depth"></svg>
+          <p class="bt-legend"><span class="k ln tr"></span> training accuracy &nbsp; <span class="k ln te"></span> test accuracy</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== PRUNING ===== -->
+  <section class="block algo-section bfs" id="pruning">
+    <span class="badge bfs" style="margin-bottom:0.6rem; display:inline-block;">Remedies</span>
+    <h2 class="section-title">Dealing with overfitting</h2>
+    <p class="section-lede">The idea is always the same: keep the tree <b>smaller than it could be</b>, so every leaf is backed by enough data. There are two families of <b>pruning</b>, plus ensembles.</p>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.6rem;">1. Pre-pruning (early stopping)</h3>
+    <p class="section-lede">Stop the recursion early, adding extra base cases to <code>BuildTree</code>:</p>
+    <ul class="concept-list">
+      <li><b>Maximum depth</b>: do not split below depth \(d\).</li>
+      <li><b>Minimum samples per split / per leaf</b>: do not split a node with fewer than \(m\) examples, or do not create a child with fewer than \(m\) examples.</li>
+      <li><b>Minimum information gain</b>: do not split when the best gain is below a threshold.</li>
+      <li><b>Maximum number of leaves.</b></li>
+    </ul>
+    <p class="section-lede">Pre-pruning is simple and fast, but can stop too early: a split with a small gain may enable very good splits below it (the classic example is XOR).</p>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.6rem;">2. Post-pruning</h3>
+    <p class="section-lede">Grow the full tree, then cut back from the leaves upwards, replacing a subtree by a leaf (its majority class) when the subtree does not pay off:</p>
+    <ul class="concept-list">
+      <li><b>Reduced-error pruning</b>: hold out a validation set; replace a subtree by a leaf if validation accuracy does not decrease. Repeat while it helps.</li>
+      <li><b>Cost-complexity pruning</b> (CART, <code>ccp_alpha</code> in scikit-learn): minimise error plus a penalty per leaf,
+        <div class="math-block">\[ R_\alpha(T) = R(T) + \alpha \cdot |\text{leaves}(T)| \]</div>
+        where \(R(T)\) is the training error rate. \(\alpha = 0\) keeps the full tree. A larger \(\alpha\) makes each leaf more expensive, so weak subtrees are collapsed first. \(\alpha\) is chosen by <b>cross-validation</b>.</li>
+    </ul>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Try it: prune the tree</h4>
+    <p class="section-lede">Same data as above (the current training set). The full tree is grown first with the pre-pruning limit <i>min samples per leaf</i>, then post-pruned with \(\alpha\). Compare the result with the unpruned tree. Push either slider too far and the tree <b>underfits</b>: at \(\alpha = 0.1\) only the root is left.</p>
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="beam-control show" style="margin:0;"><label>Min samples per leaf</label><input type="range" id="pr-leaf" min="1" max="20" value="1" step="1"><span class="val" id="pr-leaf-val">1</span></div>
+        <div class="beam-control show" style="margin:0;"><label>\(\alpha\) (cost per leaf)</label><input type="range" id="pr-alpha" min="0" max="0.1" value="0" step="0.002"><span class="val" id="pr-alpha-val">0.000</span></div>
+      </div>
+      <div class="pg-grid">
+        <svg id="pr-plot" class="ml-plot of-plot" viewBox="0 0 400 400" aria-label="Decision regions of the pruned tree"></svg>
+        <div>
+          <div id="pr-out" class="dt-out"></div>
+        </div>
+      </div>
+    </div>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.8rem;">3. Ensembles of trees</h3>
+    <p class="section-lede">Instead of one careful tree, combine many trees (the <b>ensemble methods</b> from <a href="lab06-intro-ml.html">Lab 06</a>):</p>
+    <ul class="concept-list">
+      <li><b>Random forest</b>: train many deep trees, each on a bootstrap sample of the data (<b>bagging</b>) and with a random subset of features considered at each split; predict by majority vote (or average). Averaging many high-variance trees <b>reduces the variance</b>.</li>
+      <li><b>Boosting</b> (AdaBoost, gradient boosted trees such as XGBoost): train small trees one after another, each one correcting the errors of the previous ones.</li>
+    </ul>
+    <p class="caption-note">💡 Whatever method you use, choose the hyperparameters (depth, min samples, \(\alpha\)) with a <b>validation set or k-fold cross-validation</b>, never with the test set.</p>
+  </section>
+
+  <!-- ===== SUMMARY ===== -->
+  <section class="block" id="summary">
+    <h2 class="section-title">Summary: key takeaways</h2>
+    <ol class="concept-list">
+      <li><b>Decision trees</b> predict by asking a sequence of feature questions; leaves hold a class (<b>classification</b>) or a mean value (<b>regression</b>).</li>
+      <li><b>Building</b> is recursive, top-down and greedy: choose the best split, partition the data, recurse; stop at pure nodes.</li>
+      <li><b>Surprise</b> of an outcome is \(-\log_2 p\); <b>entropy</b> is the expected surprise \(H = -\sum_i p_i \log_2 p_i\): 0 for a pure node, \(\log_2 k\) for a uniform one.</li>
+      <li><b>Information gain</b> \(= H(\text{parent}) -\) weighted average \(H(\text{children})\); ID3 splits on the feature with the largest gain. It is biased towards many-valued features (gain ratio corrects this).</li>
+      <li>Trees are <b>interpretable</b> but <b>overfit</b> easily and are <b>unstable</b> (high variance).</li>
+      <li><b>Remedies</b>: pre-pruning (max depth, min samples, min gain), post-pruning (reduced-error, cost-complexity \(\alpha\)), and ensembles (random forests, boosting), all tuned with validation or cross-validation.</li>
+    </ol>
+  </section>
+
+</div>
+
+<footer>Class notes by Elitsa Yotkova · Lab 09 · built with plain HTML, CSS &amp; JS</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="code-cards.js"></script>
+<script src="lab09.js"></script>
+</body>
+</html>
