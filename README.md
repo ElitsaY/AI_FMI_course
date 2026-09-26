@@ -11,7 +11,33 @@ This course provides an introduction to the fundamental principles and technique
     * Game Theory and Adversarial Search
 * ***Machine Learning Concepts***
     * Introduction to Machine Learning
+    * Linear & Logistic Regression, K-Nearest Neighbours, Naive Bayes, Decision Trees
+    * Clustering (K-Means) and Neural Networks
+    * Transformers, Generative Models, Post-training and Alignment
+    * Evaluation, Metrics and Data Analysis
 
+
+## 🌐 Interactive Class Notes
+
+Lab notes with interactive widgets, served from `docs/` on GitHub Pages: **[elitsay.github.io/AI_FMI_course](https://elitsay.github.io/AI_FMI_course/docs/index.html)**
+
+| Lab | Topic |
+| :--- | :--- |
+| 01 | [Uninformed Search](https://elitsay.github.io/AI_FMI_course/docs/labs/lab01-uninformed-search.html) |
+| 02 | [Informed Search](https://elitsay.github.io/AI_FMI_course/docs/labs/lab02-informed-search.html) |
+| 03 | [Constraint Satisfaction](https://elitsay.github.io/AI_FMI_course/docs/labs/lab03-csp.html) |
+| 04 | [Genetic Algorithms](https://elitsay.github.io/AI_FMI_course/docs/labs/lab04-genetic-algorithms.html) |
+| 05 | [Games](https://elitsay.github.io/AI_FMI_course/docs/labs/lab05-games.html) |
+| 06 | [Introduction to ML](https://elitsay.github.io/AI_FMI_course/docs/labs/lab06-intro-ml.html) |
+| 6.5 | [Linear & Logistic Regression](https://elitsay.github.io/AI_FMI_course/docs/labs/lab065-linear-logistic.html) |
+| 07 | [K-Nearest Neighbours](https://elitsay.github.io/AI_FMI_course/docs/labs/lab07-knn.html) |
+| 08 | [Naive Bayes Classifier](https://elitsay.github.io/AI_FMI_course/docs/labs/lab08-naive-bayes.html) |
+| 09 | [Decision Trees](https://elitsay.github.io/AI_FMI_course/docs/labs/lab09-decision-trees.html) |
+| 10 | [K-Means and Clustering](https://elitsay.github.io/AI_FMI_course/docs/labs/lab10-kmeans.html) |
+| 11 | [Neural Networks](https://elitsay.github.io/AI_FMI_course/docs/labs/lab11-neural-networks.html) |
+| 12 | [Transformers and Generative Models](https://elitsay.github.io/AI_FMI_course/docs/labs/lab12-transformers.html) |
+| 13 | [Post-training and Alignment](https://elitsay.github.io/AI_FMI_course/docs/labs/lab13-alignment.html) |
+| 14 | [Evaluation, Metrics and Data Analysis](https://elitsay.github.io/AI_FMI_course/docs/labs/lab14-evaluation.html) |
 
 ## 💻 Jupyter Notebooks
 
