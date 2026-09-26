@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lab 14 — Evaluation, Metrics and Data Analysis | Class Notes</title>
+<meta name="description" content="Interactive notes on evaluating AI systems: task vs metric vs evaluator, precision, recall and F1, BLEU, ROUGE-L and COMET, LLM-as-a-judge, reading plots, subgroup analysis, distribution shift, data leakage, contamination, uncertainty and human evaluation, through case scenarios.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+
+<header class="site-nav">
+  <span class="brand"><span class="dot"></span> Class Notes</span>
+  <nav>
+    <a href="../index.html">Home</a>
+    <a href="lab01-uninformed-search.html">Lab 01</a>
+    <a href="lab02-informed-search.html">Lab 02</a>
+    <a href="lab03-csp.html">Lab 03</a>
+    <a href="lab04-genetic-algorithms.html">Lab 04</a>
+    <a href="lab05-games.html">Lab 05</a>
+    <a href="lab06-intro-ml.html">Lab 06</a>
+    <a href="lab065-linear-logistic.html">Lab 6.5</a>
+    <a href="lab07-knn.html">Lab 07</a>
+    <a href="lab08-naive-bayes.html">Lab 08</a>
+    <a href="lab09-decision-trees.html">Lab 09</a>
+    <a href="lab10-kmeans.html">Lab 10</a>
+    <a href="lab11-neural-networks.html">Lab 11</a>
+    <a href="lab12-transformers.html">Lab 12</a>
+    <a href="lab13-alignment.html">Lab 13</a>
+    <a href="lab14-evaluation.html" aria-current="page">Lab 14</a>
+  </nav>
+  <script>(function(){var n=document.querySelector(".site-nav nav"),a=n&&n.querySelector("[aria-current]");if(a)n.scrollLeft=a.offsetLeft-n.offsetLeft-(n.clientWidth-a.offsetWidth)/2;})();</script>
+</header>
+
+<section class="hero art-hero art-ev">
+  <svg id="ev-hero-bg" class="hero-art" viewBox="0 0 1200 300" preserveAspectRatio="xMidYMid slice" aria-hidden="true"></svg>
+  <div class="wrap">
+    <p class="eyebrow">Lab 14</p>
+    <h1>Evaluation, Metrics and Data Analysis</h1>
+    <div class="badges">
+      <span class="badge ids">Precision &amp; recall</span>
+      <span class="badge dfs">BLEU · ROUGE · judges</span>
+      <span class="badge ucs">Reading plots</span>
+      <span class="badge bfs">Data problems</span>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+
+  <!-- ===== OVERVIEW ===== -->
+  <section class="block" id="overview">
+    <h2 class="section-title">Overview of the lab</h2>
+    <p class="section-lede">This lab is built around <b>case scenarios</b> and <b>plots to reason about</b>. Every plot comes with questions: answer them yourself first, then open the solution. The plots use invented, illustrative data unless stated otherwise.</p>
+    <ol class="concept-list">
+      <li><a href="#question">The central question</a>: task, metric, evaluator</li>
+      <li><a href="#classification">Classification metrics</a>: confusion matrix, accuracy, precision, recall, F1</li>
+      <li><a href="#tradeoff">Precision vs recall depends on the application</a></li>
+      <li><a href="#plot-acc">Plot: accuracy can hide failure</a></li>
+      <li><a href="#text">Evaluating generated text: BLEU and ROUGE-L</a></li>
+      <li><a href="#learned">Learned evaluators: COMET and LLM-as-a-judge</a></li>
+      <li><a href="#disagree">When evaluators disagree</a></li>
+      <li><a href="#curves">Plot: training curves</a></li>
+      <li><a href="#subgroups">Averages hide subgroups; distribution shift</a></li>
+      <li><a href="#leakage">Leakage, duplicates and contamination</a></li>
+      <li><a href="#uncertainty">Uncertainty and causation</a></li>
+      <li><a href="#human">Human evaluation</a></li>
+      <li><a href="#case">Final case study: build an evaluation suite</a> and <a href="#conclude">what can you actually conclude?</a></li>
+    </ol>
+  </section>
+
+  <!-- ===== 1. QUESTION ===== -->
+  <section class="block" id="question">
+    <h2 class="section-title">1. The central question</h2>
+    <p class="section-lede">A model produces a number: <i>accuracy = 92%, BLEU = 34.7, ROUGE-L = 0.51, COMET = 0.78, LLM-judge win rate = 64%</i>. The dangerous question is <b>"which model has the highest score?"</b>. The useful one is <b>"what does this score actually measure, and what conclusions does the experiment justify?"</b></p>
+    <ul class="concept-list">
+      <li>❗ A metric is not the goal. A benchmark is not reality. An evaluator is not automatically correct.</li>
+    </ul>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.6rem;">Task, metric, evaluator</h3>
+    <div class="table-wrap">
+      <table class="summary">
+        <thead><tr><th></th><th>What it is</th><th>Examples</th></tr></thead>
+        <tbody>
+          <tr data-s="ids"><td><b>Task</b></td><td>the behaviour we want to measure</td><td>detect spam · translate English to Bulgarian · summarise an article · write useful code · follow instructions</td></tr>
+          <tr data-s="dfs"><td><b>Evaluator</b></td><td>the mechanism deciding whether an output is good</td><td>exact string match · a reference answer · unit tests · a human annotator · a learned metric · an LLM judge</td></tr>
+          <tr data-s="ucs"><td><b>Metric</b></td><td>a number that summarises the evaluator's decisions</td><td>accuracy · precision · recall · F1 · BLEU · ROUGE-L · COMET · win rate</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="section-lede" style="margin-top:0.8rem;">A single task can have many possible evaluators, and each evaluator can be summarised by several metrics.</p>
+
+    <div class="dt-ex-list" style="margin-top:1.2rem;">
+      <details class="dt-ex">
+        <summary><span class="dt-ex-no">1</span><span class="dt-ex-q">Identify the <b>task</b>, the <b>evaluator</b> and the <b>metric</b>. <b>A</b>: a spam classifier is evaluated on manually labelled emails; we report F1. <b>B</b>: a translation system is compared against reference translations using BLEU. <b>C</b>: two chatbot answers are shown to an LLM, which selects the better one; we report win rate. <b>D</b>: a coding model writes Python solutions, hidden unit tests execute the code; we report the percentage of problems solved.</span></summary>
+        <div class="dt-ex-sol">
+          <div class="table-wrap"><table class="summary ev-small">
+            <thead><tr><th></th><th>Task</th><th>Evaluator</th><th>Metric</th></tr></thead>
+            <tbody>
+              <tr><td><b>A</b></td><td>spam detection</td><td>human labels (the prediction is compared with them)</td><td>F1</td></tr>
+              <tr><td><b>B</b></td><td>translation</td><td>n-gram comparison against reference translations</td><td>BLEU</td></tr>
+              <tr><td><b>C</b></td><td>helpful chat answers</td><td>an LLM judge</td><td>win rate</td></tr>
+              <tr><td><b>D</b></td><td>code generation</td><td>hidden unit tests</td><td>% of problems solved (pass rate)</td></tr>
+            </tbody>
+          </table></div>
+          <p>In A, B and D the evaluator is only as good as the labels, the references, or the tests. In C the evaluator is itself a model that can be wrong.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- ===== 2. CLASSIFICATION METRICS ===== -->
+  <section class="block algo-section ids" id="classification">
+    <span class="badge ids" style="margin-bottom:0.6rem; display:inline-block;">Classification</span>
+    <h2 class="section-title">2. Classification metrics</h2>
+    <p class="section-lede">For binary classification, every prediction falls into one of four groups: the <b>confusion matrix</b>.</p>
+    <div class="table-wrap">
+      <table class="summary ev-cmtab">
+        <thead><tr><th></th><th>Predicted positive</th><th>Predicted negative</th></tr></thead>
+        <tbody>
+          <tr><td><b>Actually positive</b></td><td class="ok">True Positive (TP)</td><td class="bad">False Negative (FN)</td></tr>
+          <tr><td><b>Actually negative</b></td><td class="bad">False Positive (FP)</td><td class="ok">True Negative (TN)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="definition-box">
+      <div class="dbox-label">📐 Accuracy, precision, recall, F1</div>
+      <div class="math-block">\[ \text{Accuracy} = \frac{TP + TN}{TP + TN + FP + FN} \qquad \text{Precision} = \frac{TP}{TP + FP} \qquad \text{Recall} = \frac{TP}{TP + FN} \]</div>
+      <div class="math-block">\[ F_1 = 2 \cdot \frac{\text{precision} \cdot \text{recall}}{\text{precision} + \text{recall}} \]</div>
+      <ul class="concept-list">
+        <li><b>Precision</b>: of the examples predicted positive, how many were actually positive? High precision: when the model says "positive", it is usually right.</li>
+        <li><b>Recall</b>: of all actual positives, how many did the model find? High recall: the model misses few positive cases.</li>
+        <li><b>F1</b>: the harmonic mean, so it is low if <i>either</i> precision or recall is low.</li>
+      </ul>
+    </div>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Try it: the confusion-matrix calculator</h4>
+    <p class="section-lede">Starts with a disease-screening model: TP = 80, FP = 20, FN = 40, TN = 860. Accuracy is 94%, which sounds excellent, yet the model missed 40 of the 120 sick patients. Edit any cell, or load another case.</p>
+    <div class="playground">
+      <div class="pg-controls"><div class="strategy-pick" id="cm-presets"></div></div>
+      <div class="pg-grid">
+        <div class="table-wrap">
+          <table class="summary ev-cmtab ev-cmin">
+            <thead><tr><th></th><th>Pred. +</th><th>Pred. −</th></tr></thead>
+            <tbody>
+              <tr><td><b>Actual +</b></td><td class="ok"><label>TP<input type="number" id="cm-tp" min="0" value="80"></label></td><td class="bad"><label>FN<input type="number" id="cm-fn" min="0" value="40"></label></td></tr>
+              <tr><td><b>Actual −</b></td><td class="bad"><label>FP<input type="number" id="cm-fp" min="0" value="20"></label></td><td class="ok"><label>TN<input type="number" id="cm-tn" min="0" value="860"></label></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div id="cm-out" class="al-out"></div>
+      </div>
+    </div>
+
+    <div class="dt-ex-list" style="margin-top:1.4rem;">
+      <details class="dt-ex">
+        <summary><span class="dt-ex-no">2</span><span class="dt-ex-q">A fraud detector produces TP = 45, FP = 15, FN = 55, TN = 885. Compute accuracy, precision, recall and F1 by hand (then check with the calculator). Which metric would you care about most if missing a fraudulent transaction is very expensive? Don't answer only with a metric name: explain the trade-off.</span></summary>
+        <div class="dt-ex-sol">
+          <p>Accuracy = 930 / 1000 = <b>0.93</b> · Precision = 45 / 60 = <b>0.75</b> · Recall = 45 / 100 = <b>0.45</b> · F1 = 2·0.75·0.45 / 1.2 = <b>0.5625</b>.</p>
+          <p>The model misses <b>55 of 100</b> frauds, hidden behind 93% accuracy. If a missed fraud is expensive, <b>recall</b> matters most: we would lower the decision threshold to catch more fraud. The price is more false alarms (lower precision): more legitimate transactions blocked or sent for review, annoyed customers and analyst time. The right operating point depends on how much each error costs, not on the metric alone.</p>
+        </div>
+      </details>
+      <details class="dt-ex">
+        <summary><span class="dt-ex-no">3</span><span class="dt-ex-q"><b>Case: rare disease.</b> 10,000 patients, 100 positive, 9,900 negative. The model predicts <i>negative</i> for every patient. Compute the accuracy and the recall for the positive class. Is accuracy useful here? Propose a better evaluation report.</span></summary>
+        <div class="dt-ex-sol">
+          <p>Accuracy = 9,900 / 10,000 = <b>99%</b>. Recall = 0 / 100 = <b>0</b>. Precision is undefined (the model never says "positive"). The model is useless, yet its accuracy is 99%: accuracy measures mostly how rare the disease is.</p>
+          <p>A better report: the full confusion matrix; recall (sensitivity) and precision for the positive class, plus specificity; the <b>baseline</b> of always predicting the majority class; a precision–recall curve (or recall at a fixed false-alarm rate) rather than one threshold; confidence intervals (with only 100 positives, recall is uncertain); and subgroup results (age, sex, hospital).</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- ===== 3. TRADE-OFF ===== -->
+  <section class="block" id="tradeoff">
+    <h2 class="section-title">3. Precision vs recall depends on the application</h2>
+    <p class="section-lede">There is no universal rule saying precision &gt; recall, or recall &gt; precision. <b>The cost of the different errors decides.</b> The metric must follow the task, not the other way around.</p>
+    <ul class="concept-list">
+      <li><b>Spam filter</b>: a false positive may hide an important email, so you may care strongly about <b>precision</b>.</li>
+      <li><b>Disease screening</b>: a false negative may miss a sick patient, so you may care strongly about <b>recall</b>.</li>
+      <li><b>Search engine</b>: depends on the product. Retrieving everything possible favours recall; showing only highly relevant results favours precision.</li>
+    </ul>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Try it: move the decision threshold</h4>
+    <p class="section-lede">A classifier gives each case a score; everything to the right of the threshold is predicted positive. 100 positives (red) and 900 negatives (blue). Switch the view to "each class normalised" and notice how much better separated the classes <i>look</i> once you hide the imbalance.</p>
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="strategy-pick" id="th-scale"></div>
+        <div class="beam-control show" style="margin:0;"><label>Threshold</label><input type="range" id="th-t" min="0.2" max="0.9" value="0.5" step="0.01"><span class="val" id="th-t-val">0.50</span></div>
+      </div>
+      <div class="pg-grid">
+        <div>
+          <svg id="th-plot" class="ml-plot" viewBox="0 0 460 240" aria-label="Score distributions of positives and negatives with a threshold"></svg>
+          <p class="bt-legend"><span class="k ham"></span> negatives &nbsp; <span class="k spam"></span> positives &nbsp; shaded: predicted positive</p>
+        </div>
+        <div>
+          <svg id="th-pr" class="ml-plot" viewBox="0 0 250 205" aria-label="Precision-recall curve" style="max-width:320px;"></svg>
+          <div id="th-out" class="al-out"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="dt-ex-list" style="margin-top:1.4rem;">
+      <details class="dt-ex">
+        <summary><span class="dt-ex-no">4</span><span class="dt-ex-q"><b>Case scenarios.</b> Using the widget, where would you put the threshold for (a) a <b>spam filter</b> for a company's inbox, (b) a first-round <b>cancer screening</b> test followed by a cheap second test, (c) a <b>legal e-discovery</b> search where lawyers must find every relevant document? What happens to accuracy as you move to each choice, and why is accuracy the wrong guide here?</span></summary>
+        <div class="dt-ex-sol">
+          <p>(a) Spam: high threshold (≈ 0.7), precision ≈ 0.95. A few spam emails slip through; almost no real email is lost. (b) Screening followed by a second test: low threshold (≈ 0.4), recall ≈ 0.98; the false alarms are filtered by the second test. (c) E-discovery: also recall-oriented, since a missed document can lose a case, and humans review what is retrieved.</p>
+          <p>Accuracy barely changes near 0.6–0.7 (0.95 → 0.94) but drops to 0.67 at 0.4, even though 0.4 is the right choice for screening. With 90% negatives, accuracy is dominated by the negatives and rewards thresholds that simply predict "negative" more often.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- ===== 4. PLOT: ACCURACY HIDES FAILURE ===== -->
+  <section class="block algo-section dfs" id="plot-acc">
+    <span class="badge dfs" style="margin-bottom:0.6rem; display:inline-block;">Read the plot</span>
+    <h2 class="section-title">4. Plot: accuracy can hide failure</h2>
+    <p class="section-lede">Four models, evaluated on 1,000 cases. 100 of them belong to a <b>minority class that represents a safety-critical event</b>.</p>
+    <div class="playground">
+      <div class="pg-controls"><div class="strategy-pick"><button class="strat-btn" id="p1-prec">Also show precision</button></div></div>
+      <svg id="p1-plot" class="ml-plot ev-solo" viewBox="0 0 460 235" aria-label="Overall accuracy and minority-class recall of four models"></svg>
+      <p class="bt-legend"><span class="k ev-k1"></span> overall accuracy &nbsp; <span class="k ev-k2"></span> minority-class recall <span id="p1-leg-p" hidden>&nbsp; <span class="k ev-k3"></span> minority-class precision</span></p>
+    </div>
+
+    <div class="dt-ex-list" style="margin-top:1.4rem;">
+      <details class="dt-ex">
+        <summary><span class="dt-ex-no">5</span><span class="dt-ex-q">(1) Which model has the highest overall accuracy? (2) Which has the highest minority-class recall? (3) If the minority class is a safety-critical event, is accuracy alone a sufficient evaluation? (4) What additional information would you want before selecting a model? (5) Is it valid to conclude that Model C is "best"? Be careful with the last question.</span></summary>
+        <div class="dt-ex-sol">
+          <p>(1) <b>Model A</b> (0.943), with B almost equal (0.940). (2) <b>Model C</b> (0.85), which has the <i>lowest</i> accuracy. (3) No: A has the best accuracy and misses 55 of the 100 critical events.</p>
+          <p>(4) Precision (how many alarms are false: turn it on, C's precision is 0.49, so half of its alarms are false), the <b>cost of each error type</b>, the confusion matrices, the test-set size and confidence intervals, how the threshold was chosen (all four could move along their PR curves), and subgroup results.</p>
+          <p>(5) No. The plot supports specific comparisons ("C finds the most critical events", "A makes the fewest errors overall"). It does not support a universal ranking. Which model is best depends on what a missed event costs relative to a false alarm, which the plot does not show. Try it below.</p>
+        </div>
+      </details>
+    </div>
+
+    <h4 style="margin:1.6rem 0 0.4rem;">Try it: put a price on the errors</h4>
+    <p class="section-lede">Total cost = FN × (cost of a missed event) + FP × 1. Slide the cost of a miss: each of the four models is the "best" one for some cost ratio.</p>
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="beam-control show" style="margin:0;"><label>Cost of a missed event (× a false alarm)</label><input type="range" id="p1-c" min="1" max="10" value="1" step="0.5"><span class="val" id="p1-c-val">1</span></div>
+      </div>
+      <div id="p1-cost" class="al-out"></div>
+    </div>
+  </section>
+
+  <!-- ===== 5. TEXT GENERATION ===== -->
+  <section class="block algo-section ucs" id="text">
+    <span class="badge ucs" style="margin-bottom:0.6rem; display:inline-block;">Reference-based</span>
+    <h2 class="section-title">5. Evaluating generated text: BLEU and ROUGE-L</h2>
+    <p class="section-lede">Classification usually has one correct label. Language generation does not. For the reference <i>The cat is sleeping on the sofa.</i>, the outputs <i>The cat sleeps on the couch.</i> and <i>A cat is asleep on the sofa.</i> may both be good translations; <i>The sofa sleeps on the cat.</i> is not. Exact-match accuracy is inappropriate: we need evaluators that tolerate variation.</p>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.6rem;">BLEU</h3>
+    <p class="section-lede">A classic reference-based metric for machine translation (Papineni et al., 2002): <b>compare the n-grams of the generated text with the n-grams of one or more references</b>. An n-gram is a sequence of \(n\) tokens: <i>the cat sat down</i> has the bigrams <i>the cat · cat sat · sat down</i>.</p>
+    <div class="definition-box">
+      <div class="dbox-label">📐 BLEU</div>
+      <div class="math-block">\[ \text{BLEU} = \text{BP} \cdot \exp\Big(\tfrac{1}{4}\sum_{n=1}^{4} \log p_n\Big), \qquad \text{BP} = \begin{cases} 1 & c \ge r \\ e^{\,1 - r/c} & c &lt; r \end{cases} \]</div>
+      <p>\(p_n\) = clipped n-gram precision: the fraction of the candidate's n-grams that also appear in the reference (each reference n-gram can be matched at most as many times as it occurs). \(c\), \(r\) = candidate and reference length. The <b>brevity penalty</b> stops a model from scoring well by outputting only a few very safe words.</p>
+    </div>
+    <p class="caption-note">💡 BLEU was designed to be computed over a whole test corpus. On a single sentence, one n-gram order with zero matches makes the score 0, so sentence-level scores are usually <b>smoothed</b>; the widget shows the common "BLEU+1" variant, which adds 1 to the matched and total counts for \(n \ge 2\).</p>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.6rem;">ROUGE-L</h3>
+    <p class="section-lede">ROUGE metrics (Lin, 2004) are widely used for summarisation. ROUGE-L is based on the <b>longest common subsequence (LCS)</b>: tokens in the same order, but not necessarily adjacent. For the reference <i>the small cat sat on the mat</i> and the candidate <i>the cat sat near the mat</i>, the LCS is <i>the cat sat the mat</i> (5 tokens).</p>
+    <div class="definition-box">
+      <div class="dbox-label">📐 ROUGE-L</div>
+      <div class="math-block">\[ P_{\text{LCS}} = \frac{\text{LCS}}{|\text{candidate}|} \qquad R_{\text{LCS}} = \frac{\text{LCS}}{|\text{reference}|} \qquad F_{\text{LCS}} = \frac{2\,P_{\text{LCS}}\,R_{\text{LCS}}}{P_{\text{LCS}} + R_{\text{LCS}}} \]</div>
+      <p>Common implementations report this F-measure (the original paper allows weighting recall more).</p>
+    </div>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Try it: the overlap lab</h4>
+    <p class="section-lede">Load the exercise sentences, or type your own reference and candidates (one per line). Click a row to see which words match: gold words form the LCS.</p>
+    <div class="playground">
+      <div class="pg-controls"><div class="strategy-pick" id="ov-sets"></div></div>
+      <div class="ov-inputs">
+        <label><span>Reference</span><input type="text" id="ov-ref" spellcheck="false"></label>
+        <label><span>Candidates</span><textarea id="ov-cands" rows="3" spellcheck="false"></textarea></label>
+      </div>
+      <div class="table-wrap" style="margin-top:0.8rem;"><table class="summary ov-table" id="ov-table"></table></div>
+      <div id="ov-detail" class="al-out ov-detail"></div>
+    </div>
+
+    <div class="dt-ex-list" style="margin-top:1.4rem;">
+      <details class="dt-ex">
+        <summary><span class="dt-ex-no">6</span><span class="dt-ex-q"><b>BLEU intuition.</b> Reference: <i>the cat is sitting on the mat</i>. A: <i>the cat is sitting on the mat</i> · B: <i>the cat sits on the mat</i> · C: <i>mat the on sitting is cat the</i>. Without the full formula: which candidate should get the highest BLEU? Why might B score lower although it is a perfectly reasonable sentence? Why might n-gram overlap fail to represent meaning?</span></summary>
+        <div class="dt-ex-sol">
+          <p><b>A</b> (identical, BLEU = 1). B changes one verb form and loses a word, which breaks every 3-gram and 4-gram around it: p₄ = 0/3, so unsmoothed BLEU is 0, BLEU+1 ≈ 0.41, and it is also shorter than the reference. C uses exactly the right words (p₁ = 1) in a meaningless order: only the higher-order n-grams catch that.</p>
+          <p>n-grams only check <b>surface form</b>: synonyms (<i>sofa / couch</i>), inflections (<i>sits / is sitting</i>) and valid reorderings are penalised, while a single changed word that flips the meaning barely is. <b>Lexical similarity ≠ semantic equivalence.</b></p>
+        </div>
+      </details>
+      <details class="dt-ex">
+        <summary><span class="dt-ex-no">7</span><span class="dt-ex-q"><b>Longest common subsequence.</b> Reference: <i>machine learning models can overfit training data</i>. A: <i>machine learning models may overfit the training data</i> · B: <i>training data can overfit machine learning models</i>. Which candidate has the stronger ordered overlap? Why does word order matter for ROUGE-L? Could a good summary get a mediocre ROUGE-L, and a poor summary a surprisingly good one? Give an example of the latter.</span></summary>
+        <div class="dt-ex-sol">
+          <p><b>A</b>: LCS = 6 (<i>machine learning models overfit training data</i>), F = 0.80. B uses almost the same words, but in an order that reverses the meaning; its LCS is only 3 (<i>machine learning models</i>), F = 0.43. Interesting: BLEU+1 prefers B (0.47 vs 0.37), because every one of B's words and several bigrams appear in the reference, and A is longer. Two overlap metrics, two different winners.</p>
+          <p>Yes to both. A good paraphrased summary (<i>overfitting: the model memorises its training set</i>) shares few words. A poor one can copy long ordered stretches of the reference while changing one crucial word: <i>machine learning models cannot overfit training data</i> scores F = 0.86 with the opposite meaning.</p>
+        </div>
+      </details>
+      <details class="dt-ex">
+        <summary><span class="dt-ex-no">8</span><span class="dt-ex-q"><b>Surface overlap vs meaning.</b> Reference: <i>The committee rejected the proposal.</i> A: <i>The proposal was rejected by the committee.</i> B: <i>The committee accepted the proposal.</i> Which candidate should humans prefer? Which one gets the higher overlap scores in the lab? Why could a learned semantic metric help, and what new risks appear when the evaluator itself is a learned model?</span></summary>
+        <div class="dt-ex-sol">
+          <p>Humans prefer <b>A</b> (same meaning, passive voice). Both overlap metrics prefer <b>B</b>: BLEU+1 0.45 vs 0.32 and ROUGE-L 0.80 vs 0.50, although B says the opposite. The paraphrase preset shows the same thing: the correct paraphrase scores ROUGE-L 0.20, the contradiction <i>…contained <b>no</b> noise</i> scores 0.90.</p>
+          <p>A learned metric compares meaning in a representation space, so it can recognise the passive paraphrase and (ideally) notice that <i>accepted</i> ≠ <i>rejected</i>. But it inherits the weaknesses of a model: biases from its training data, domain shift, adversarial inputs, poor calibration, and weaker performance on rare languages and domains (next section).</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- ===== 6. LEARNED EVALUATORS ===== -->
+  <section class="block algo-section bfs" id="learned">
+    <span class="badge bfs" style="margin-bottom:0.6rem; display:inline-block;">Model-based</span>
+    <h2 class="section-title">6. Learned evaluators: COMET and LLM-as-a-judge</h2>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:0.6rem;">COMET</h3>
+    <p class="section-lede">COMET (Rei et al., 2020) is a <b>learned metric</b> for machine translation. Instead of counting n-grams, a neural model reads the <b>source sentence, the candidate translation and the reference</b> (depending on the variant) and predicts a quality score. It is trained to agree with human quality judgements.</p>
+    <div class="al-flow2">
+      <div class="al-lane"><span class="n">source</span><span class="n">candidate</span><span class="n">reference</span><span class="ar">→</span><span class="n learned">learned evaluator</span><span class="ar">→</span><span class="n">quality score</span></div>
+    </div>
+    <p class="caption-note">❗ Learned metrics are not magic. Replacing a simple metric by a neural evaluator does not remove the evaluation problem; it moves part of it <b>into the evaluator</b>: training-data bias, domain shift, adversarial examples, poor calibration, spurious correlations, systematic mistakes in rare languages or domains.</p>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.6rem;">LLM-as-a-judge</h3>
+    <p class="section-lede">A language model receives the task prompt, one or two candidate answers and evaluation criteria, and returns <i>A wins / B wins / tie</i>, or scores such as <i>correctness 4/5, relevance 5/5, clarity 3/5</i>. It is cheap at scale compared with expert annotators, can evaluate open-ended text, can follow an explicit rubric, and speeds up iteration. But judges have known failure modes (several documented by Zheng et al., 2023):</p>
+    <div class="cond-grid">
+      <div class="cond"><h4>Position bias</h4><p>prefers the answer shown first (or second) because of presentation order</p></div>
+      <div class="cond"><h4>Verbosity bias</h4><p>longer answers look more complete even when they are not more correct</p></div>
+      <div class="cond"><h4>Style bias</h4><p>polished language beats plain but technically correct language</p></div>
+      <div class="cond"><h4>Self-preference</h4><p>a model family may prefer outputs resembling its own style</p></div>
+      <div class="cond"><h4>Prompt sensitivity</h4><p>small changes in the judge instructions change the result</p></div>
+      <div class="cond"><h4>Knowledge limits</h4><p>it cannot verify specialised or recent claims</p></div>
+      <div class="cond"><h4>Shared failures</h4><p>if generator and judge make the same mistake, the judge rewards it</p></div>
+    </div>
+
+    <h4 style="margin:1.6rem 0 0.4rem;">Read the plot: possible judge bias</h4>
+    <p class="section-lede"><b>Illustrative, simulated data.</b> Pairs of answers that human raters consider <b>about equal in quality</b>, grouped by how much longer Answer A is than Answer B. y-axis: how often the LLM judge (and, for comparison, humans) prefer A. Then split the judge's votes by which answer was shown first.</p>
+    <div class="playground">
+      <div class="pg-controls"><div class="strategy-pick" id="jb-view"></div></div>
+      <svg id="jb-plot" class="ml-plot ev-solo" viewBox="0 0 460 262" aria-label="LLM judge preference for answer A versus length difference"></svg>
+      <p class="bt-legend"><span class="k ev-k1"></span> <span id="jb-leg1">LLM judge</span> <span id="jb-leg2" hidden>&nbsp; <span class="k ev-k3"></span> LLM judge, A shown <b>second</b></span> &nbsp; <span class="k jb-kh"></span> human raters</p>
+    </div>
+
+    <div class="dt-ex-list" style="margin-top:1.4rem;">
+      <details class="dt-ex">
+        <summary><span class="dt-ex-no">9</span><span class="dt-ex-q">(1) What pattern do you observe? (2) What bias might it suggest? (3) Does the plot <i>prove</i> that length causes the judge's preference? (4) What controlled experiment would you run? (5) How could you change the protocol to reduce the bias? (6) After splitting by order: what second bias appears, and why did the pooled view hide it?</span></summary>
+        <div class="dt-ex-sol">
+          <p>(1) The judge's preference for A rises steadily with A's extra length, from ≈ 0.15 to ≈ 0.8; the human curve stays flat near 0.5. (2) <b>Verbosity bias</b>.</p>
+          <p>(3) No. It is an association. Longer answers might contain real extra content that these human raters did not value (or noticed less), or length might correlate with style, formatting or the topic of the question. "Humans rate them equal" is itself a measurement with noise.</p>
+          <p>(4) Take the <i>same</i> answer and create a padded version that adds only neutral, content-free words (or a shortened one that removes only redundancy); ask the judge to compare them, in both orders, many times. If the padded version wins, length itself is moving the judge.</p>
+          <p>(5) A rubric that says length is not a merit and penalises padding; separate scores for correctness and completeness; length-controlled comparisons or reporting win rate by length bin; randomised order and scoring both orders; allowing ties; validating on a human-labelled sample.</p>
+          <p>(6) <b>Position bias</b>: at equal length the judge picks A ≈ 65% of the time when A is first and ≈ 38% when it is second. Because each pair was shown in both orders equally often, the two effects cancel in the average. If your evaluation always shows your model first, they would not cancel.</p>
+        </div>
+      </details>
+    </div>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.8rem;">Building a better judge</h3>
+    <ul class="concept-list">
+      <li>a clear <b>rubric</b> with separate scores per dimension, e.g. <i>correctness 1–5, relevance 1–5, completeness 1–5, clarity 1–5, unsupported claims yes/no</i> instead of "which answer is better?";</li>
+      <li><b>randomised answer order</b>, multiple judge prompts, multiple independent judges, explicit permission to choose a <b>tie</b>;</li>
+      <li>hidden reference answers when appropriate; <b>human validation</b> on a representative sample and calibration against expert judgements.</li>
+    </ul>
+
+    <div class="dt-ex-list" style="margin-top:1.2rem;">
+      <details class="dt-ex">
+        <summary><span class="dt-ex-no">10</span><span class="dt-ex-q"><b>Design an LLM judge</b> for answers to <i>"Explain why validation data should not be used for final model reporting."</i> It receives the question and one candidate answer, scores at least three dimensions with explicit criteria, separates factual errors from style, and returns a structured result. Then: how would you test whether your judge is reliable?</span></summary>
+        <div class="dt-ex-sol">
+<pre class="ev-pre">You are grading a student-facing answer to an ML question.
+Question: {question}
+Answer:   {answer}
+
+A correct answer must say: validation data was used to make choices
+(hyperparameters, early stopping, model selection), so the model is
+indirectly fitted to it and its validation score is optimistically
+biased; the final report needs an untouched test set.
+
+Score each dimension from 1 to 5 using ONLY these criteria:
+- correctness:  are all technical claims true? (ignore style)
+- completeness: does it mention the selection bias AND the need
+                for a separate held-out test set?
+- clarity:      could a 2nd-year student follow it? (ignore length;
+                do not reward padding)
+List every factual error separately. Do not let style affect correctness.
+
+Return JSON only:
+{"correctness": int, "completeness": int, "clarity": int,
+ "factual_errors": [str], "justification": str}</pre>
+          <p><b>Reliability tests</b>: have instructors grade 50–100 answers and measure agreement with the judge (correlation, κ); include planted answers with known errors and check they are caught; re-run with a different wording of the prompt, a different temperature or seed, and check stability; pad a good answer and check its score does not rise; test a fluent-but-wrong and a plain-but-right answer.</p>
+        </div>
+      </details>
+      <details class="dt-ex">
+        <summary><span class="dt-ex-no">11</span><span class="dt-ex-q"><b>Case: the 68% win rate.</b> You compare two chatbots with the judge prompt <i>"Which answer is more helpful? Choose A or B."</i> Across 1,000 comparisons, A wins 68% and B 32%. Before concluding that A is better, list at least <b>eight</b> questions you would ask about the evaluation setup.</span></summary>
+        <div class="dt-ex-sol">
+          <ol class="concept-list">
+            <li>Was chatbot A always shown in position A? Was the order randomised or both orders scored?</li>
+            <li>Is there a rubric, or only "more helpful"? Helpful to whom?</li>
+            <li>Were ties allowed? (Forced choice turns near-equal pairs into noise.)</li>
+            <li>Which model is the judge? Is it from the same family as chatbot A (self-preference)?</li>
+            <li>What temperature, and how stable is the result across seeds or re-runs?</li>
+            <li>Are A's answers systematically longer or more formatted?</li>
+            <li>Were factual claims verified, or could a confident wrong answer win?</li>
+            <li>Where did the 1,000 prompts come from? Do they represent real use, or favour A's strengths? Any overlap with A's training data?</li>
+            <li>Was the judge calibrated against humans on a sample? What is the agreement?</li>
+            <li>What is the confidence interval, and how many distinct prompts are there (1,000 comparisons of 50 prompts is not 1,000 independent samples)?</li>
+          </ol>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- ===== 7. DISAGREEMENT ===== -->
+  <section class="block algo-section ids" id="disagree">
+    <span class="badge ids" style="margin-bottom:0.6rem; display:inline-block;">Read the plot</span>
+    <h2 class="section-title">7. When evaluators disagree</h2>
+    <p class="section-lede">Five translation systems, scored by four evaluators (illustrative numbers). BLEU, ROUGE-L, COMET and human scores do <b>not</b> share a scale, so the plot shows <b>ranks</b>: the point is the ordering. The raw score is written in each circle. Pick a system to follow it.</p>
+    <div class="playground">
+      <div class="pg-controls"><div class="strategy-pick" id="md-sys"></div></div>
+      <div class="pg-grid">
+        <svg id="md-plot" class="ml-plot" viewBox="0 0 440 240" aria-label="Rank of five systems under four evaluators"></svg>
+        <div id="md-out" class="al-out"></div>
+      </div>
+    </div>
+
+    <div class="dt-ex-list" style="margin-top:1.4rem;">
+      <details class="dt-ex">
+        <summary><span class="dt-ex-no">12</span><span class="dt-ex-q">(1) Does every evaluator rank the systems in the same order? (2) Which systems change position? (3) Why could this happen? (4) If your paper reports only the metric that makes your system look best, what is the methodological problem? (5) What would a stronger evaluation section report?</span></summary>
+        <div class="dt-ex-sol">
+          <p>(1) No. The two lexical metrics (BLEU, ROUGE-L) roughly agree with each other; COMET and humans agree with each other; the two pairs disagree. (2) <b>System 2</b> goes from 1st (BLEU, ROUGE-L) to last (COMET, human); <b>System 3</b> goes from 4th to 1st; System 4 and 5 swap around the middle. System 1 is stable (2nd–3rd).</p>
+          <p>(3) The evaluators measure different things. System 2 may copy phrasing that matches the references (high overlap) while making meaning errors humans notice; System 3 may paraphrase correctly with different words. In real data, learned metrics also have their own blind spots.</p>
+          <p>(4) It is a <b>search over metrics</b> until the conclusion looks good. With four evaluators, almost any system can be "first" somewhere, so the reported win carries little information (the same problem as testing many hypotheses and reporting the significant one).</p>
+          <p>(5) Metrics chosen from the task <b>before</b> seeing test results; all of them reported, including those where the system loses; human evaluation on a sample; confidence intervals or significance tests; a discussion of why metrics disagree, with examples.</p>
+        </div>
+      </details>
+      <details class="dt-ex">
+        <summary><span class="dt-ex-no">13</span><span class="dt-ex-q"><b>Case: summarisation.</b> System A writes concise summaries with frequent paraphrasing. System B copies more phrases directly from the source and reference. ROUGE-L: A 0.41, B 0.48. Human factuality: A 4.7/5, B 4.1/5. Human usefulness: A 4.5/5, B 4.0/5. Which system does ROUGE-L favour? Which do humans favour? Is ROUGE-L "wrong"? What might it be measuring that differs from the human criteria? Which metrics should the final report include?</span></summary>
+        <div class="dt-ex-sol">
+          <p>ROUGE-L favours <b>B</b>; humans favour <b>A</b> on both criteria. ROUGE-L is not "wrong": it correctly reports that B's wording overlaps more with the reference. It measures <b>lexical, ordered overlap</b>, which rewards copying and penalises paraphrase; it does not measure factuality or usefulness directly.</p>
+          <p>Report ROUGE-L (comparability with prior work) <b>and</b> human factuality and usefulness (or a validated factuality check), with the number of annotated summaries, inter-annotator agreement and examples of each system's typical errors. Human judgement should decide the headline claim.</p>
+        </div>
+      </details>
+      <details class="dt-ex">
+        <summary><span class="dt-ex-no">14</span><span class="dt-ex-q"><b>Case: translation.</b> Three translations of the same sentence: A BLEU 32, COMET 0.79 · B BLEU 35, COMET 0.76 · C BLEU 30, COMET 0.84. Humans prefer C &gt; A &gt; B. Which metric tracks the human ordering more closely? Is one example enough to conclude it is universally better? What dataset would you need to compare the metrics properly? Why might evaluator quality differ by language pair or domain?</span></summary>
+        <div class="dt-ex-sol">
+          <p><b>COMET</b> orders them C &gt; A &gt; B exactly; BLEU gives the reverse (B &gt; A &gt; C). But one sentence is an anecdote.</p>
+          <p>To compare metrics you need many (thousands of) segments across several systems, language pairs and domains, each with <b>human quality judgements</b>; then measure how well each metric's scores correlate with the human scores (segment level and system level), with confidence intervals. This is how the WMT metrics shared tasks evaluate metrics.</p>
+          <p>A learned metric is only as good as its training data: for language pairs or domains (medical, legal, slang) that were rare in its training judgements, it may be poorly calibrated. BLEU depends on tokenisation and morphology: in a morphologically rich language like Bulgarian, one inflection change breaks many n-gram matches.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- ===== 8. TRAINING CURVES ===== -->
+  <section class="block algo-section dfs" id="curves">
+    <span class="badge dfs" style="margin-bottom:0.6rem; display:inline-block;">Read the plot</span>
+    <h2 class="section-title">8. Plot: training curves</h2>
+    <p class="section-lede">Training and validation loss over 40 epochs (illustrative). Move the stopping epoch, then compare the curves after two interventions. Compare with the bias–variance picture in <a href="lab06-intro-ml.html#concepts">Lab 06</a>.</p>
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="strategy-pick" id="tc-setup"></div>
+        <div class="beam-control show" style="margin:0;"><label>Stop at epoch</label><input type="range" id="tc-e" min="1" max="40" value="30" step="1"><span class="val" id="tc-e-val">30</span></div>
+      </div>
+      <div class="pg-grid">
+        <div>
+          <svg id="tc-plot" class="ml-plot" viewBox="0 0 460 250" aria-label="Training and validation loss per epoch"></svg>
+          <p class="bt-legend"><span class="k ham"></span> training loss &nbsp; <span class="k spam"></span> validation loss</p>
+        </div>
+        <div id="tc-out" class="al-out"></div>
+      </div>
+    </div>
+
+    <div class="dt-ex-list" style="margin-top:1.4rem;">
+      <details class="dt-ex">
+        <summary><span class="dt-ex-no">15</span><span class="dt-ex-q">In the baseline: (1) What happens to the training loss over time? (2) To the validation loss? (3) Around which epoch does the model begin to overfit? (4) Would training for more epochs necessarily improve deployment performance? (5) Which interventions could you try (early stopping, regularisation, more data, data augmentation, a simpler model, better validation design)? For each, explain why it could help, and check the two you can switch on.</span></summary>
+        <div class="dt-ex-sol">
+          <p>(1) It falls all the way (to ≈ 0.08). (2) It falls until ≈ epoch 12, then rises steadily. (3) Around <b>epoch 12</b>, where the gap starts to grow. (4) No: after epoch 12 more training makes the validation (and likely deployment) loss worse. Training loss is not the goal.</p>
+          <p>(5) <b>Early stopping</b>: keep the weights from the best validation epoch. <b>Regularisation</b> (weight decay, dropout): limits how precisely the model can fit noise; in the plot the training loss stays higher, the gap is smaller and the minimum moves to ≈ epoch 21. <b>More data</b> and <b>augmentation</b>: harder to memorise, so the gap shrinks and the best validation loss is the lowest of the three. <b>Simpler model</b>: less capacity to memorise. <b>Better validation design</b>: make sure the validation set is not leaking or too small, so the curve you stop on is trustworthy.</p>
+          <p>❗ Early stopping uses the validation set to make a choice, so the validation loss at the chosen epoch is optimistic. The final number must come from an untouched test set.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- ===== 9. SUBGROUPS AND SHIFT ===== -->
+  <section class="block algo-section ucs" id="subgroups">
+    <span class="badge ucs" style="margin-bottom:0.6rem; display:inline-block;">Read the plot</span>
+    <h2 class="section-title">9. Averages hide subgroups; distribution shift</h2>
+    <p class="section-lede">Two models, F1 per subgroup and overall (illustrative). Group 3 is small. Move its share of the data.</p>
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="beam-control show" style="margin:0;"><label>Group 3 share of the data</label><input type="range" id="sg-share" min="1" max="40" value="5" step="1"><span class="val" id="sg-share-val">5%</span></div>
+      </div>
+      <div class="pg-grid">
+        <div>
+          <svg id="sg-plot" class="ml-plot" viewBox="0 0 460 250" aria-label="F1 per subgroup for two models"></svg>
+          <p class="bt-legend"><span class="k ev-k1"></span> Model X &nbsp; <span class="k ev-k2"></span> Model Y</p>
+        </div>
+        <div id="sg-out" class="al-out"></div>
+      </div>
+    </div>
+
+    <div class="dt-ex-list" style="margin-top:1.4rem;">
+      <details class="dt-ex">
+        <summary><span class="dt-ex-no">16</span><span class="dt-ex-q">At 5%: (1) Which model has the higher overall F1? (2) What happens for Group 3? (3) If Group 3 is only 5% of the data, how can the overall metric hide the problem? (4) What additional statistics would you request? (5) Should subgroup metrics always be reported? When is subgroup analysis especially important?</span></summary>
+        <div class="dt-ex-sol">
+          <p>(1) <b>Model Y</b>, 0.881 vs 0.838. (2) Y's F1 on Group 3 is 0.43, X's is 0.81: Y misses most of Group 3's positives (recall 0.35). (3) The overall score is pooled over all examples, so each group counts in proportion to its size; a failure on 5% of the data costs only a few points. Only when Group 3 reaches ≈ 17% of the data does X overtake Y.</p>
+          <p>(4) Per-group size, precision and recall, confusion matrices, confidence intervals (small groups have wide intervals), and worst-group performance.</p>
+          <p>(5) Report them whenever the groups are known and meaningful. They are especially important when errors fall on people (medical, hiring, credit, speech recognition across accents), when a group is safety-critical, when a group is small in the test set but large in deployment, and when a regulator or user will ask "does it work for <i>us</i>?".</p>
+        </div>
+      </details>
+    </div>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.8rem;">Distribution shift</h3>
+    <p class="section-lede">A model trained and tested on 70% news, 20% Wikipedia, 10% social media is deployed where traffic is 10% news, 10% Wikipedia, 80% social media. It can do well on an IID test set and still degrade in deployment. The central question: <b>does the test set represent the environment where the model will actually be used?</b></p>
+    <h4 style="margin:1.2rem 0 0.4rem;">Try it: the same model, a different mix</h4>
+    <p class="section-lede">Per-domain accuracy is fixed (news 0.94, Wikipedia 0.92, social media 0.71). Set the deployment mix.</p>
+    <div class="playground">
+      <div class="nb-sliders">
+        <label><span>News</span><input type="range" id="sh-0" min="0" max="100" value="10" step="1"><span class="val" id="sh-0-val">10%</span></label>
+        <label><span>Wikipedia</span><input type="range" id="sh-1" min="0" max="100" value="10" step="1"><span class="val" id="sh-1-val">10%</span></label>
+        <label><span>Social media</span><input type="range" id="sh-2" min="0" max="100" value="80" step="1"><span class="val" id="sh-2-val">80%</span></label>
+      </div>
+      <div id="sh-out" class="al-out" style="margin-top:0.9rem;"></div>
+    </div>
+
+    <div class="dt-ex-list" style="margin-top:1.4rem;">
+      <details class="dt-ex">
+        <summary><span class="dt-ex-no">17</span><span class="dt-ex-q"><b>Case: sentiment in the wild.</b> A sentiment classifier achieves 92% F1 on a benchmark of <b>movie reviews</b>. A company deploys it on <b>short social-media comments about mobile apps</b>, and performance drops dramatically. Give at least four possible reasons. Then propose a better evaluation dataset.</span></summary>
+        <div class="dt-ex-sol">
+          <ul class="concept-list">
+            <li><b>Vocabulary</b>: <i>crashes, laggy, battery drain, update</i> never appear in movie reviews; <i>plot, acting</i> never appear in app comments.</li>
+            <li><b>Length</b>: long reviews carry many sentiment cues; a 6-word comment carries one or two.</li>
+            <li><b>Sarcasm, emojis, slang, misspellings</b>: <i>great, another update that deletes my data 🙃</i>.</li>
+            <li><b>Class balance</b>: benchmarks are often balanced; app comments may be mostly complaints, or mostly neutral.</li>
+            <li><b>Label definitions</b>: star ratings of a film vs "is the user angry at the app?"; neutral / mixed comments may not exist in the benchmark.</li>
+            <li><b>Language variety and temporal drift</b>: code-switching, non-native English, new features and new slang after training.</li>
+          </ul>
+          <p><b>Better evaluation</b>: sample real comments from the deployment platform (across apps, time periods and languages), label them with guidelines written for this use case, measure inter-annotator agreement, keep the natural class balance, report per-slice results (length, emoji / no emoji, app category), and refresh the set regularly to track drift.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- ===== 10. LEAKAGE ===== -->
+  <section class="block algo-section bfs" id="leakage">
+    <span class="badge bfs" style="margin-bottom:0.6rem; display:inline-block;">Data problems</span>
+    <h2 class="section-title">10. Leakage, duplicates and contamination</h2>
+    <p class="section-lede"><b>Data leakage</b> occurs when information that is not available at real prediction time enters training or evaluation. Example: predicting whether a patient will be readmitted to hospital, using the feature <i>number of follow-up appointments scheduled after discharge</i>. Some appointments are scheduled only <i>because</i> clinicians already suspect readmission risk, so the feature partially reveals the future. The test score can look excellent while deployment performance collapses.</p>
+
+    <div class="dt-ex-list" style="margin-top:1.2rem;">
+      <details class="dt-ex">
+        <summary><span class="dt-ex-no">18</span><span class="dt-ex-q"><b>Spot the leakage.</b> For each case, explain the possible leak, why the score could be inflated, and a safer split or procedure. <b>A</b>: randomly splitting multiple medical records from the same patient across train and test. <b>B</b>: using the article's publication date to predict whether it will receive many views after one year. <b>C</b>: using a feature computed from the entire dataset before cross-validation. <b>D</b>: training a language model on web data that may include benchmark questions later used for evaluation.</span></summary>
+        <div class="dt-ex-sol">
+          <p><b>A</b>: leak. The model can recognise the <i>patient</i> (age, rare conditions, lab values) rather than learn the disease; test patients are not new patients. Split <b>by patient</b> (group k-fold).</p>
+          <p><b>B</b>: probably no leak. The publication date is known at prediction time. Watch for a subtler problem: with a <i>random</i> split, the model learns from articles published later than the test articles (e.g. which topics trended). Use a <b>time-based split</b>: train on older articles, test on newer ones. Also make sure no feature is measured after publication (e.g. views after one week).</p>
+          <p><b>C</b>: leak. Scaling statistics, feature selection, TF-IDF vocabularies or target encodings computed on all data have "seen" the test folds. Fit every preprocessing step <b>inside each fold</b>, on training data only (a pipeline).</p>
+          <p><b>D</b>: leak (<b>contamination</b>). The model may have memorised the questions or answers; the benchmark then measures recall of training data, not ability. Deduplicate the training data against benchmarks (n-gram overlap), report results on clean vs overlapping items, use held-out or freshly written test sets.</p>
+        </div>
+      </details>
+    </div>
+
+    <h4 style="margin:1.6rem 0 0.4rem;">Read the plot: scores before and after near-duplicate removal</h4>
+    <p class="section-lede">Illustrative. A benchmark is checked against the models' training data; 15% of its items have near-duplicates there and are removed.</p>
+    <div class="playground">
+      <div class="pg-controls"><div class="strategy-pick"><button class="strat-btn" id="ct-show">Show scores on the removed items</button></div></div>
+      <div class="pg-grid">
+        <div>
+          <svg id="ct-plot" class="ml-plot" viewBox="0 0 460 235" aria-label="Benchmark scores before and after deduplication"></svg>
+          <p class="bt-legend"><span class="k ev-k3"></span> full benchmark &nbsp; <span class="k ev-k1"></span> after deduplication <span id="ct-leg-o" hidden>&nbsp; <span class="k ev-k2"></span> on the removed items only</span></p>
+        </div>
+        <div id="ct-out" class="al-out"></div>
+      </div>
+    </div>
+
+    <div class="dt-ex-list" style="margin-top:1.4rem;">
+      <details class="dt-ex">
+        <summary><span class="dt-ex-no">19</span><span class="dt-ex-q">(1) What happens to performance after deduplication? (2) Give at least two possible explanations. (3) Does the plot prove intentional benchmark contamination? (4) What additional evidence would be needed? (5) Why is deduplication particularly important for large language models trained on web-scale corpora?</span></summary>
+        <div class="dt-ex-sol">
+          <p>(1) Every model drops, but by very different amounts: Model 1 by 3.9 points, Model 3 by 2.0, Models 2 and 4 by less than 0.5. Model 2 now ranks above Model 1.</p>
+          <p>(2) (a) <b>Memorisation</b>: models that saw the items during training reproduce their answers. (b) <b>The removed items are easier</b>: popular questions get copied around the web <i>because</i> they are standard, simple ones, so removing them lowers everyone's score a bit, even for models that never saw them. (c) Noise: on a small benchmark, differences of 0.5 points may be random.</p>
+          <p>(3) No. It shows the scores depend on the overlapping items; it says nothing about <i>intent</i> (web data contains benchmarks by accident), and it does not even prove memorisation. (4) Compare each model's score on the removed vs the kept items (show them: Model 1 scores 96% vs 70%, while Model 4 scores 59% vs 58%, so the items are only slightly easier); check whether the model can complete benchmark questions verbatim; check training-data documentation; test on freshly written, never-published items.</p>
+          <p>(5) Web-scale corpora are too big to inspect by hand and contain copies of popular benchmarks, their solutions and discussions. A model with billions of parameters can memorise rare text. Without deduplication, benchmark scores can silently measure memory rather than generalisation.</p>
+        </div>
+      </details>
+      <details class="dt-ex">
+        <summary><span class="dt-ex-no">20</span><span class="dt-ex-q"><b>Case: data cleaning.</b> You receive 50,000 text examples. Initial inspection finds 4,000 exact duplicates, 2,000 near-duplicates, 800 empty or corrupted examples, an unknown language distribution, inconsistent labels, and multiple examples from the same users. Design a cleaning and splitting pipeline: in what order would you inspect, remove unusable examples, normalise fields, handle duplicates, investigate labels, create train/validation/test splits, prevent user-level leakage, and document the changes? Why does the order matter?</span></summary>
+        <div class="dt-ex-sol">
+          <ol class="concept-list">
+            <li><b>Inspect</b>: read random samples, look at length distributions, detect languages, count labels per user. Keep a copy of the raw data.</li>
+            <li><b>Remove unusable</b> examples (empty, corrupted, wrong encoding): 800.</li>
+            <li><b>Normalise fields</b> (Unicode, whitespace, casing where appropriate, label spellings) so that duplicate detection works.</li>
+            <li><b>Deduplicate</b>: exact duplicates, then near-duplicates (e.g. MinHash); where duplicates disagree on labels, that is a label-noise signal for step 5.</li>
+            <li><b>Investigate labels</b>: annotation guidelines, disagreement between duplicates, a relabelled sample with agreement statistics; fix or drop inconsistent ones.</li>
+            <li><b>Split by user</b> (all of a user's examples go into one split), stratified by label and language; decide whether the test set should mirror deployment.</li>
+            <li><b>Document</b> every step with counts (a data card), and freeze the test set.</li>
+          </ol>
+          <p><b>Why order matters</b>: normalising before deduplication finds more duplicates; deduplicating and grouping by user <b>before</b> splitting prevents copies of the same text or user from landing in both train and test (leakage); label investigation is easier after duplicates reveal conflicts; any statistic used for cleaning decisions should not be tuned on the test split.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- ===== 11. UNCERTAINTY ===== -->
+  <section class="block algo-section ids" id="uncertainty">
+    <span class="badge ids" style="margin-bottom:0.6rem; display:inline-block;">Experimental design</span>
+    <h2 class="section-title">11. Uncertainty and causation</h2>
+    <p class="section-lede">A benchmark score is an <b>estimate</b>. Is Model B with 84.5% meaningfully better than Model A with 84.2%? You need the test-set size, the uncertainty, repeated runs (different seeds), a significance test, and a judgement of practical significance. A 0.3-point difference may be meaningful on a huge stable benchmark, or pure noise.</p>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Try it: the same accuracies, more test examples</h4>
+    <p class="section-lede">Model A is 82% accurate, Model B 84%. Bars show 95% confidence intervals (Wilson). Increase the test-set size.</p>
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="beam-control show" style="margin:0;"><label>Test examples</label><input type="range" id="un-n" min="2" max="6" value="2" step="0.05"><span class="val" id="un-n-val">100</span></div>
+      </div>
+      <svg id="un-plot" class="ml-plot ev-solo" viewBox="0 0 460 140" aria-label="Confidence intervals for two accuracies"></svg>
+      <div id="un-out" class="al-out"></div>
+    </div>
+
+    <div class="dt-ex-list" style="margin-top:1.4rem;">
+      <details class="dt-ex">
+        <summary><span class="dt-ex-no">21</span><span class="dt-ex-q"><b>Case: small differences.</b> Two models are evaluated on only 100 examples: A 82 correct, B 84 correct. (1) Is the 2-point difference convincing? (2) What additional experiment would you run? (3) Would your conclusion change with 1,000,000 independent examples? (4) What if the models were evaluated on different test examples?</span></summary>
+        <div class="dt-ex-sol">
+          <p>(1) No. The 95% intervals are about ±7 points and overlap almost completely; p ≈ 0.7.</p>
+          <p>(2) A larger test set; several training seeds per model; and a <b>paired</b> test on the same examples, e.g. McNemar's test or a paired bootstrap, which uses only the examples where the two models disagree and is much more sensitive than comparing two independent proportions.</p>
+          <p>(3) Yes: intervals shrink to ±0.08 points, so a 2-point gap is statistically unambiguous. It may still not be <i>practically</i> important, and it still doesn't tell you it holds on a different distribution.</p>
+          <p>(4) Then the comparison is confounded by test difficulty: B may simply have received easier examples. Scores on different test sets are not comparable; evaluate both on the same set.</p>
+        </div>
+      </details>
+    </div>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.8rem;">Correlation is not causation</h3>
+    <p class="section-lede">Models with more parameters also tend to have higher benchmark scores. You cannot conclude that parameter count <i>caused</i> the improvement: those models usually also differ in training compute, training data, data quality, architecture, post-training and evaluation setup. A plot can reveal association; causal claims need a controlled experiment.</p>
+    <div class="dt-ex-list">
+      <details class="dt-ex">
+        <summary><span class="dt-ex-no">22</span><span class="dt-ex-q"><b>Case: confounded experiment.</b> A team compares Model A (7B parameters, trained on 1T tokens) with Model B (13B parameters, trained on 3T tokens). Model B performs better. The report concludes: "Larger models are better." What is wrong with this conclusion? Design a fairer experiment.</span></summary>
+        <div class="dt-ex-sol">
+          <p>Two things changed at once: size (×1.9) <b>and</b> training data (×3), so compute also changed (≈ 5.6×). The improvement could come from either, or both. With only two models there is also no estimate of variance, and "better" on which benchmarks?</p>
+          <p><b>Fairer</b>: vary one factor at a time. Train 7B and 13B on the <i>same</i> data, same number of tokens, same recipe; separately, train one size on 1T vs 3T tokens. Better still, a grid of sizes × data amounts (as in scaling-law studies), including a compute-matched comparison, several seeds, and the same evaluation suite for all.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- ===== 12. HUMAN EVALUATION ===== -->
+  <section class="block algo-section dfs" id="human">
+    <span class="badge dfs" style="margin-bottom:0.6rem; display:inline-block;">Human evaluators</span>
+    <h2 class="section-title">12. Human evaluation</h2>
+    <p class="section-lede">For many tasks humans remain an important evaluator of correctness, fluency, usefulness, clarity, safety, faithfulness and style. But humans are not perfect instruments: disagreement, fatigue, inconsistent standards, insufficient expertise, order effects, anchoring, cultural differences and unclear rubrics. <b>Human evaluation also requires experimental design.</b></p>
+    <ul class="concept-list">
+      <li><b>Inter-annotator agreement</b>: if annotators disagree constantly, the target may be subjective, poorly defined, difficult, or badly explained. Agreement statistics quantify reliability.</li>
+      <li>❗ High agreement does not guarantee correctness: a team can agree consistently on the wrong criterion.</li>
+    </ul>
+    <div class="definition-box">
+      <div class="dbox-label">📐 Cohen's kappa (two annotators)</div>
+      <div class="math-block">\[ \kappa = \frac{p_o - p_e}{1 - p_e} \]</div>
+      <p>\(p_o\) = observed agreement; \(p_e\) = agreement expected by chance from each annotator's label frequencies. \(\kappa = 1\): perfect agreement; \(\kappa = 0\): no better than chance.</p>
+    </div>
+    <h4 style="margin:1.4rem 0 0.4rem;">Try it: 90% agreement, but how good is it?</h4>
+    <p class="section-lede">Two annotators label 100 model outputs as <i>acceptable</i> or <i>not</i>. Compare the first two presets: same raw agreement, very different κ.</p>
+    <div class="playground">
+      <div class="pg-controls"><div class="strategy-pick" id="ka-presets"></div></div>
+      <div class="pg-grid">
+        <div class="table-wrap">
+          <table class="summary ev-cmtab ev-cmin">
+            <thead><tr><th></th><th>B: acceptable</th><th>B: not</th></tr></thead>
+            <tbody>
+              <tr><td><b>A: acceptable</b></td><td class="ok"><label>both<input type="number" id="ka-a" min="0" value="40"></label></td><td class="bad"><label>differ<input type="number" id="ka-b" min="0" value="5"></label></td></tr>
+              <tr><td><b>A: not</b></td><td class="bad"><label>differ<input type="number" id="ka-c" min="0" value="5"></label></td><td class="ok"><label>both<input type="number" id="ka-d" min="0" value="50"></label></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div id="ka-out" class="al-out"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 13. FINAL CASE STUDY ===== -->
+  <section class="block algo-section bfs" id="case">
+    <span class="badge bfs" style="margin-bottom:0.6rem; display:inline-block;">Final case study</span>
+    <h2 class="section-title">13. Build an evaluation suite</h2>
+    <p class="section-lede">Design an evaluation suite for an <b>AI assistant that answers questions about university course material</b>. It should be factually correct, relevant, clear, appropriately concise, faithful to the course material, and honest when information is missing. You have reference answers, course notes, students, instructors, an LLM judge and automatic text metrics.</p>
+    <div class="dt-ex-list">
+      <details class="dt-ex">
+        <summary><span class="dt-ex-no">23</span><span class="dt-ex-q">Your design must cover: (1) dataset design, (2) automatic evaluation, (3) the LLM-judge rubric, (4) human evaluation (who annotates what?), (5) subgroup analysis, (6) failure analysis, (7) data-leakage controls. One possible solution is below; compare it with yours.</span></summary>
+        <div class="dt-ex-sol">
+          <p><b>1. Dataset.</b> Real (anonymised) student questions from past forums and office hours, plus instructor-written questions covering every lab; include easy definitions, multi-step reasoning, questions whose answer is <i>not</i> in the notes (to test honesty), ambiguous questions, and questions phrased in Bulgarian and English. A few hundred, with reference answers and links to the supporting passage.</p>
+          <p><b>2. Automatic.</b> Checks that are cheap and objective: is the cited passage really in the notes (faithfulness), numerical answers compared exactly, code answers run against tests, answer length, refusal detection on unanswerable questions. ROUGE-L/BLEU against references only as a rough signal, never the headline.</p>
+          <p><b>3. LLM judge.</b> Per-dimension 1–5 scores (correctness vs the notes, relevance, clarity, conciseness), yes/no for "unsupported claim" and "admits missing information when appropriate", with the reference answer and the relevant course passage given to the judge; randomised order in pairwise mode; JSON output.</p>
+          <p><b>4. Humans.</b> Instructors / TAs judge correctness on a random sample and on all disagreements between judge and automatic checks; students rate clarity and usefulness (they are the users); measure agreement (κ) and calibrate the judge against the instructors.</p>
+          <p><b>5. Subgroups.</b> Per lab or topic, question type (definition / computation / code / conceptual), language, answerable vs unanswerable, difficulty.</p>
+          <p><b>6. Failure analysis.</b> Read the worst-scored answers per subgroup, tag error types (wrong fact, hallucinated citation, too long, off-topic, over-refusal), count them, and track them across versions.</p>
+          <p><b>7. Leakage.</b> Keep the test questions out of prompt engineering and any fine-tuning data; hold out a secret set that is only used for final reports; write new questions each semester; check for overlap with anything used during development.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- ===== 14. WHAT CAN YOU CONCLUDE ===== -->
+  <section class="block" id="conclude">
+    <h2 class="section-title">14. Final challenge: what can you actually conclude?</h2>
+    <p class="section-lede">For each claim: is the evidence sufficient? If not, what additional evidence is needed? Then <b>rewrite the claim into the strongest statement the evidence does support</b>.</p>
+    <div class="dt-ex-list">
+      <details class="dt-ex">
+        <summary><span class="dt-ex-no">A</span><span class="dt-ex-q">"Model X is better because it has higher accuracy." Evidence: X accuracy 94%, Y accuracy 91%.</span></summary>
+        <div class="dt-ex-sol"><p>Insufficient: test-set size and uncertainty, class balance and per-class errors (Section 2), the cost of errors, same test set? <b>Supported</b>: "On this test set, X's accuracy (94%) is 3 points higher than Y's (91%)."</p></div>
+      </details>
+      <details class="dt-ex">
+        <summary><span class="dt-ex-no">B</span><span class="dt-ex-q">"Model X summarises better because it has higher ROUGE-L." Evidence: X 0.47, Y 0.43.</span></summary>
+        <div class="dt-ex-sol"><p>Insufficient: ROUGE-L measures overlap with references, not factuality or usefulness (Exercise 13). Needs human or validated factuality evaluation, and uncertainty. <b>Supported</b>: "X's summaries overlap more with the reference summaries (ROUGE-L 0.47 vs 0.43)."</p></div>
+      </details>
+      <details class="dt-ex">
+        <summary><span class="dt-ex-no">C</span><span class="dt-ex-q">"Users prefer X." Evidence: an LLM judge prefers X in 63% of comparisons.</span></summary>
+        <div class="dt-ex-sol"><p>Insufficient: the judge is not the users (Exercise 11: order, length, self-preference, calibration). Needs a user study or human preferences on representative prompts. <b>Supported</b>: "Under this judge prompt and setup, the LLM judge preferred X in 63% of comparisons."</p></div>
+      </details>
+      <details class="dt-ex">
+        <summary><span class="dt-ex-no">D</span><span class="dt-ex-q">"Increasing training time improves generalisation." Evidence: training loss decreases for 30 epochs.</span></summary>
+        <div class="dt-ex-sol"><p>Insufficient: training loss says nothing about generalisation; in Section 8 it keeps falling while validation loss rises. Needs validation / test loss per epoch. <b>Supported</b>: "The model continues to fit the training data better for 30 epochs."</p></div>
+      </details>
+      <details class="dt-ex">
+        <summary><span class="dt-ex-no">E</span><span class="dt-ex-q">"The model is robust." Evidence: it scores 90% on one IID benchmark.</span></summary>
+        <div class="dt-ex-sol"><p>Insufficient: robustness means performance under shift, noise, adversarial or rare inputs, and across subgroups (Section 9); an IID test says nothing about those. <b>Supported</b>: "The model scores 90% on test data drawn from the same distribution as its training data."</p></div>
+      </details>
+    </div>
+  </section>
+
+  <!-- ===== CHEAT SHEET ===== -->
+  <section class="block" id="cheatsheet">
+    <h2 class="section-title">Metric selection cheat sheet</h2>
+    <div class="table-wrap">
+      <table class="summary">
+        <thead><tr><th>Situation</th><th>Useful starting point</th><th>Main warning</th></tr></thead>
+        <tbody>
+          <tr data-s="ids"><td>Balanced classification</td><td>accuracy, F1</td><td>inspect class-level errors</td></tr>
+          <tr data-s="ids"><td>Imbalanced classification</td><td>precision, recall, F1, precision–recall curve</td><td>accuracy can mislead</td></tr>
+          <tr data-s="ucs"><td>Machine translation</td><td>BLEU, COMET, human evaluation</td><td>lexical overlap is not meaning</td></tr>
+          <tr data-s="ucs"><td>Summarisation</td><td>ROUGE-L + factuality / usefulness evaluation</td><td>overlap does not guarantee faithfulness</td></tr>
+          <tr data-s="bfs"><td>Open-ended assistant responses</td><td>human or LLM judge with a rubric</td><td>judge bias and evaluator reliability</td></tr>
+          <tr data-s="bfs"><td>Code generation</td><td>unit tests / verifiable execution</td><td>incomplete tests can be exploited (<a href="lab13-alignment.html#verifiable">Lab 13</a>)</td></tr>
+          <tr data-s="dfs"><td>Safety-critical tasks</td><td>task-specific error costs, subgroup analysis</td><td>aggregate scores may hide dangerous failures</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="section-lede" style="margin-top:0.8rem;">A starting point, not a universal recipe.</p>
+  </section>
+
+  <!-- ===== SUMMARY ===== -->
+  <section class="block" id="summary">
+    <h2 class="section-title">Summary: key takeaways</h2>
+    <ol class="concept-list">
+      <li><b>Metric vs objective</b>: the metric is a measurement proxy; the objective is what you actually care about.</li>
+      <li><b>Accuracy vs usefulness</b>: with imbalanced classes, look at precision and recall, and at what each error costs.</li>
+      <li><b>Reference overlap vs meaning</b>: BLEU and ROUGE-L measure forms of overlap; meaning needs learned or human evaluators.</li>
+      <li><b>Learned evaluator vs truth</b>: COMET and LLM judges capture richer behaviour but bring their own errors and biases.</li>
+      <li><b>Aggregate vs subgroup</b>: averages can hide systematic failures on small groups.</li>
+      <li><b>Benchmark vs deployment</b>: a model can do well on a test set and fail under distribution shift, leakage or contamination.</li>
+      <li><b>Estimate vs fact</b>: small differences on small test sets may be noise.</li>
+      <li><b>Correlation vs causation</b>: observed association does not prove what caused the result.</li>
+    </ol>
+    <p class="caption-note">💡 <b>If one model has a higher score, what must you know before concluding that it is better for the task you care about?</b> What the task is, what the evaluator is, what the metric is, what the test distribution is, what errors are hidden by the average, and what conclusion the evidence actually supports.</p>
+    <p class="section-lede" style="margin-top:0.8rem;"><b>One sentence</b>: a trustworthy evaluation does not ask only whether a model scores higher; it asks whether the evaluator measures the right behaviour, whether the data represents the real task, whether important failures are hidden by averages, and whether the evidence actually supports the conclusion being made.</p>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.6rem;">Further reading</h3>
+    <ul class="concept-list">
+      <li><b>BLEU</b>: Papineni et al. (2002), <a href="https://aclanthology.org/P02-1040/" target="_blank" rel="noopener">BLEU: a Method for Automatic Evaluation of Machine Translation</a></li>
+      <li><b>ROUGE</b>: Lin (2004), <a href="https://aclanthology.org/W04-1013/" target="_blank" rel="noopener">ROUGE: A Package for Automatic Evaluation of Summaries</a></li>
+      <li><b>COMET</b>: Rei et al. (2020), <a href="https://aclanthology.org/2020.emnlp-main.213/" target="_blank" rel="noopener">COMET: A Neural Framework for MT Evaluation</a></li>
+      <li><b>LLM-as-a-judge</b>: Zheng et al. (2023), <a href="https://arxiv.org/abs/2306.05685" target="_blank" rel="noopener">Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena</a></li>
+      <li><b>Significance testing</b>: Koehn (2004), <a href="https://aclanthology.org/W04-3250/" target="_blank" rel="noopener">Statistical Significance Tests for Machine Translation Evaluation</a> (paired bootstrap)</li>
+    </ul>
+  </section>
+
+</div>
+
+<footer>Class notes by Elitsa Yotkova · Lab 14 · built with plain HTML, CSS &amp; JS</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="lab14.js"></script>
+</body>
+</html>

@@ -1648,3 +1648,72 @@ a.m-box:hover { border-color: var(--indigo); text-decoration: none; }
 .m-col { display: grid; justify-items: center; gap: 0.3rem; padding: 0.5rem 0.8rem; border: 1px dashed var(--line); border-radius: var(--radius-sm); }
 .m-sub { font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-soft); }
 .m-row { display: flex; gap: 0.5rem; }
+
+/* ---- Lab 14: evaluation, metrics and data analysis ---- */
+.art-ev .hero-art .cm.ok { fill: color-mix(in srgb, var(--bfs) 40%, var(--surface)); opacity: 0.45; }
+.art-ev .hero-art .cm.bad { fill: color-mix(in srgb, #d9546e 35%, var(--surface)); opacity: 0.4; }
+.art-ev .hero-art .bar.b0 { fill: var(--indigo); opacity: 0.22; } .art-ev .hero-art .bar.b1 { fill: #d9546e; opacity: 0.22; }
+.art-ev .hero-art .pr { fill: none; stroke: var(--ucs); stroke-width: 4; opacity: 0.4; }
+table.summary.ev-small th, table.summary.ev-small td { padding: 0.45rem 0.6rem; font-size: 0.86rem; }
+.ev-cmtab td.ok { background: color-mix(in srgb, var(--bfs) 12%, var(--surface)); } .ev-cmtab td.bad { background: color-mix(in srgb, #d9546e 10%, var(--surface)); }
+.ev-cmin th, .ev-cmin td { padding: 0.5rem 0.6rem !important; }
+.ev-cmin label { display: grid; gap: 0.2rem; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.04em; color: var(--ink-soft); }
+.ev-cmin input { width: 100%; max-width: 7rem; font: inherit; font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 1rem; color: var(--indigo); padding: 0.25rem 0.4rem; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); }
+.ev-mini { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.35rem; margin-bottom: 0.6rem; }
+.ev-mini span { text-align: center; font-size: 0.74rem; font-weight: 800; color: var(--ink-soft); border: 1px solid var(--line); border-radius: 8px; padding: 0.3rem 0.2rem; }
+.ev-mini span:nth-child(1), .ev-mini span:nth-child(4) { background: color-mix(in srgb, var(--bfs) 12%, var(--surface)); }
+.ev-mini span:nth-child(2), .ev-mini span:nth-child(3) { background: color-mix(in srgb, #d9546e 10%, var(--surface)); }
+.ev-mini b { display: block; font-family: 'Poppins', sans-serif; font-size: 1.05rem; color: var(--ink); }
+.ml-plot .th-zone { fill: color-mix(in srgb, var(--ucs) 12%, transparent); }
+.ml-plot .th-neg { fill: color-mix(in srgb, var(--indigo) 30%, transparent); stroke: var(--indigo); stroke-width: 1.5; }
+.ml-plot .th-pos { fill: color-mix(in srgb, #d9546e 40%, transparent); stroke: #d9546e; stroke-width: 1.5; }
+.ml-plot .th-line { stroke: var(--ink); stroke-width: 2; stroke-dasharray: 6 4; }
+.ml-plot .th-prc { fill: none; stroke: var(--indigo); stroke-width: 2.5; }
+.ml-plot .th-dot, .ml-plot .un-dot { fill: var(--ucs); stroke: var(--ink); stroke-width: 2; }
+.ml-plot .ev-b1 { fill: var(--indigo); } .ml-plot .ev-b2 { fill: #d9546e; } .ml-plot .ev-b3 { fill: var(--ucs); }
+.ml-plot .ev-vlab { font-size: 9.5px; font-weight: 700; } .ml-plot .ev-cat { font-weight: 700; fill: var(--ink); }
+.bt-legend .k.ev-k1 { background: var(--indigo); } .bt-legend .k.ev-k2 { background: #d9546e; } .bt-legend .k.ev-k3 { background: var(--ucs); }
+.bt-legend .k.jb-kh { background: var(--ink-soft); }
+.ev-crow { display: grid; grid-template-columns: minmax(0, 9rem) minmax(0, 11rem) minmax(0, 1fr); gap: 0.6rem; align-items: center; padding: 0.35rem 0.5rem; border-radius: 8px; margin-bottom: 0.25rem; }
+.ev-crow.best { background: color-mix(in srgb, var(--bfs) 12%, var(--surface)); }
+.ev-cname { font-weight: 700; font-size: 0.9rem; } .ev-cname em { display: block; font-style: normal; font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; color: var(--bfs); }
+.ev-cf { font-size: 0.78rem; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+.ev-cbar { position: relative; height: 16px; background: var(--bg); border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+.ev-cbar i { display: block; height: 100%; background: color-mix(in srgb, #d9546e 55%, var(--surface)); transition: width 0.2s ease; }
+.ev-crow.best .ev-cbar i { background: color-mix(in srgb, var(--bfs) 65%, var(--surface)); }
+.ev-cbar b { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); font-size: 0.7rem; line-height: 1; }
+@media (max-width: 520px) { .ev-crow { grid-template-columns: 1fr 1fr; } .ev-cbar { grid-column: 1 / -1; } }
+.ov-inputs { display: grid; gap: 0.5rem; }
+.ov-inputs label { display: grid; grid-template-columns: 7rem minmax(0, 1fr); gap: 0.6rem; align-items: start; font-weight: 700; font-size: 0.86rem; }
+.ov-inputs label span { padding-top: 0.4rem; }
+.ov-inputs input, .ov-inputs textarea { width: 100%; box-sizing: border-box; font: inherit; font-size: 0.92rem; padding: 0.4rem 0.6rem; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); resize: vertical; }
+@media (max-width: 520px) { .ov-inputs label { grid-template-columns: 1fr; gap: 0.2rem; } }
+table.summary.ov-table th, table.summary.ov-table td { padding: 0.45rem 0.55rem; font-size: 0.84rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
+table.summary.ov-table td.ov-c { white-space: normal; min-width: 12rem; }
+.ov-table tbody tr { cursor: pointer; } .ov-table tr.hl td { background: color-mix(in srgb, var(--ucs) 16%, transparent); }
+.ov-detail { margin-top: 0.8rem; }
+.ov-detail span.lcs { background: color-mix(in srgb, var(--ucs) 40%, var(--surface)); border-radius: 4px; padding: 0 0.15rem; font-weight: 700; }
+.ov-detail span.uni { background: color-mix(in srgb, var(--ids) 16%, var(--surface)); border-radius: 4px; padding: 0 0.15rem; }
+.ov-lab { display: inline-block; min-width: 5.6rem; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-soft); }
+.bt-legend .k.ov-klcs { background: color-mix(in srgb, var(--ucs) 40%, var(--surface)); } .bt-legend .k.ov-kuni { background: color-mix(in srgb, var(--ids) 16%, var(--surface)); }
+.ml-plot .jb-j.ln { fill: none; stroke: var(--indigo); stroke-width: 2.2; } .ml-plot .jb-j.pt { fill: var(--indigo); stroke: var(--surface); stroke-width: 1.5; }
+.ml-plot .jb-j2.ln { fill: none; stroke: var(--ucs); stroke-width: 2.2; } .ml-plot .jb-j2.pt { fill: var(--ucs); stroke: var(--surface); stroke-width: 1.5; }
+.ml-plot .jb-h.ln { fill: none; stroke: var(--ink-soft); stroke-width: 1.8; stroke-dasharray: 5 4; } .ml-plot .jb-h.pt { fill: var(--ink-soft); stroke: var(--surface); stroke-width: 1.5; }
+.ml-plot .md-s { cursor: pointer; }
+.ml-plot .md-s .ln { fill: none; stroke-width: 3; } .ml-plot .md-s .pt { stroke: var(--surface); stroke-width: 2; }
+.ml-plot .md-s.s0 .ln { stroke: var(--dfs); } .ml-plot .md-s.s0 .pt { fill: var(--dfs); }
+.ml-plot .md-s.s1 .ln { stroke: #d9546e; } .ml-plot .md-s.s1 .pt { fill: #d9546e; }
+.ml-plot .md-s.s2 .ln { stroke: var(--bfs); } .ml-plot .md-s.s2 .pt { fill: var(--bfs); }
+.ml-plot .md-s.s3 .ln { stroke: var(--ucs); } .ml-plot .md-s.s3 .pt { fill: var(--ucs); }
+.ml-plot .md-s.s4 .ln { stroke: var(--ids); } .ml-plot .md-s.s4 .pt { fill: var(--ids); }
+.ml-plot .md-s.off { opacity: 0.45; } .ml-plot .md-s.on .ln { stroke-width: 4.5; }
+.ml-plot .md-v { font-size: 9px; font-weight: 800; fill: #fff; pointer-events: none; }
+.ml-plot .tc-vdot { fill: #d9546e; stroke: var(--surface); stroke-width: 1.5; }
+.ml-plot .sg-over { fill: color-mix(in srgb, var(--ucs) 10%, transparent); }
+.ml-plot .un-ci { opacity: 0.35; }
+.sh-lab { margin: 0.5rem 0 0.25rem !important; font-size: 0.74rem !important; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-soft); }
+.sh-bar { display: flex; height: 22px; border-radius: 999px; overflow: hidden; border: 1px solid var(--line); margin-bottom: 0.3rem; }
+.sh-bar i { display: flex; align-items: center; justify-content: center; font-style: normal; font-size: 0.7rem; font-weight: 800; color: #fff; transition: width 0.2s ease; }
+.sh-bar i.d0, .bt-legend .k.sh-k0 { background: var(--indigo); } .sh-bar i.d1, .bt-legend .k.sh-k1 { background: var(--bfs); } .sh-bar i.d2, .bt-legend .k.sh-k2 { background: var(--dfs); }
+.ev-pre { margin: 0 0 0.6rem; padding: 0.7rem 0.9rem; font-size: 0.78rem; line-height: 1.5; background: color-mix(in srgb, var(--ink) 5%, var(--surface)); border-radius: var(--radius-sm); overflow-x: auto; }
+.ml-plot.ev-solo { max-width: 620px; margin: 0 auto; }
