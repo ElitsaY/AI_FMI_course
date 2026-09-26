@@ -769,12 +769,20 @@ body.home {
   .lab-go { margin-top: 0.5rem; }
 }
 
-.team-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.2rem; }
-@media (max-width: 760px) { .team-grid { grid-template-columns: 1fr; } }
+.team-grid { display: grid; gap: 1rem; }
+.team-grid .person-card { display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; }
+.person-main { min-width: 0; }
+.person-prev { flex-shrink: 0; text-align: right; }
+.prev-label { margin: 0 0 0.5rem; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-soft); }
+.prev-logos { display: flex; gap: 0.6rem; justify-content: flex-end; align-items: center; }
+.prev-logo { display: inline-flex; align-items: center; justify-content: center; height: 54px; min-width: 64px; padding: 0 0.85rem; background: #fff; border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow-sm); }
+.prev-logo img { display: block; width: auto; height: 26px; }
+.prev-logo.g img { height: 28px; } .prev-logo.uber img { height: 19px; } .prev-logo.aws img { height: 30px; }
+@media (max-width: 640px) { .team-grid .person-card { flex-direction: column; align-items: flex-start; } .person-prev { text-align: left; } .prev-logos { justify-content: flex-start; } }
 .person-card { background: var(--surface); border: 1px solid var(--line); border-top: 4px solid var(--teal); border-radius: var(--radius); box-shadow: var(--shadow-sm); padding: 1.4rem 1.5rem; }
 .person-card .role { margin: 0; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: color-mix(in srgb, var(--teal) 75%, var(--ink)); }
 .person-card h3 { margin: 0.35rem 0 0.4rem; font-size: 1.25rem; }
-.person-card > p:not(.role) { margin: 0; color: var(--ink-soft); font-size: 0.95rem; }
+.person-card > p:not(.role), .person-main > p:not(.role) { margin: 0; color: var(--ink-soft); font-size: 0.95rem; }
 .person-links { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
 .person-links a { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; font-weight: 700; color: var(--ink); background: color-mix(in srgb, var(--ink) 5%, var(--surface)); border: 1px solid var(--line); border-radius: 999px; padding: 0.35rem 0.8rem; text-decoration: none; }
 .person-links a:hover { border-color: var(--teal); color: color-mix(in srgb, var(--teal) 75%, var(--ink)); text-decoration: none; }
