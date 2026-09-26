@@ -1417,3 +1417,9 @@ b.c0, .dt-out .c0 { color: var(--indigo); } b.c1, .dt-out .c1 { color: #b8394f; 
 .dg-bar i { display: block; height: 100%; background: color-mix(in srgb, var(--indigo) 45%, var(--surface)); }
 .dg-row.best .dg-bar i { background: var(--indigo); } .dg-row.best b { color: var(--indigo); font-weight: 800; }
 @media (max-width: 760px) { .dg-grid { grid-template-columns: 1fr; } .dg-draw-wrap { justify-items: center; } }
+
+/* ---- site nav: every lab links to all labs ---- */
+.site-nav nav a[aria-current="page"] { color: var(--indigo); font-weight: 800; }
+@media (min-width: 521px) and (max-width: 1180px) {
+  .site-nav nav { flex-wrap: wrap; justify-content: flex-end; column-gap: 0.9rem; row-gap: 0.2rem; font-size: 0.86rem; }
+}
