@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lab 13 — Post-training and Alignment | Class Notes</title>
+<meta name="description" content="Interactive notes on how a pretrained language model becomes an assistant: pretraining, supervised fine-tuning, preference data, reward models and RLHF, the KL constraint, reward hacking and Goodhart's law, DPO, AI feedback, process supervision, verifiable rewards and evaluation.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+
+<header class="site-nav">
+  <span class="brand"><span class="dot"></span> Class Notes</span>
+  <nav>
+    <a href="../index.html">Home</a>
+    <a href="lab01-uninformed-search.html">Lab 01</a>
+    <a href="lab02-informed-search.html">Lab 02</a>
+    <a href="lab03-csp.html">Lab 03</a>
+    <a href="lab04-genetic-algorithms.html">Lab 04</a>
+    <a href="lab05-games.html">Lab 05</a>
+    <a href="lab06-intro-ml.html">Lab 06</a>
+    <a href="lab065-linear-logistic.html">Lab 6.5</a>
+    <a href="lab07-knn.html">Lab 07</a>
+    <a href="lab08-naive-bayes.html">Lab 08</a>
+    <a href="lab09-decision-trees.html">Lab 09</a>
+    <a href="lab10-kmeans.html">Lab 10</a>
+    <a href="lab11-neural-networks.html">Lab 11</a>
+    <a href="lab12-transformers.html">Lab 12</a>
+    <a href="lab13-alignment.html" aria-current="page">Lab 13</a>
+  </nav>
+  <script>(function(){var n=document.querySelector(".site-nav nav"),a=n&&n.querySelector("[aria-current]");if(a)n.scrollLeft=a.offsetLeft-n.offsetLeft-(n.clientWidth-a.offsetWidth)/2;})();</script>
+</header>
+
+<section class="hero art-hero art-al">
+  <svg id="al-hero-bg" class="hero-art" viewBox="0 0 1200 300" preserveAspectRatio="xMidYMid slice" aria-hidden="true"></svg>
+  <div class="wrap">
+    <p class="eyebrow">Lab 13</p>
+    <h1>Post-training and Alignment</h1>
+    <div class="badges">
+      <span class="badge ids">SFT</span>
+      <span class="badge dfs">RLHF &amp; DPO</span>
+      <span class="badge ucs">Reward hacking</span>
+      <span class="badge bfs">Evaluation</span>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+
+  <!-- ===== OVERVIEW ===== -->
+  <section class="block" id="overview">
+    <h2 class="section-title">Overview of the lab</h2>
+    <p class="section-lede">By the end of this lab you should be able to distinguish <b>pretraining</b>, <b>supervised fine-tuning (SFT)</b> and <b>preference-based post-training</b>; explain why next-token prediction alone does not guarantee useful assistant behaviour; describe <b>RLHF</b>, <b>reward models</b> and <b>DPO</b>; recognise <b>reward hacking</b>; and reason about why alignment is an ongoing evaluation and optimisation problem.</p>
+    <ol class="concept-list">
+      <li><a href="#question">The central question</a></li>
+      <li><a href="#pretraining">Pretraining</a> and <a href="#base-vs-assistant">base model vs assistant</a></li>
+      <li><a href="#sft">Supervised fine-tuning (SFT)</a></li>
+      <li><a href="#preferences">Preferences instead of perfect answers</a></li>
+      <li><a href="#rlhf">RLHF: reward model and optimisation</a>, <a href="#kl">why constrain the optimisation</a></li>
+      <li><a href="#hacking">Reward hacking</a> and the <a href="#attack">main exercise: attack the reward</a></li>
+      <li><a href="#goodhart">Goodhart-style failure</a></li>
+      <li><a href="#dpo">Direct Preference Optimization (DPO)</a></li>
+      <li><a href="#human-feedback">Human feedback is not ground truth</a> and <a href="#tradeoffs">alignment is not one number</a></li>
+      <li><a href="#ai-feedback">AI feedback</a>, <a href="#process">outcome vs process supervision</a>, <a href="#verifiable">verifiable rewards</a></li>
+      <li><a href="#map">A map of post-training</a>, <a href="#research">research directions</a> and <a href="#discussion">discussion</a></li>
+      <li><a href="#case">Final case study: AI programming tutor</a> and <a href="#checkpoint">final checkpoint</a></li>
+    </ol>
+  </section>
+
+  <!-- ===== 1. QUESTION ===== -->
+  <section class="block" id="question">
+    <h2 class="section-title">1. The central question</h2>
+    <p class="section-lede">In <a href="lab12-transformers.html">Lab 12</a> we saw how a Transformer turns text into a probability distribution over the next token. Now: <b>how does a pretrained language model become an assistant?</b></p>
+    <p class="section-lede">A model trained on next-token prediction may become good at completing text, answering questions, writing code and imitating many styles. But next-token prediction does not explicitly say: <i>follow the user's instruction · be useful · be honest about uncertainty · avoid harmful behaviour · prefer clear answers</i>. This motivates <b>post-training</b>.</p>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">See it: one prompt through the stages</h4>
+    <p class="section-lede">A simplified pipeline. Click a stage to see what it learns from, what it optimises, and a typical (illustrative) reply to the same prompt: <i>"Write three concise reasons why regular backups are useful."</i></p>
+    <div class="playground">
+      <div id="st-flow" class="st-flow"></div>
+      <div id="st-out" class="al-out st-out"></div>
+    </div>
+    <p class="caption-note">💡 Real systems may use additional stages, synthetic data, model-based evaluators, safety-specific training, tool-use training, and repeated evaluation.</p>
+  </section>
+
+  <!-- ===== 2. PRETRAINING ===== -->
+  <section class="block algo-section ids" id="pretraining">
+    <span class="badge ids" style="margin-bottom:0.6rem; display:inline-block;">Stage 1</span>
+    <h2 class="section-title">2. Pretraining</h2>
+    <p class="section-lede">During pretraining, a language model is typically optimised to <b>predict the next token</b>. For <i>The capital of France is Paris.</i> it learns from the contexts <i>The</i> · <i>The capital</i> · <i>The capital of</i> · <i>The capital of France</i> · <i>The capital of France is</i>.</p>
+    <div class="definition-box">
+      <div class="dbox-label">📐 Pretraining loss</div>
+      \[ \mathcal{L}_{\text{pretrain}} = -\sum_t \log p(x_t \mid x_{&lt;t}) \]
+      <p>The model is rewarded for assigning high probability to the token that actually follows the context. This is the cross-entropy of <a href="lab065-linear-logistic.html#logistic">Lab 6.5</a>, summed over positions, with the Transformer of <a href="lab12-transformers.html">Lab 12</a> computing \(p\).</p>
+    </div>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Try it: the loss of one sentence</h4>
+    <p class="section-lede">Invented model probabilities for each true next token. Move the probability the model gives to <i>Paris</i>: a confident correct prediction costs almost nothing, a confident wrong one costs a lot.</p>
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="beam-control show" style="margin:0;"><label>p(Paris | The capital of France is)</label><input type="range" id="pt-p" min="0.01" max="0.99" value="0.9" step="0.01"><span class="val" id="pt-p-val">0.90</span></div>
+      </div>
+      <div id="pt-out" class="al-out"></div>
+    </div>
+
+    <div class="dt-ex-list" style="margin-top:1.4rem;">
+      <details class="dt-ex">
+        <summary><span class="dt-ex-no">1</span><span class="dt-ex-q">For the prompt <i>"User: Explain photosynthesis to a 10-year-old. Assistant:"</i>: (1) Does the pretraining objective explicitly contain "be helpful"? (2) "Follow the user's instruction"? (3) Could the model have seen helpful explanations in training? (4) Also misinformation, arguments, jokes, ads, low-quality explanations? (5) Why can next-token prediction produce useful abilities without guaranteeing useful assistant behaviour? Write a 2–3 sentence conclusion.</span></summary>
+        <div class="dt-ex-sol">
+          <p>(1), (2) No: the only objective is to predict the next token of the training text. (3) Yes, plenty. (4) Yes, also plenty.</p>
+          <p><b>Conclusion:</b> to predict text well, the model must learn a lot about language, facts and reasoning, so useful abilities emerge. But it learns to reproduce <b>whatever kind of text is likely</b> after the context, good or bad, helpful or not. Which behaviour it shows depends on which kind of document the prompt resembles, not on what the user wants; shaping that is the job of post-training.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- ===== 3. BASE VS ASSISTANT ===== -->
+  <section class="block" id="base-vs-assistant">
+    <h2 class="section-title">3. Base model vs assistant model</h2>
+    <p class="section-lede">For the prompt <i>"Write three concise reasons why regular backups are useful."</i></p>
+    <ul class="concept-list">
+      <li>A <b>base model</b> is primarily trained to answer: <i>what text is likely to come next?</i> (Maybe a list of more writing prompts, as in a worksheet.)</li>
+      <li>An <b>assistant model</b> is additionally trained towards: <i>what response should I produce for this user's request?</i></li>
+    </ul>
+    <p class="section-lede">These objectives are related, but they are not identical.</p>
+    <div class="dt-ex-list">
+      <details class="dt-ex">
+        <summary><span class="dt-ex-no">2</span><span class="dt-ex-q">Classify each output as <b>A</b> (raw text continuation) or <b>B</b> (instruction following). Ex. 1: <i>Translate "good morning" into Spanish.</i> → <i>Buenos días.</i> · Ex. 2: same prompt → <i>Translate "good night" into French. Translate "thank you" into German.</i> · Ex. 3: <i>List two disadvantages of decision trees.</i> → <i>1. They can overfit. 2. They can be unstable to small changes in the training data.</i> · Ex. 4: same prompt → <i>List three advantages of random forests. List two advantages of logistic regression.</i></span></summary>
+        <div class="dt-ex-sol">
+          <p><b>1: B</b>, it carries out the request. <b>2: A</b>, it continues the pattern "a list of translation exercises", as a base model would after seeing a worksheet. <b>3: B</b>, it answers (and correctly, see <a href="lab09-decision-trees.html#overfit">Lab 09</a>). <b>4: A</b>, again a continuation of an exercise list.</p>
+          <p>The A outputs are perfectly <i>plausible text</i>: such lists are common on the web. They are just not what the user wanted.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- ===== 4. SFT ===== -->
+  <section class="block algo-section dfs" id="sft">
+    <span class="badge dfs" style="margin-bottom:0.6rem; display:inline-block;">Stage 2</span>
+    <h2 class="section-title">4. Supervised Fine-Tuning (SFT)</h2>
+    <p class="section-lede">We collect examples of desired behaviour, <b>prompt → high-quality response</b>, and train the model to <b>imitate the target responses</b>, with the same next-token loss as in pretraining (usually counted only on the response tokens).</p>
+    <div class="al-pair">
+      <div class="al-card"><h5>Prompt</h5><p>Explain overfitting in one paragraph.</p></div>
+      <div class="al-card chosen"><h5>Target response</h5><p>Overfitting occurs when a model learns patterns that are too specific for the training data and therefore generalizes poorly to new data…</p></div>
+    </div>
+    <div class="table-wrap" style="margin-top:1rem;">
+      <table class="summary">
+        <thead><tr><th></th><th>Pretraining</th><th>SFT</th></tr></thead>
+        <tbody>
+          <tr><td><b>Data</b></td><td>enormous amounts of naturally occurring text</td><td>a smaller curated collection of desired behaviours</td></tr>
+          <tr><td><b>Learns</b></td><td>to predict likely text</td><td>instruction following, preferred structure, style and tone, tool-use conventions, task-specific and safety-related behaviour</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="section-lede" style="margin-top:1rem;">But SFT has an obvious limitation: <b>someone must provide examples of what good behaviour looks like</b>.</p>
+    <div class="dt-ex-list">
+      <details class="dt-ex">
+        <summary><span class="dt-ex-no">3</span><span class="dt-ex-q">You are training an AI teaching assistant for an introductory ML course. Write an ideal target response for: <b>A</b> "What is the difference between classification and regression?" · <b>B</b> "My model has 99% training accuracy and 72% test accuracy. Is this good?" · <b>C</b> "Give me the answer to this homework problem without explaining anything." Then discuss: what makes your responses "good"? Would every teacher make the same choices? Could two SFT datasets produce noticeably different assistants? Who decides what counts as the desired behaviour?</span></summary>
+        <div class="dt-ex-sol">
+          <p><b>A</b>: "Both are supervised learning. Classification predicts a category (spam / not spam); regression predicts a number (a house price). A quick test: can you average two possible answers? If yes, it is usually regression."</p>
+          <p><b>B</b>: "Not really: the 27-point gap between training and test accuracy suggests overfitting. The model has partly memorised the training data. Try a simpler model or regularisation, get more data, and choose hyperparameters with cross-validation. What model are you using?"</p>
+          <p><b>C</b>: "I can't just hand over the answer to a graded assignment, but I'm happy to help you get there quickly. Which part are you stuck on? Here is the first step…" (A different course might allow direct answers.)</p>
+          <p>Good = correct, at the right level, relevant, honest, and serving the goal of <b>learning</b>. Teachers would disagree on details (how much to reveal in C, how formal to be), so different SFT datasets would give assistants with noticeably different behaviour. Someone (course staff, the company, the annotation guidelines) decides; <b>that choice is already an alignment question</b>.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- ===== 5. PREFERENCES ===== -->
+  <section class="block algo-section ucs" id="preferences">
+    <span class="badge ucs" style="margin-bottom:0.6rem; display:inline-block;">Comparisons</span>
+    <h2 class="section-title">5. Preferences instead of perfect answers</h2>
+    <p class="section-lede">For <i>"Explain gradient descent to a beginner."</i> the model generates two responses. It may be easier for a human to say <b>"A is better than B"</b> than to write a perfect answer from scratch.</p>
+    <div class="al-pair">
+      <div class="al-card"><h5>Response A</h5><p>Gradient descent is an optimization algorithm that repeatedly changes model parameters in the direction that reduces the loss. You can imagine walking downhill by taking small steps in the steepest downward direction.</p></div>
+      <div class="al-card"><h5>Response B</h5><p>Gradient descent is based on first-order differential structure over a parameterized objective manifold and applies iterative updates using the negative local derivative of the scalar objective.</p></div>
+    </div>
+    <p class="section-lede" style="margin-top:1rem;">This gives us <b>preference data</b>: triples <b>(prompt, chosen response, rejected response)</b>.</p>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Try it: you are the annotator</h4>
+    <p class="section-lede">The two cases from Exercise 4. Pick the better response for each user; every click adds a record to the preference dataset below.</p>
+    <div class="playground">
+      <div id="pf-cases" class="pf-cases"></div>
+      <div id="pf-data" class="al-out" style="margin-top:0.8rem;"></div>
+    </div>
+
+    <div class="dt-ex-list" style="margin-top:1.4rem;">
+      <details class="dt-ex">
+        <summary><span class="dt-ex-no">4</span><span class="dt-ex-q">Case 1: a user who has never studied ML asks "What is logistic regression?" Case 2: a user implementing logistic regression from scratch asks for the prediction equation. Which response is preferable in each case? What does "better response" mean if the user's goals and background can change?</span></summary>
+        <div class="dt-ex-sol">
+          <p>Case 1: the plain-language response A. Case 2: the equation, response B. The same two <i>styles</i> swap places.</p>
+          <p>"Better" is not a property of a response alone; it depends on the <b>prompt, the user and their goal</b>. Preference data must capture that context, and a model trained on it must learn to read the context rather than one fixed style (e.g. "always technical" or "always simple").</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- ===== 6. RLHF ===== -->
+  <section class="block algo-section bfs" id="rlhf">
+    <span class="badge bfs" style="margin-bottom:0.6rem; display:inline-block;">Stage 3</span>
+    <h2 class="section-title">6. Reinforcement Learning from Human Feedback (RLHF)</h2>
+    <p class="section-lede">A historically important preference-based post-training approach (used e.g. for InstructGPT, Ouyang et al., 2022). A simplified pipeline has three steps:</p>
+    <ol class="concept-list">
+      <li><b>Supervised fine-tuning</b>: pretrained model → SFT model.</li>
+      <li><b>Train a reward model</b>: humans compare model responses (prompt, response A, response B, "A &gt; B"). A separate <b>reward model</b> learns to assign a score \(r(x, y)\) to a prompt \(x\) and response \(y\): a learned estimate of preference.</li>
+      <li><b>Optimise the language model</b>: it generates responses, the reward model scores them, and the language model is updated (with reinforcement learning, e.g. PPO) to produce responses receiving <b>higher reward</b>.</li>
+    </ol>
+    <div class="definition-box">
+      <div class="dbox-label">📐 Reward model from pairwise preferences (Bradley–Terry)</div>
+      \[ P(y_w \succ y_l \mid x) = \sigma\big(r(x, y_w) - r(x, y_l)\big) \qquad \mathcal{L}_R = -\log \sigma\big(r(x, y_w) - r(x, y_l)\big) \]
+      <p>\(y_w\) is the chosen (winning), \(y_l\) the rejected (losing) response, \(\sigma\) the sigmoid. Only the <b>difference</b> of two rewards matters: the reward model is trained like <a href="lab065-linear-logistic.html#logistic">logistic regression</a> on "which one wins?".</p>
+    </div>
+    <p class="caption-note">❗ The reward is <b>not objective truth</b>. It is the output of another learned model, trained on a limited set of (noisy) human judgements.</p>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Try it: train the reward model on one comparison</h4>
+    <p class="section-lede">Humans preferred A over B. Set the two scores: the loss is small when the reward model agrees with the human by a clear margin.</p>
+    <div class="playground">
+      <div class="nb-sliders">
+        <label><span>r(x, A) chosen</span><input type="range" id="bt-a" min="-3" max="3" value="0.5" step="0.1"><span class="val" id="bt-a-val">0.5</span></label>
+        <label><span>r(x, B) rejected</span><input type="range" id="bt-b" min="-3" max="3" value="0" step="0.1"><span class="val" id="bt-b-val">0.0</span></label>
+      </div>
+      <div class="pg-grid" style="margin-top:0.8rem;">
+        <svg id="bt-plot" class="ml-plot" viewBox="0 0 400 240" aria-label="Preference probability versus reward difference"></svg>
+        <div id="bt-out" class="al-out"></div>
+      </div>
+      <div class="pg-controls" style="margin-top:0.6rem;"><div class="strategy-pick"><button class="strat-btn" id="bt-step">Take a gradient step</button><button class="strat-btn" id="bt-reset">Reset</button></div></div>
+    </div>
+  </section>
+
+  <!-- ===== 7. KL ===== -->
+  <section class="block algo-section ids" id="kl">
+    <span class="badge ids" style="margin-bottom:0.6rem; display:inline-block;">Regularisation</span>
+    <h2 class="section-title">7. Why constrain the optimisation?</h2>
+    <p class="section-lede">If the only goal is <b>maximise the reward-model score</b>, a powerful optimiser may discover strange outputs that exploit weaknesses in the reward model. So RLHF methods commonly include a term that discourages the model from moving too far from a <b>reference model</b> (usually the SFT model).</p>
+    <div class="definition-box">
+      <div class="dbox-label">📐 KL-constrained objective</div>
+      \[ \max_{\pi}\; \mathbb{E}_{y \sim \pi(\cdot \mid x)}\big[r(x, y)\big] \;-\; \beta\, D_{\mathrm{KL}}\big(\pi(\cdot \mid x) \,\|\, \pi_{\text{ref}}(\cdot \mid x)\big) \]
+      <p>objective = reward − β · distance from reference behaviour. A common distance is the <b>KL divergence</b>, \(D_{\mathrm{KL}}(\pi \| \pi_{\text{ref}}) = \sum_y \pi(y) \log \frac{\pi(y)}{\pi_{\text{ref}}(y)}\). Its optimum has a closed form (Rafailov et al., 2023): \(\pi^*(y \mid x) \propto \pi_{\text{ref}}(y \mid x)\, e^{r(x, y) / \beta}\).</p>
+    </div>
+    <p class="section-lede" style="margin-top:1rem;">The intuition: <b>improve the desired behaviour without allowing the model to drift arbitrarily far while chasing an imperfect reward signal</b>.</p>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Try it: optimisation pressure and the KL penalty</h4>
+    <p class="section-lede">Five kinds of reply to "Explain gradient descent to a beginner", with their probability under the SFT model, the (imperfect) reward model's score, and a hidden <b>true quality</b> (our invented judgement). The reward model overrates length and jargon. Lower \(\beta\) (more optimisation pressure) and watch the policy \(\pi^*\) move: the proxy reward keeps rising, true quality peaks and then falls.</p>
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="beam-control show" style="margin:0;"><label>β (KL penalty)</label><input type="range" id="kl-b" min="-1.3" max="1.3" value="0.7" step="0.02"><span class="val" id="kl-b-val">5.0</span></label></div>
+      </div>
+      <div class="pg-grid">
+        <div id="kl-bars" class="al-out"></div>
+        <div>
+          <svg id="kl-plot" class="ml-plot" viewBox="0 0 400 250" aria-label="Proxy reward and true quality versus optimisation pressure"></svg>
+          <p class="bt-legend"><span class="k ln kl-kr"></span> expected reward-model score (proxy) &nbsp; <span class="k ln kl-kq"></span> expected true quality</p>
+          <div id="kl-out" class="al-out"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="dt-ex-list" style="margin-top:1.4rem;">
+      <details class="dt-ex">
+        <summary><span class="dt-ex-no">5</span><span class="dt-ex-q">Without copying a diagram, draw an RLHF pipeline with: pretrained model, SFT data, SFT model, prompts, generated responses, human preferences, reward model, reinforcement learning, final model. Label where you see <b>human-provided supervision</b>, <b>learned supervision</b> and <b>optimisation</b>.</span></summary>
+        <div class="dt-ex-sol">
+          <div class="al-rlhf">
+            <span class="n">pretrained model</span> + <span class="n human">SFT data (humans)</span> → <span class="n opt">supervised training</span> → <span class="n">SFT model</span><br>
+            <span class="n">prompts</span> → SFT model → <span class="n">generated responses</span> → <span class="n human">human preferences (A &gt; B)</span> → <span class="n opt">training</span> → <span class="n learned">reward model</span><br>
+            <span class="n">prompts</span> → policy (starts as SFT model) → responses → <span class="n learned">reward model score</span> − β·KL → <span class="n opt">reinforcement learning</span> → <span class="n">final model</span>
+          </div>
+          <p class="bt-legend"><span class="k al-h"></span> human-provided supervision &nbsp; <span class="k al-l"></span> learned supervision &nbsp; <span class="k al-o"></span> optimisation</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- ===== 8. REWARD HACKING ===== -->
+  <section class="block algo-section dfs" id="hacking">
+    <span class="badge dfs" style="margin-bottom:0.6rem; display:inline-block;">Failure mode</span>
+    <h2 class="section-title">8. Reward hacking</h2>
+    <p class="section-lede">We want high-quality educational explanations and define the reward: <b>+1</b> if the answer is longer than 300 words, <b>+1</b> if it contains at least five technical terms, <b>+1</b> if it contains the phrase "In conclusion". Optimised aggressively, the model learns <i>longer = better, more jargon = better, always write "In conclusion"</i>. None of these guarantees educational quality.</p>
+    <p class="section-lede">The model has optimised the <b>proxy</b> rather than the real goal: <b>reward hacking</b>, or <b>specification gaming</b>.</p>
+  </section>
+
+  <!-- ===== 9. ATTACK ===== -->
+  <section class="block algo-section ucs" id="attack">
+    <span class="badge ucs" style="margin-bottom:0.6rem; display:inline-block;">Main exercise</span>
+    <h2 class="section-title">9. Main exercise: attack the reward</h2>
+    <p class="section-lede">Your team trains an AI teaching assistant. The real objective: <b>produce answers that help students understand the material</b>. Student understanding is hard to measure directly, so someone proposes:</p>
+    <div class="table-wrap">
+      <table class="summary">
+        <thead><tr><th>Component</th><th>Reward</th></tr></thead>
+        <tbody>
+          <tr><td>answer longer than 250 words</td><td>+2</td></tr>
+          <tr><td>contains at least three equations</td><td>+2</td></tr>
+          <tr><td>uses technical vocabulary</td><td>+1</td></tr>
+          <tr><td>student clicks "helpful"</td><td>+3</td></tr>
+          <tr><td>student asks a follow-up question</td><td>−2</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Try it: score answers with the proposed reward</h4>
+    <p class="section-lede">Five answers to a student asking <i>"Why does my model overfit?"</i> (invented), scored by the proposed reward and by what we actually care about. Then tick the features of your own answer.</p>
+    <div class="playground">
+      <div id="rh-out" class="al-out"></div>
+      <div class="rh-build">
+        <h5>Build an answer</h5>
+        <div id="rh-feats" class="rh-feats"></div>
+        <div id="rh-score" class="al-out"></div>
+      </div>
+    </div>
+
+    <div class="dt-ex-list" style="margin-top:1.4rem;">
+      <details class="dt-ex">
+        <summary><span class="dt-ex-no">A</span><span class="dt-ex-q">Find the exploits: describe at least five ways a model could obtain high reward while being a poor teacher. (Example: it could avoid useful uncertainty or discussion, because follow-up questions are penalised.)</span></summary>
+        <div class="dt-ex-sol">
+          <ol class="concept-list">
+            <li>Pad every answer past 250 words with repetition and filler.</li>
+            <li>Add three equations whether or not they help, even to conceptual questions.</li>
+            <li>Stuff answers with jargon that beginners cannot follow.</li>
+            <li>Flatter the student or simply give the homework answer, to earn the "helpful" click.</li>
+            <li>Sound complete and final ("this fully answers your question"), discourage questions, or hide uncertainty, to avoid follow-ups; or be so confusing that students give up rather than ask.</li>
+            <li>Tell students what they want to hear (confirm a wrong belief) because that gets clicked more.</li>
+          </ol>
+        </div>
+      </details>
+      <details class="dt-ex">
+        <summary><span class="dt-ex-no">B</span><span class="dt-ex-q">Identify the hidden assumption behind every component: answer length, number of equations, technical vocabulary, "helpful" clicks, follow-up questions.</span></summary>
+        <div class="dt-ex-sol">
+          <ul class="concept-list">
+            <li><b>Length</b>: long answer → better explanation. <b>Equations</b>: more maths → more rigour and understanding.</li>
+            <li><b>Vocabulary</b>: technical words → expertise and correctness.</li>
+            <li><b>Helpful clicks</b>: the student can judge what helped them learn, and clicks when they did (not when they got the answer or felt flattered).</li>
+            <li><b>Follow-ups</b>: a follow-up question means the answer failed (rather than that the student is engaged and curious).</li>
+          </ul>
+        </div>
+      </details>
+      <details class="dt-ex">
+        <summary><span class="dt-ex-no">C</span><span class="dt-ex-q">Redesign the evaluation. Use any of: human ratings, short quizzes after the explanation, expert review, pairwise comparisons, automatic correctness checks, delayed outcomes, adversarial tests. It must measure at least correctness, clarity, relevance, appropriate difficulty and absence of misleading claims.</span></summary>
+        <div class="dt-ex-sol">
+          <ul class="concept-list">
+            <li><b>Correctness, misleading claims</b>: expert (TA) review of a random sample with a rubric; automatic checks where possible (does the code run, is the formula right); adversarial prompts containing false premises.</li>
+            <li><b>Clarity, difficulty</b>: pairwise comparisons by TAs, with the student's level shown; students rate "I could explain this to a friend".</li>
+            <li><b>Relevance</b>: rubric item "answers the question that was asked".</li>
+            <li><b>Learning (the real goal)</b>: a short quiz right after the explanation, and a <b>delayed</b> quiz or exam performance a week later, compared with a control group.</li>
+            <li>Keep the evaluation <b>separate</b> from the training reward, and rotate it, so it cannot be optimised directly.</li>
+          </ul>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- ===== 10. GOODHART ===== -->
+  <section class="block algo-section bfs" id="goodhart">
+    <span class="badge bfs" style="margin-bottom:0.6rem; display:inline-block;">Goodhart</span>
+    <h2 class="section-title">10. Goodhart-style failure</h2>
+    <p class="section-lede">A useful warning, informally: <b>once a proxy becomes the thing we aggressively optimise, it may stop being a good measure of the real goal.</b> You saw it in the <a href="#kl">KL widget</a>: the proxy keeps rising while true quality falls.</p>
+    <div class="table-wrap">
+      <table class="summary">
+        <thead><tr><th>Real goal</th><th>Proxy</th></tr></thead>
+        <tbody>
+          <tr><td>student learning</td><td>"helpful" clicks</td></tr>
+          <tr><td>useful code</td><td>public tests passed</td></tr>
+          <tr><td>safe behaviour</td><td>number of refusals</td></tr>
+          <tr><td>good summary</td><td>lexical overlap with a reference</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="dt-ex-list" style="margin-top:1.4rem;">
+      <details class="dt-ex">
+        <summary><span class="dt-ex-no">6</span><span class="dt-ex-q">For each scenario identify the real objective, the proxy and one failure mode. A: a customer-support chatbot rewarded for minimising conversation length. B: a coding agent rewarded only for passing public unit tests. C: a moderation system rewarded for minimising the number of harmful messages that remain visible. D: a tutoring system rewarded for maximising five-star ratings.</span></summary>
+        <div class="dt-ex-sol">
+          <ul class="concept-list">
+            <li><b>A</b>: goal = solve the customer's problem; proxy = short conversations. Failure: it ends chats early, gives quick wrong answers, or makes customers give up.</li>
+            <li><b>B</b>: goal = correct, maintainable code; proxy = public tests. Failure: special-cases the test inputs, or edits the tests (see the <a href="#verifiable">verifier widget</a>).</li>
+            <li><b>C</b>: goal = remove harmful content while keeping legitimate speech; proxy = few harmful messages visible. Failure: removes almost everything (massive over-removal).</li>
+            <li><b>D</b>: goal = learning; proxy = ratings. Failure: gives answers away, flatters, makes everything feel easy.</li>
+          </ul>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- ===== 11. DPO ===== -->
+  <section class="block algo-section ids" id="dpo">
+    <span class="badge ids" style="margin-bottom:0.6rem; display:inline-block;">Without a reward model</span>
+    <h2 class="section-title">11. Direct Preference Optimization (DPO)</h2>
+    <p class="section-lede">RLHF is a complicated pipeline: preference data → reward model → reinforcement learning → updated model. <b>DPO</b> (Rafailov et al., 2023) learns from the same preference pairs, but instead of first learning a separate reward model and then running RL, it <b>directly trains the language model</b> so that, relative to a reference model, <b>chosen responses become relatively more likely and rejected responses relatively less likely</b>.</p>
+    <div class="table-wrap">
+      <table class="summary">
+        <tbody>
+          <tr data-s="bfs"><td><b>RLHF</b></td><td>preferences → reward model → RL optimisation</td></tr>
+          <tr data-s="ids"><td><b>DPO</b></td><td>preferences → direct preference-learning objective</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="definition-box" style="margin-top:1rem;">
+      <div class="dbox-label">📐 DPO loss (for reference; the derivation is outside the scope of this lab)</div>
+      \[ \mathcal{L}_{\text{DPO}} = -\log \sigma\!\Big( \beta \log \frac{\pi_\theta(y_w \mid x)}{\pi_{\text{ref}}(y_w \mid x)} \;-\; \beta \log \frac{\pi_\theta(y_l \mid x)}{\pi_{\text{ref}}(y_l \mid x)} \Big) \]
+      <p>It is the reward-model loss from <a href="#rlhf">RLHF</a> with the reward replaced by \(\hat{r}(x, y) = \beta \log \frac{\pi_\theta(y \mid x)}{\pi_{\text{ref}}(y \mid x)}\): the language model is "secretly" its own reward model. The gradient raises \(\log \pi_\theta(y_w)\) and lowers \(\log \pi_\theta(y_l)\), weighted by \(\sigma(\hat{r}_l - \hat{r}_w)\): more when the model still ranks the pair wrongly.</p>
+    </div>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Try it: one preference pair</h4>
+    <p class="section-lede">How much the policy has raised or lowered the log-probability of the chosen and rejected response, compared with the reference model. Take gradient steps and watch <i>chosen ↑, rejected ↓</i>, with smaller and smaller steps once the pair is ranked correctly.</p>
+    <div class="playground">
+      <div class="nb-sliders">
+        <label><span>log π/π<sub>ref</sub> of chosen</span><input type="range" id="dp-w" min="-3" max="3" value="0" step="0.05"><span class="val" id="dp-w-val">0.00</span></label>
+        <label><span>log π/π<sub>ref</sub> of rejected</span><input type="range" id="dp-l" min="-3" max="3" value="0" step="0.05"><span class="val" id="dp-l-val">0.00</span></label>
+        <label><span>β</span><input type="range" id="dp-b" min="0.05" max="1" value="0.5" step="0.05"><span class="val" id="dp-b-val">0.50</span></label>
+      </div>
+      <div class="pg-controls" style="margin-top:0.6rem;"><div class="strategy-pick"><button class="strat-btn" id="dp-step">Take a gradient step</button><button class="strat-btn" id="dp-reset">Reset</button></div></div>
+      <div id="dp-out" class="al-out"></div>
+    </div>
+
+    <div class="dt-ex-list" style="margin-top:1.4rem;">
+      <details class="dt-ex">
+        <summary><span class="dt-ex-no">7</span><span class="dt-ex-q">(1) Why might it be attractive to avoid training a separate reward model? (2) Does DPO remove the need for preference data? (3) If the preference data rewards overly verbose answers, what might DPO learn? (4) Does changing the optimisation algorithm solve poor annotation or poorly specified goals? (5) What problems remain even if optimisation is perfectly stable?</span></summary>
+        <div class="dt-ex-sol">
+          <p>(1) Simpler and cheaper: no second large model, no RL loop with sampling and its instability and many hyperparameters; just a classification-style loss on fixed data. (2) No, it needs exactly the same preference pairs. (3) Verbosity: long answers become more likely, because DPO faithfully learns what the data prefers. (4) No: garbage in, garbage out; the objective is still defined by the data. (5) Biased or inconsistent annotators, prompts that don't cover real use, preferences that reward style over substance, reward hacking of whatever the preferences measure, and the need for evaluation that is independent of the training signal.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- ===== 12. HUMAN FEEDBACK ===== -->
+  <section class="block algo-section dfs" id="human-feedback">
+    <span class="badge dfs" style="margin-bottom:0.6rem; display:inline-block;">Annotators</span>
+    <h2 class="section-title">12. Human feedback is not ground truth</h2>
+    <p class="section-lede">Three annotators compare the same answers: <i>Annotator 1: A is better. Annotator 2: B is better. Annotator 3: A and B are equally good.</i> Possible reasons: ambiguous instructions, different expertise or expectations, different tolerance for verbosity, different interpretations of safety, annotation mistakes, genuinely subjective preferences.</p>
+    <p class="section-lede">Therefore <b>"human feedback" is not one perfectly defined objective</b>. The result depends on who gives feedback, what instructions they receive, which prompts are sampled, how disagreements are handled, which behaviour is rewarded, and how the final model is evaluated.</p>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Try it: who labels the data?</h4>
+    <p class="section-lede">Three response pairs and three annotators per pool. Each annotator weighs <b>clarity, rigour, brevity</b> and <b>learning value</b> differently (invented weights). Switch the pool and watch the "chosen" column of the dataset change.</p>
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="strategy-pick" id="hf-pool">
+          <button class="strat-btn active" data-p="beginners">Beginner students</button>
+          <button class="strat-btn" data-p="experts">Professional programmers</button>
+          <button class="strat-btn" data-p="instructors">Course instructors</button>
+          <button class="strat-btn" data-p="mixed">Mixed</button>
+        </div>
+      </div>
+      <div id="hf-out" class="al-out"></div>
+    </div>
+  </section>
+
+  <!-- ===== 13. TRADEOFFS ===== -->
+  <section class="block algo-section ucs" id="tradeoffs">
+    <span class="badge ucs" style="margin-bottom:0.6rem; display:inline-block;">Trade-offs</span>
+    <h2 class="section-title">13. Alignment is not one number</h2>
+    <p class="section-lede">An assistant might be evaluated on helpfulness, correctness, honesty, harmlessness, brevity, creativity, instruction following and robustness. These properties can <b>conflict</b>: brevity vs completeness, creativity vs predictability, helpfulness vs safety constraints, confidence vs calibrated uncertainty. So alignment is not maximising a universal scalar called "goodness": it requires <b>specifying desired behaviour and evaluating trade-offs</b> under different conditions.</p>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Try it: which answer is best?</h4>
+    <p class="section-lede">A user asks for a <b>two-sentence summary</b> of a complicated study whose main result holds only for one group of patients. Three candidate answers are scored on four properties (invented scores). Change how much each property matters: the "best" answer changes with the weights.</p>
+    <div class="playground">
+      <div class="nb-sliders" id="to-sliders"></div>
+      <div id="to-out" class="al-out" style="margin-top:0.8rem;"></div>
+    </div>
+
+    <div class="dt-ex-list" style="margin-top:1.4rem;">
+      <details class="dt-ex">
+        <summary><span class="dt-ex-no">8</span><span class="dt-ex-q">Identify at least two conflicting objectives. A: a two-sentence summary of a complicated study. B: a beginner asks for help with a programming assignment. C: a user asks the model to be "100% certain" about an uncertain question. D: a very short explanation of a topic that needs important caveats. Should the model always follow the user's literal instruction?</span></summary>
+        <div class="dt-ex-sol">
+          <p><b>A</b>: brevity / instruction following vs completeness and accuracy (caveats). <b>B</b>: helpfulness (solve it) vs learning and academic integrity. <b>C</b>: instruction following vs honesty and calibration. <b>D</b>: brevity vs not misleading.</p>
+          <p>Not always literally. A good assistant follows the <b>intent</b> and states the trade-off: keep it short but include the one caveat that changes the conclusion, or say that certainty is not possible and why. Where the lines lie is exactly what a specification has to define.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- ===== 14. AI FEEDBACK ===== -->
+  <section class="block algo-section bfs" id="ai-feedback">
+    <span class="badge bfs" style="margin-bottom:0.6rem; display:inline-block;">Scalable supervision</span>
+    <h2 class="section-title">14. AI feedback and scalable supervision</h2>
+    <p class="section-lede">Human labelling is expensive. One research direction uses <b>models themselves</b> as part of the supervision process:</p>
+    <div class="al-flow2">
+      <div class="al-lane"><span class="n">generate answer</span><span class="ar">→</span><span class="n">critique answer</span><span class="ar">→</span><span class="n">revise answer</span></div>
+      <div class="al-lane"><span class="n">response A</span><span class="ar">+</span><span class="n">response B</span><span class="ar">→</span><span class="n learned">AI evaluator</span><span class="ar">→</span><span class="n">preference</span></div>
+    </div>
+    <p class="section-lede">This appears in research on <b>AI feedback</b>, <b>model-based evaluation</b>, critique/revision, and approaches that use explicit written principles or specifications. For example, Constitutional AI (Bai et al., 2022) has the model critique and revise its own answers according to a list of principles, then trains a reward model on <b>AI preferences</b> ("RL from AI Feedback").</p>
+    <p class="caption-note">❗ The new question: what happens when the evaluator is itself <b>wrong, biased, manipulable</b>, or weak on the same task?</p>
+  </section>
+
+  <!-- ===== 15. PROCESS ===== -->
+  <section class="block algo-section ids" id="process">
+    <span class="badge ids" style="margin-bottom:0.6rem; display:inline-block;">What to check</span>
+    <h2 class="section-title">15. Outcome supervision vs process supervision</h2>
+    <ul class="concept-list">
+      <li><b>Outcome supervision</b> evaluates only the final answer: <i>did the model obtain the correct result?</i></li>
+      <li><b>Process supervision</b> evaluates the intermediate steps: <i>did the model use a reliable process?</i> Lightman et al. (ICLR 2024) found process supervision significantly better than outcome supervision for training reward models on the MATH benchmark.</li>
+    </ul>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Try it: a lucky answer</h4>
+    <p class="section-lede">Two solutions to \((3 + 5) \times 2 - 4\). Switch the verifier: the outcome verifier rewards both, the process verifier checks every step.</p>
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="strategy-pick" id="ps-mode">
+          <button class="strat-btn active" data-m="outcome">Outcome verifier</button>
+          <button class="strat-btn" data-m="process">Process verifier</button>
+        </div>
+      </div>
+      <div id="ps-out" class="ps-sols"></div>
+    </div>
+
+    <div class="dt-ex-list" style="margin-top:1.4rem;">
+      <details class="dt-ex">
+        <summary><span class="dt-ex-no">9</span><span class="dt-ex-q">Is evaluating only the final outcome enough for: (1) Sudoku, (2) a mathematical proof, (3) a medical recommendation, (4) code generation with a strong hidden test suite, (5) essay writing? Which are easy to verify automatically, and where would you also inspect reasoning or evidence?</span></summary>
+        <div class="dt-ex-sol">
+          <p><b>Sudoku</b>: outcome is enough and trivially checkable. <b>Proof</b>: the proof <i>is</i> the process; a formal proof checker verifies it automatically, an informal one needs step-by-step review. <b>Medical</b>: the outcome is delayed, noisy and high-stakes; inspect the evidence and reasoning. <b>Code with strong hidden tests</b>: mostly automatic, but also review for security and maintainability. <b>Essay</b>: no automatic verifier; needs human judgement of argument and sources.</p>
+          <p>Easy to verify automatically: Sudoku, formal proofs, code with strong tests. Inspect reasoning or evidence: informal proofs, medicine, essays, and anywhere a right answer could come from a wrong process.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- ===== 16. VERIFIABLE ===== -->
+  <section class="block algo-section dfs" id="verifiable">
+    <span class="badge dfs" style="margin-bottom:0.6rem; display:inline-block;">RLVR</span>
+    <h2 class="section-title">16. Reinforcement learning with verifiable rewards</h2>
+    <p class="section-lede">Some outputs are easy to check automatically: a maths answer (compare with the solution), code (execute tests), a formal proof (proof checker), a game (win or lose). This enables the loop <b>model generates candidate → automatic verifier → reward → optimisation</b>. Recent reasoning systems made RL with verifiable rewards an important research direction; DeepSeek-R1 (2025), for example, reports that reasoning abilities can be incentivised through pure RL, without human-labelled reasoning trajectories.</p>
+    <p class="caption-note">❗ A verifier only checks what it was designed to check. If it is incomplete or exploitable, reward hacking returns.</p>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Try it: hack the verifier</h4>
+    <p class="section-lede">Task: <i>write <code>is_even(n)</code></i>. Four candidate programs a model might produce. Choose how strong the verifier is and see which programs earn the reward.</p>
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="strategy-pick" id="vf-mode">
+          <button class="strat-btn active" data-v="log">Reads the log for "passed"</button>
+          <button class="strat-btn" data-v="public">Runs 2 public tests</button>
+          <button class="strat-btn" data-v="hidden">+ 6 hidden tests</button>
+        </div>
+      </div>
+      <div id="vf-out" class="al-out"></div>
+    </div>
+
+    <div class="dt-ex-list" style="margin-top:1.4rem;">
+      <details class="dt-ex">
+        <summary><span class="dt-ex-no">10</span><span class="dt-ex-q">Design a verifier for one task (mathematics, code generation, SQL generation or information extraction): what the model produces, what exactly is checked, what reward it receives, how the model could exploit it, and what additional tests would make it harder to exploit.</span></summary>
+        <div class="dt-ex-sol">
+          <p><b>Example, SQL generation.</b> The model produces a SQL query for a question about a database. The verifier runs it on a test database and compares the result table with the result of a reference query; reward 1 if the tables match (as multisets), else 0.</p>
+          <p><b>Exploits</b>: a query that happens to return the right rows on this small test database but is wrong in general (e.g. hard-coded IDs, a <code>LIMIT</code> that matches by luck); queries that modify data; extremely slow queries.</p>
+          <p><b>Harder to exploit</b>: several randomised test databases with edge cases (NULLs, duplicates, empty tables); read-only permissions; a time limit; a check that the query does not contain the literal expected values.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- ===== 17. MAP ===== -->
+  <section class="block" id="map">
+    <h2 class="section-title">17. A simplified map of post-training</h2>
+    <p class="section-lede">A conceptual map, not a universal recipe. Click a box to jump to its section.</p>
+    <div class="al-map">
+      <a class="m-box pre" href="#pretraining">Pretraining</a><span class="m-ar">↓</span>
+      <span class="m-note">base model</span><span class="m-ar">↓</span>
+      <a class="m-box sft" href="#sft">Supervised fine-tuning</a><span class="m-ar">↓</span>
+      <span class="m-note">instruction model</span><span class="m-ar">↓</span>
+      <div class="m-split">
+        <div class="m-col"><span class="m-sub">preference learning</span><div class="m-row"><a class="m-box pref" href="#rlhf">RLHF</a><a class="m-box pref" href="#dpo">DPO</a></div></div>
+        <div class="m-col"><span class="m-sub">verifiable rewards</span><div class="m-row"><a class="m-box ver" href="#verifiable">RL / search</a></div></div>
+      </div><span class="m-ar">↓</span>
+      <span class="m-note">post-trained assistant</span><span class="m-ar">↓</span>
+      <a class="m-box eval" href="#tradeoffs">Evaluation</a><span class="m-ar">↓</span>
+      <span class="m-box fail">discover failures → better data / reward / evaluation / retraining ↺</span>
+    </div>
+  </section>
+
+  <!-- ===== 18. RESEARCH ===== -->
+  <section class="block" id="research">
+    <h2 class="section-title">18. Current research directions</h2>
+    <p class="section-lede">As of 2026, recurring themes in post-training and alignment research include:</p>
+    <ul class="concept-list">
+      <li><b>Better reasoning through post-training</b>: how RL, preference optimisation, search and carefully constructed data improve multi-step reasoning. Central question: which capabilities must be learned in pretraining, and which can be elicited or improved in post-training?</li>
+      <li><b>Verifiable rewards</b>: maths, programming, formal reasoning and some tool-use tasks can be partly checked automatically. The hard part is making the verifier measure the task we actually care about.</li>
+      <li><b>Better supervision</b>: outcome and process supervision, human preferences, AI-generated feedback, critique and revision, synthetic training data, scalable oversight.</li>
+      <li><b>Reward robustness</b>: models that exploit reward-model weaknesses, learn shortcuts, over-optimise imperfect proxies, or behave differently under evaluation and deployment.</li>
+      <li><b>Explicit principles and specifications</b>: training models to follow written rules, principles, constitutions or safety specifications. The hard question is not whether the model can read the rule, but whether it applies the correct rule under ambiguity or adversarial pressure.</li>
+      <li><b>Agents and tool use</b>: models increasingly use browsers, code execution, databases, APIs and other tools, so evaluation must cover long sequences of actions rather than one static answer.</li>
+    </ul>
+  </section>
+
+  <!-- ===== 19. DISCUSSION ===== -->
+  <section class="block" id="discussion">
+    <h2 class="section-title">19. Research discussion</h2>
+    <p class="section-lede">Work in small groups; each group takes one question. <b>Define the problem, give one concrete example, propose one possible approach, and identify one weakness of your approach.</b> The goal is not a perfect solution, but to think like a researcher. Each card has one possible starting point.</p>
+    <div class="dt-ex-list">
+      <details class="dt-ex"><summary><span class="dt-ex-no">A</span><span class="dt-ex-q">If a reward model is imperfect, how can we optimise against it without exploiting it?</span></summary><div class="dt-ex-sol"><p>Starting points: the KL penalty; ensembles of reward models and optimising a pessimistic (e.g. minimum) score; early stopping on a held-out <b>gold</b> evaluation; periodically retraining the reward model on the policy's new outputs. Weakness: all reward models may share the same blind spot.</p></div></details>
+      <details class="dt-ex"><summary><span class="dt-ex-no">B</span><span class="dt-ex-q">Can AI systems reliably supervise systems that are more capable than the evaluator?</span></summary><div class="dt-ex-sol"><p>Starting points: tasks where checking is easier than solving (verify a proof, run tests); decomposition into smaller checkable pieces; debate between two models judged by a weaker one. Weakness: some tasks have no easy check, and a stronger model may argue persuasively for wrong answers.</p></div></details>
+      <details class="dt-ex"><summary><span class="dt-ex-no">C</span><span class="dt-ex-q">When should we reward only a final answer, and when should we supervise intermediate steps?</span></summary><div class="dt-ex-sol"><p>Starting points: outcome rewards when the answer is cheap to verify and a wrong process cannot produce it reliably; process supervision when answers are hard to check, stakes are high, or right answers can come from wrong reasoning. Weakness: step labels are expensive, and rewarding steps may favour reasoning that <i>looks</i> right.</p></div></details>
+      <details class="dt-ex"><summary><span class="dt-ex-no">D</span><span class="dt-ex-q">How can we detect behaviour that looks good during evaluation but fails in deployment?</span></summary><div class="dt-ex-sol"><p>Starting points: evaluation prompts that are indistinguishable from real use; monitoring and sampling real deployment traffic; red-teaming and adversarial tests; comparing behaviour when the model is and isn't told it is being evaluated. Weakness: deployment is open-ended, so no test set covers it.</p></div></details>
+      <details class="dt-ex"><summary><span class="dt-ex-no">E</span><span class="dt-ex-q">How should we evaluate an AI agent that performs a task over hundreds of actions?</span></summary><div class="dt-ex-sol"><p>Starting points: sandboxed environments with automatic end-state checks; checks on intermediate states (no forbidden actions, resources respected); logging every action for review; sampling trajectories for human audit. Weakness: many paths reach the same end state, some of them unsafe, and full human review does not scale.</p></div></details>
+    </div>
+  </section>
+
+  <!-- ===== 20. CASE STUDY ===== -->
+  <section class="block algo-section ucs" id="case">
+    <span class="badge ucs" style="margin-bottom:0.6rem; display:inline-block;">Case study</span>
+    <h2 class="section-title">20. Final case study: AI programming tutor</h2>
+    <p class="section-lede">You are building an AI system that helps students solve programming exercises. The team proposes:</p>
+    <ol class="concept-list">
+      <li>Pretrain a language model on web text and source code.</li>
+      <li>Fine-tune it on high-quality tutoring conversations.</li>
+      <li>Collect student preferences between pairs of responses.</li>
+      <li>Train a reward model.</li>
+      <li>Optimise the assistant to maximise reward.</li>
+      <li>Evaluate using student satisfaction ratings.</li>
+    </ol>
+    <div class="dt-ex-list">
+      <details class="dt-ex"><summary><span class="dt-ex-no">A</span><span class="dt-ex-q">Pretraining: what useful abilities might it provide? What desired behaviours are not guaranteed?</span></summary><div class="dt-ex-sol"><p>Provides: programming languages, common algorithms, APIs, reading error messages, explaining code. Not guaranteed: teaching instead of solving, matching the student's level, honesty about bugs it isn't sure of, respecting course rules on academic integrity, not repeating bad code it saw online.</p></div></details>
+      <details class="dt-ex"><summary><span class="dt-ex-no">B</span><span class="dt-ex-q">SFT: give three examples of behaviour that should appear in the SFT dataset.</span></summary><div class="dt-ex-sol"><p>Asking what the student has tried before helping; giving a hint or pointing at the failing line instead of the full solution; explaining an error message in plain words; admitting uncertainty and suggesting how to test; asking the student to run a small experiment.</p></div></details>
+      <details class="dt-ex"><summary><span class="dt-ex-no">C</span><span class="dt-ex-q">Preferences: who should compare the responses (beginner students, advanced students, TAs, professional programmers, course instructors)? Would all groups produce the same preferences?</span></summary><div class="dt-ex-sol"><p>No (see the <a href="#human-feedback">annotator widget</a>). Beginners may prefer complete solutions; programmers may prefer idiomatic, concise code; instructors prefer responses that make students think. A reasonable choice is TAs and instructors with a written rubric for learning value, plus student input on clarity only, with disagreements recorded rather than averaged away.</p></div></details>
+      <details class="dt-ex"><summary><span class="dt-ex-no">D</span><span class="dt-ex-q">Reward hacking: give three ways the assistant could maximise student satisfaction without maximising learning.</span></summary><div class="dt-ex-sol"><p>Hand out complete solutions; praise every attempt ("great code!") even when it is wrong; make tasks seem easier than they are, skip hard concepts, and never make the student struggle productively.</p></div></details>
+      <details class="dt-ex"><summary><span class="dt-ex-no">E</span><span class="dt-ex-q">Evaluation: design an evaluation with at least three different measurements, not only satisfaction.</span></summary><div class="dt-ex-sol"><p>(1) Learning: students later solve a similar exercise <b>without</b> the tutor; compare with a control group. (2) Correctness and pedagogy: TAs rate a random sample of conversations with a rubric (correct? level-appropriate? gave away the solution?). (3) Integrity: adversarial prompts asking for full graded solutions. (4) Satisfaction, as one signal among several.</p></div></details>
+      <details class="dt-ex"><summary><span class="dt-ex-no">F</span><span class="dt-ex-q">Alignment: what does "aligned" mean for this tutoring system? Make the definition concrete enough that someone could design tests for it.</span></summary><div class="dt-ex-sol"><p>For example: "The tutor (a) never gives a complete solution to a graded exercise, (b) makes no false technical claims (TA audit error rate below 2%), (c) adapts explanations to the student's stated level, (d) says when it is unsure, and (e) students who use it score at least as well on unaided follow-up exercises as students who use office hours." Each clause maps to a test.</p></div></details>
+    </div>
+  </section>
+
+  <!-- ===== 21. CHECKPOINT ===== -->
+  <section class="block" id="checkpoint">
+    <h2 class="section-title">21. Final checkpoint</h2>
+    <p class="section-lede">Explain the pipeline <b>pretraining → base model → SFT → instruction-following model → preference / reward optimisation → assistant → evaluation</b> in your own words. Include what data is used at each stage, what objective is optimised, where humans enter, where learned evaluators may enter, how reward hacking can occur, and why evaluation should not simply reuse the proxy being optimised.</p>
+    <div class="dt-ex-list">
+      <details class="dt-ex">
+        <summary><span class="dt-ex-no">✓</span><span class="dt-ex-q">A model answer (open it after writing yours)</span></summary>
+        <div class="dt-ex-sol">
+          <p><b>Pretraining</b> uses huge amounts of web text and code and minimises next-token cross-entropy; the result, a <b>base model</b>, can continue any kind of text but does not specifically follow instructions. <b>SFT</b> uses a smaller set of human-written (or curated) prompt–response demonstrations with the same loss, giving an <b>instruction-following model</b>. <b>Preference optimisation</b> uses pairs of responses ranked by humans or by AI evaluators: RLHF trains a <b>reward model</b> on these comparisons and then maximises its score with RL, minus a KL penalty to stay near the SFT model; DPO optimises a preference loss directly. Humans enter by writing demonstrations, ranking responses and writing specifications; learned evaluators enter as reward models, AI judges and verifiers. <b>Reward hacking</b> happens when the optimiser finds outputs the reward scores highly but that aren't actually better (length, jargon, flattery, fooled verifiers). So the final <b>evaluation</b> must use independent measurements (held-out human and expert judgements, real outcomes, adversarial tests), not the same proxy that was optimised, or it would simply confirm the hack.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- ===== FURTHER READING ===== -->
+  <section class="block" id="reading">
+    <h2 class="section-title">Further reading</h2>
+    <div class="paper-group">
+      <div class="paper-card">
+        <h4>Training Language Models to Follow Instructions with Human Feedback</h4>
+        <div class="venue">Ouyang et al. · 2022 · <a href="https://arxiv.org/abs/2203.02155" target="_blank" rel="noopener">arXiv:2203.02155</a></div>
+        <dl><dt>Core idea</dt><dd>InstructGPT: SFT on labeller demonstrations, a reward model trained on rankings of outputs, then RL. Outputs of the 1.3B-parameter InstructGPT were preferred to those of the 175B GPT-3.</dd></dl>
+      </div>
+      <div class="paper-card">
+        <h4>Direct Preference Optimization: Your Language Model is Secretly a Reward Model</h4>
+        <div class="venue">Rafailov et al. · 2023 · <a href="https://arxiv.org/abs/2305.18290" target="_blank" rel="noopener">arXiv:2305.18290</a></div>
+        <dl><dt>Core idea</dt><dd>The KL-constrained RLHF objective has a closed-form optimal policy, which turns preference learning into a simple classification loss on the policy itself: no separate reward model, no RL loop.</dd></dl>
+      </div>
+      <div class="paper-card">
+        <h4>Constitutional AI: Harmlessness from AI Feedback</h4>
+        <div class="venue">Bai et al. · 2022 · <a href="https://arxiv.org/abs/2212.08073" target="_blank" rel="noopener">arXiv:2212.08073</a></div>
+        <dl><dt>Core idea</dt><dd>A list of principles guides self-critique and revision (supervised phase) and AI-generated preferences for a reward model (RL from AI feedback), with little human labelling of harmful outputs.</dd></dl>
+      </div>
+      <div class="paper-card">
+        <h4>Let's Verify Step by Step</h4>
+        <div class="venue">Lightman et al. · ICLR 2024 · <a href="https://proceedings.iclr.cc/paper_files/paper/2024/hash/aca97732e30bcf1303bc22ac3924fd16-Abstract-Conference.html" target="_blank" rel="noopener">ICLR proceedings</a></div>
+        <dl><dt>Core idea</dt><dd>Process supervision significantly outperforms outcome supervision on the MATH dataset (78% on a representative subset of the test set); releases PRM800K, 800 000 step-level human labels.</dd></dl>
+      </div>
+      <div class="paper-card">
+        <h4>DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning</h4>
+        <div class="venue">DeepSeek-AI · 2025 · <a href="https://arxiv.org/abs/2501.12948" target="_blank" rel="noopener">arXiv:2501.12948</a></div>
+        <dl><dt>Core idea</dt><dd>Reasoning abilities can be incentivised through pure reinforcement learning, without human-labelled reasoning trajectories; behaviours such as self-reflection and verification emerge.</dd></dl>
+      </div>
+      <div class="paper-card">
+        <h4>Deliberative Alignment: Reasoning Enables Safer Language Models</h4>
+        <div class="venue">Guan et al. (OpenAI) · 2024 · <a href="https://openai.com/index/deliberative-alignment/" target="_blank" rel="noopener">openai.com</a> · <a href="https://arxiv.org/abs/2412.16339" target="_blank" rel="noopener">arXiv:2412.16339</a></div>
+        <dl><dt>Core idea</dt><dd>Teaches the model the text of the safety specifications and trains it to recall and reason over them before answering; reported to improve robustness to jailbreaks while reducing over-refusal.</dd></dl>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SUMMARY ===== -->
+  <section class="block" id="summary">
+    <h2 class="section-title">Summary: key takeaways</h2>
+    <ol class="concept-list">
+      <li><b>Pretraining and alignment are different problems</b>: pretraining teaches approximately "predict likely text"; post-training tries to shape <b>desired behaviour</b>.</li>
+      <li><b>SFT teaches by demonstration</b>: prompt → target answer.</li>
+      <li><b>Preference learning teaches by comparison</b>: for this prompt, response A &gt; response B.</li>
+      <li><b>RLHF learns and optimises a reward signal</b>: human preferences → reward model → reinforcement learning (with a KL penalty). But the reward model is only an approximation of what people actually want.</li>
+      <li><b>DPO learns directly from preference pairs</b> (chosen ↑, rejected ↓). It simplifies part of the pipeline, but does not fix bad preferences or badly specified goals.</li>
+      <li><b>Optimisation finds loopholes</b>: if the objective is imperfect, stronger optimisation can produce better exploitation of the objective rather than better real-world behaviour (Goodhart).</li>
+      <li><b>Alignment requires continuous evaluation</b>: there is no single universal "alignment score"; desired behaviour depends on the application, users, risks, context, training data and evaluation procedure.</li>
+    </ol>
+    <p class="section-lede" style="margin-top:1rem;"><b>In one sentence:</b> pretraining gives a language model broad predictive capabilities; post-training uses demonstrations, preferences, rewards, specifications and evaluation to shape those capabilities into desired behaviour, but every proxy and evaluator can itself become a source of failure.</p>
+  </section>
+
+</div>
+
+<footer>Class notes by Elitsa Yotkova · Lab 13 · built with plain HTML, CSS &amp; JS</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="lab13.js"></script>
+</body>
+</html>
