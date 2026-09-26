@@ -1424,10 +1424,26 @@ b.c0, .dt-out .c0 { color: var(--indigo); } b.c1, .dt-out .c1 { color: #b8394f; 
 .dg-row.best .dg-bar i { background: var(--indigo); } .dg-row.best b { color: var(--indigo); font-weight: 800; }
 @media (max-width: 760px) { .dg-grid { grid-template-columns: 1fr; } .dg-draw-wrap { justify-items: center; } }
 
-/* ---- site nav: every lab links to all labs ---- */
-.site-nav nav a[aria-current="page"] { color: var(--indigo); font-weight: 800; }
-@media (min-width: 521px) and (max-width: 1180px) {
-  .site-nav nav { flex-wrap: wrap; justify-content: flex-end; column-gap: 0.9rem; row-gap: 0.2rem; font-size: 0.86rem; }
+/* ---- lab pages: left menu listing every lab ---- */
+.site-nav .brand { margin-right: auto; } .site-nav a.brand:hover { text-decoration: none; }
+.side-toggle { display: none; place-items: center; width: 38px; height: 38px; padding: 0; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); cursor: pointer; flex-shrink: 0; }
+.side-toggle span, .side-toggle span::before, .side-toggle span::after { content: ''; display: block; width: 18px; height: 2px; border-radius: 2px; background: var(--ink); position: relative; }
+.side-toggle span::before { position: absolute; top: -6px; } .side-toggle span::after { position: absolute; top: 6px; }
+.lab-layout { display: grid; grid-template-columns: 260px minmax(0, 1fr); }
+.lab-main { min-width: 0; }
+.lab-menu { position: sticky; top: 65px; align-self: start; height: calc(100vh - 65px); overflow-y: auto; box-sizing: border-box; padding: 1.3rem 0.8rem 2rem; border-right: 1px solid var(--line); background: color-mix(in srgb, var(--ink) 2%, var(--surface)); }
+.lm-h { margin: 0 0 0.6rem 0.6rem; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-soft); }
+.lab-menu ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.lab-menu a { display: grid; grid-template-columns: 2.1rem minmax(0, 1fr); align-items: baseline; padding: 0.42rem 0.6rem; border-radius: 8px; font-size: 0.84rem; font-weight: 600; line-height: 1.35; color: var(--ink-soft); }
+.lab-menu a:hover { background: color-mix(in srgb, var(--indigo) 8%, transparent); color: var(--ink); text-decoration: none; }
+.lab-menu a[aria-current="page"] { background: color-mix(in srgb, var(--indigo) 15%, transparent); color: var(--ink); font-weight: 800; box-shadow: inset 3px 0 0 var(--indigo); }
+.lm-n { font-family: 'Poppins', sans-serif; font-size: 0.74rem; font-weight: 800; color: var(--indigo); }
+@media (max-width: 1099px) {
+  .side-toggle { display: inline-grid; }
+  .lab-layout { display: block; }
+  .lab-menu { position: fixed; top: 0; left: 0; bottom: 0; z-index: 100; width: min(290px, 85vw); height: auto; align-self: auto; background: var(--surface); box-shadow: var(--shadow); transform: translateX(-102%); transition: transform 0.22s ease; }
+  body.menu-open .lab-menu { transform: none; }
+  body.menu-open::after { content: ''; position: fixed; inset: 0; z-index: 90; background: rgba(20, 23, 27, 0.28); }
 }
 
 /* ---- Lab 12: transformers ---- */

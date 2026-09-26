@@ -12,27 +12,34 @@
 <body>
 
 <header class="site-nav">
-  <span class="brand"><span class="dot"></span> Class Notes</span>
-  <nav>
-    <a href="../index.html">Home</a>
-    <a href="lab01-uninformed-search.html">Lab 01</a>
-    <a href="lab02-informed-search.html" aria-current="page">Lab 02</a>
-    <a href="lab03-csp.html">Lab 03</a>
-    <a href="lab04-genetic-algorithms.html">Lab 04</a>
-    <a href="lab05-games.html">Lab 05</a>
-    <a href="lab06-intro-ml.html">Lab 06</a>
-    <a href="lab065-linear-logistic.html">Lab 6.5</a>
-    <a href="lab07-knn.html">Lab 07</a>
-    <a href="lab08-naive-bayes.html">Lab 08</a>
-    <a href="lab09-decision-trees.html">Lab 09</a>
-    <a href="lab10-kmeans.html">Lab 10</a>
-    <a href="lab11-neural-networks.html">Lab 11</a>
-    <a href="lab12-transformers.html">Lab 12</a>
-    <a href="lab13-alignment.html">Lab 13</a>
-    <a href="lab14-evaluation.html">Lab 14</a>
-  </nav>
-  <script>(function(){var n=document.querySelector(".site-nav nav"),a=n&&n.querySelector("[aria-current]");if(a)n.scrollLeft=a.offsetLeft-n.offsetLeft-(n.clientWidth-a.offsetWidth)/2;})();</script>
+  <button class="side-toggle" type="button" aria-controls="lab-menu" aria-expanded="false" aria-label="Labs menu"><span></span></button>
+  <a class="brand" href="../index.html"><span class="dot"></span> Class Notes</a>
+  <nav><a href="../index.html">Home</a></nav>
 </header>
+
+<div class="lab-layout">
+  <aside class="lab-menu" id="lab-menu" aria-label="Labs">
+    <p class="lm-h">Labs</p>
+    <ol>
+      <li><a href="lab01-uninformed-search.html"><span class="lm-n">01</span>Uninformed Search</a></li>
+      <li><a href="lab02-informed-search.html" aria-current="page"><span class="lm-n">02</span>Informed Search</a></li>
+      <li><a href="lab03-csp.html"><span class="lm-n">03</span>Constraint Satisfaction</a></li>
+      <li><a href="lab04-genetic-algorithms.html"><span class="lm-n">04</span>Genetic Algorithms</a></li>
+      <li><a href="lab05-games.html"><span class="lm-n">05</span>Games</a></li>
+      <li><a href="lab06-intro-ml.html"><span class="lm-n">06</span>Introduction to ML</a></li>
+      <li><a href="lab065-linear-logistic.html"><span class="lm-n">6.5</span>Linear &amp; Logistic Regression</a></li>
+      <li><a href="lab07-knn.html"><span class="lm-n">07</span>K-Nearest Neighbours</a></li>
+      <li><a href="lab08-naive-bayes.html"><span class="lm-n">08</span>Naive Bayes Classifier</a></li>
+      <li><a href="lab09-decision-trees.html"><span class="lm-n">09</span>Decision Trees</a></li>
+      <li><a href="lab10-kmeans.html"><span class="lm-n">10</span>K-Means and Clustering</a></li>
+      <li><a href="lab11-neural-networks.html"><span class="lm-n">11</span>Neural Networks</a></li>
+      <li><a href="lab12-transformers.html"><span class="lm-n">12</span>Transformers and Generative Models</a></li>
+      <li><a href="lab13-alignment.html"><span class="lm-n">13</span>Post-training and Alignment</a></li>
+      <li><a href="lab14-evaluation.html"><span class="lm-n">14</span>Evaluation, Metrics and Data Analysis</a></li>
+    </ol>
+  </aside>
+  <script>(function(){var b=document.body,t=document.querySelector(".side-toggle"),m=document.getElementById("lab-menu"),c=m.querySelector("[aria-current]");if(c&&m.scrollHeight>m.clientHeight)m.scrollTop=c.offsetTop-m.clientHeight/2;function s(o){b.classList.toggle("menu-open",o);t.setAttribute("aria-expanded",o)}t.addEventListener("click",function(e){e.stopPropagation();s(!b.classList.contains("menu-open"))});document.addEventListener("click",function(e){if(b.classList.contains("menu-open")&&!m.contains(e.target))s(false)});document.addEventListener("keydown",function(e){if(e.key==="Escape")s(false)})})();</script>
+<main class="lab-main">
 
 <section class="hero art-hero art-heur">
   <svg class="hero-art" viewBox="0 0 1200 300" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><ellipse cx="880" cy="150" rx="54" ry="40" class="contour"></ellipse><ellipse cx="880" cy="150" rx="128" ry="95" class="contour"></ellipse><ellipse cx="880" cy="150" rx="202" ry="150" class="contour"></ellipse><ellipse cx="880" cy="150" rx="277" ry="205" class="contour"></ellipse><ellipse cx="880" cy="150" rx="351" ry="260" class="contour"></ellipse><ellipse cx="880" cy="150" rx="425" ry="315" class="contour"></ellipse><ellipse cx="880" cy="150" rx="500" ry="370" class="contour"></ellipse><ellipse cx="880" cy="150" rx="574" ry="425" class="contour"></ellipse><ellipse cx="880" cy="150" rx="648" ry="480" class="contour"></ellipse><ellipse cx="880" cy="150" rx="722" ry="535" class="contour"></ellipse><ellipse cx="880" cy="150" rx="796" ry="590" class="contour"></ellipse><ellipse cx="880" cy="150" rx="871" ry="645" class="contour"></ellipse><ellipse cx="880" cy="150" rx="945" ry="700" class="contour"></ellipse><ellipse cx="880" cy="150" rx="1019" ry="755" class="contour"></ellipse><ellipse cx="880" cy="150" rx="1094" ry="810" class="contour"></ellipse><ellipse cx="880" cy="150" rx="1168" ry="865" class="contour"></ellipse><polyline points="60,250 170,215 260,235 360,180 470,190 560,140 660,160 760,140 880,150" class="path"></polyline><circle cx="60" cy="250" r="6" class="n"></circle><circle cx="170" cy="215" r="6" class="n"></circle><circle cx="260" cy="235" r="6" class="n"></circle><circle cx="360" cy="180" r="6" class="n"></circle><circle cx="470" cy="190" r="6" class="n"></circle><circle cx="560" cy="140" r="6" class="n"></circle><circle cx="660" cy="160" r="6" class="n"></circle><circle cx="760" cy="140" r="6" class="n"></circle><path d="M880,134 l4.7,10.5 11.5,1.2 -8.6,7.7 2.5,11.3 -10.1,-5.8 -10.1,5.8 2.5,-11.3 -8.6,-7.7 11.5,-1.2z" class="goal"></path></svg>
@@ -1474,6 +1481,8 @@
 </div>
 
 <footer>Class notes by Elitsa Yotkova · Lab 02 · built with plain HTML, CSS &amp; JS</footer>
+</main>
+</div>
 
 <script src="lab02.js"></script>
 </body>
