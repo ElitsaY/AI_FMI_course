@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lab 12 — Transformers and Generative Models | Class Notes</title>
+<meta name="description" content="Interactive notes on how a Transformer turns text into next-token predictions: subword tokenization and BPE, embeddings and positional information, self-attention with queries, keys and values, causal masking, MLP layers and residual connections, logits, softmax and text generation.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+
+<header class="site-nav">
+  <span class="brand"><span class="dot"></span> Class Notes</span>
+  <nav>
+    <a href="../index.html">Home</a>
+    <a href="lab01-uninformed-search.html">Lab 01</a>
+    <a href="lab02-informed-search.html">Lab 02</a>
+    <a href="lab03-csp.html">Lab 03</a>
+    <a href="lab04-genetic-algorithms.html">Lab 04</a>
+    <a href="lab05-games.html">Lab 05</a>
+    <a href="lab06-intro-ml.html">Lab 06</a>
+    <a href="lab065-linear-logistic.html">Lab 6.5</a>
+    <a href="lab07-knn.html">Lab 07</a>
+    <a href="lab08-naive-bayes.html">Lab 08</a>
+    <a href="lab09-decision-trees.html">Lab 09</a>
+    <a href="lab10-kmeans.html">Lab 10</a>
+    <a href="lab11-neural-networks.html">Lab 11</a>
+    <a href="lab12-transformers.html" aria-current="page">Lab 12</a>
+  </nav>
+  <script>(function(){var n=document.querySelector(".site-nav nav"),a=n&&n.querySelector("[aria-current]");if(a)n.scrollLeft=a.offsetLeft-n.offsetLeft-(n.clientWidth-a.offsetWidth)/2;})();</script>
+</header>
+
+<section class="hero art-hero art-tf">
+  <svg id="tf-hero-bg" class="hero-art" viewBox="0 0 1200 300" preserveAspectRatio="xMidYMid slice" aria-hidden="true"></svg>
+  <div class="wrap">
+    <p class="eyebrow">Lab 12</p>
+    <h1>Transformers and Generative Models</h1>
+    <div class="badges">
+      <span class="badge ids">Tokenization</span>
+      <span class="badge dfs">Self-attention</span>
+      <span class="badge ucs">Transformer block</span>
+      <span class="badge bfs">Next-token prediction</span>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+
+  <!-- ===== OVERVIEW ===== -->
+  <section class="block" id="overview">
+    <h2 class="section-title">Overview of the lab</h2>
+    <p class="section-lede">By the end of this lab you should be able to trace the path from raw text to <b>next-token probabilities</b>: explain subword tokenization and BPE, how token IDs become vectors and why position matters, compute a small self-attention example with queries, keys and values, explain causal masking, the roles of the MLP layer and residual connections, and how a model turns logits into generated text.</p>
+    <ol class="concept-list">
+      <li><a href="#question">The central question</a></li>
+      <li><a href="#tokenization">Why do we need tokenization?</a></li>
+      <li><a href="#bpe">Byte Pair Encoding (BPE)</a></li>
+      <li><a href="#embeddings">From tokens to vectors</a></li>
+      <li><a href="#position">Why position matters</a></li>
+      <li><a href="#attention">Self-attention</a></li>
+      <li><a href="#attention-calc">Manual attention calculation</a></li>
+      <li><a href="#causal">Causal masking</a></li>
+      <li><a href="#block">The Transformer block</a></li>
+      <li><a href="#residual">Residual connections</a></li>
+      <li><a href="#logits">From hidden states to the next token</a></li>
+      <li><a href="#pipeline">The complete pipeline and text generation</a></li>
+      <li><a href="#coding">Mini coding exercise: scaled dot-product attention</a></li>
+      <li><a href="#challenge">Conceptual challenge</a></li>
+      <li><a href="#explanation">Attention is not automatically an explanation</a></li>
+      <li><a href="#checkpoint">Final checkpoint</a></li>
+    </ol>
+  </section>
+
+  <!-- ===== 1. QUESTION ===== -->
+  <section class="block" id="question">
+    <h2 class="section-title">1. The central question</h2>
+    <p class="section-lede">Throughout this lab we answer one question: <b>how does a Transformer turn text into a prediction for the next token?</b></p>
+    <div class="tf-prompt">
+      <span class="tf-tok">The</span><span class="tf-tok">cat</span><span class="tf-tok">sat</span><span class="tf-tok">on</span><span class="tf-tok">the</span><span class="tf-tok next">?</span>
+      <span class="tf-cands">→ <b>mat</b> · <b>floor</b> · <b>chair</b> · …</span>
+    </div>
+    <p class="section-lede">A language model assigns high probability to continuations such as <i>mat</i>, <i>floor</i> or <i>chair</i>. Our goal is to understand the computations that make such a prediction possible. This is also all a <b>generative</b> language model does: predict one token, append it, and predict again.</p>
+  </section>
+
+  <!-- ===== 2. TOKENIZATION ===== -->
+  <section class="block algo-section ids" id="tokenization">
+    <span class="badge ids" style="margin-bottom:0.6rem; display:inline-block;">Text → tokens</span>
+    <h2 class="section-title">2. Why do we need tokenization?</h2>
+    <p class="section-lede">Computers do not directly operate on words. Before text enters a neural network, it must be converted into discrete units called <b>tokens</b>. Consider the words <i>play, playing, played, player, plays, replay, replaying</i>. There are several possible ways to represent them.</p>
+    <div class="table-wrap">
+      <table class="summary">
+        <thead><tr><th>Option</th><th>Example</th><th>Advantages ✅</th><th>Problems ❌</th></tr></thead>
+        <tbody>
+          <tr data-s="ids"><td><b>A. Word-level</b></td><td><code>playing → [playing]</code></td><td>short sequences; tokens are often easy to interpret</td><td>the vocabulary can become extremely large; rare or unseen words are difficult to handle; related words (<i>play, playing, played</i>) are unrelated vocabulary entries</td></tr>
+          <tr data-s="dfs"><td><b>B. Character-level</b></td><td><code>playing → [p, l, a, y, i, n, g]</code></td><td>very small vocabulary; any word can be represented</td><td>sequences become much longer; the model must learn useful combinations of characters by itself</td></tr>
+          <tr data-s="bfs"><td><b>C. Subword</b></td><td><code>replaying → [re, play, ing]</code></td><td>a compromise: common pieces are shared across related words</td><td>tokens are less interpretable; the split depends on the training corpus</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="section-lede" style="margin-top:1rem;">Subword tokenization balances <b>vocabulary size ↔ sequence length ↔ ability to represent unseen words</b>.</p>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Try it: three tokenizers</h4>
+    <p class="section-lede">Type any text. The subword tokenizer here uses a tiny hand-made vocabulary of pieces (<i>play, re, ing, ed, er, s, …</i>) and splits each word into the longest pieces it knows, falling back to single characters. Compare the number of tokens, and try an unseen word like <i>replayers</i>.</p>
+    <div class="playground">
+      <div class="pg-controls">
+        <label class="tf-input-l">Text<input type="text" id="tk-input" value="play playing played player plays replay replaying" autocomplete="off" spellcheck="false"></label>
+      </div>
+      <div id="tk-out" class="tk-out"></div>
+    </div>
+
+    <div class="dt-ex-list" style="margin-top:1.4rem;">
+      <details class="dt-ex">
+        <summary><span class="dt-ex-no">1</span><span class="dt-ex-q">For word-level, character-level and subword-level tokenization, write one advantage and one disadvantage. Why is subword tokenization a useful compromise for large language models?</span></summary>
+        <div class="dt-ex-sol">
+          <p>See the table above. Subword tokenization keeps the vocabulary at a manageable size (tens of thousands of pieces) and the sequences reasonably short, while <b>any</b> word, even one never seen in training, can still be written as a sequence of known pieces (in the worst case, single characters or bytes). Related words share pieces (<i>play</i> in <i>playing, replay, player</i>), so what the model learns about one transfers to the others.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- ===== 3. BPE ===== -->
+  <section class="block algo-section dfs" id="bpe">
+    <span class="badge dfs" style="margin-bottom:0.6rem; display:inline-block;">Learning the vocabulary</span>
+    <h2 class="section-title">3. Byte Pair Encoding (BPE)</h2>
+    <p class="section-lede">One common idea behind subword tokenization is <b>Byte Pair Encoding</b>. The basic idea is simple:</p>
+    <ol class="concept-list">
+      <li>start with small units (characters or bytes);</li>
+      <li>count which adjacent pairs occur frequently;</li>
+      <li><b>merge</b> the most frequent pair into a new unit;</li>
+      <li>repeat, until the vocabulary has the desired size.</li>
+    </ol>
+    <p class="section-lede">The list of merges <b>is</b> the tokenizer: to tokenize new text, split it into characters and apply the learned merges in the same order.</p>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Try it: BPE step by step</h4>
+    <p class="section-lede">The toy corpus <i>low, low, lower, lowest, new, newer</i>, split into characters. Each step counts all adjacent pairs and merges the most frequent one (ties are broken alphabetically here; real implementations use their own fixed rule). After a few merges, the vocabulary contains units such as <i>low, er, new, est</i>. Then tokenize a word the corpus never contained.</p>
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="play-btns" style="margin-left:0;">
+          <button class="icon-btn" id="bp-prev" title="Undo a merge">⏮</button>
+          <button class="icon-btn" id="bp-next" title="Merge the most frequent pair">⏭</button>
+          <button class="icon-btn" id="bp-reset" title="Reset">↺</button>
+        </div>
+        <span class="tf-step" id="bp-step"></span>
+      </div>
+      <div class="pg-grid">
+        <div>
+          <div class="frontier-box"><h5>Corpus</h5><div id="bp-corpus" class="bp-corpus"></div></div>
+          <div class="frontier-box"><h5>Merges so far (the tokenizer)</h5><div id="bp-merges" class="chip-row"></div></div>
+        </div>
+        <div class="frontier-box"><h5>Adjacent pair counts</h5><div id="bp-pairs" class="bp-pairs"></div></div>
+      </div>
+      <div class="pg-controls" style="margin-top:0.6rem;">
+        <label class="tf-input-l">Tokenize a new word<input type="text" id="bp-word" value="newest" autocomplete="off" spellcheck="false"></label>
+      </div>
+      <div id="bp-word-out" class="tk-out"></div>
+    </div>
+
+    <details class="code-card" style="margin-top:1.2rem;">
+      <summary>
+        <span class="code-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="code-file">bpe.py</span>
+        <span class="code-lang">Python</span>
+        <button type="button" class="code-copy">Copy</button>
+        <span class="code-chevron" aria-hidden="true">▾</span>
+      </summary>
+      <pre class="code-body"><code class="lang-py">from collections import Counter
+
+corpus = ["low", "low", "lower", "lowest", "new", "newer"]
+words = [list(w) for w in corpus]                  # start from characters
+
+def pair_counts(words):
+    counts = Counter()
+    for w in words:
+        for a, b in zip(w, w[1:]):
+            counts[(a, b)] += 1
+    return counts
+
+def merge(words, pair):
+    a, b = pair
+    out = []
+    for w in words:
+        new, i = [], 0
+        while i &lt; len(w):
+            if i + 1 &lt; len(w) and w[i] == a and w[i + 1] == b:
+                new.append(a + b); i += 2                # replace the pair by one unit
+            else:
+                new.append(w[i]); i += 1
+        out.append(new)
+    return out
+
+merges = []
+for step in range(8):
+    counts = pair_counts(words)
+    best = sorted(counts, key=lambda p: (-counts[p], p))[0]   # most frequent; ties: alphabetical
+    merges.append(best)
+    words = merge(words, best)
+    print(step + 1, best, counts[best], [" ".join(w) for w in words])
+
+def tokenize(word):
+    w = list(word)
+    for pair in merges:                                # apply the merges in the learned order
+        w = merge([w], pair)[0]
+    return w
+
+print(tokenize("newest"), tokenize("lowest"), tokenize("renew"))
+# 1 ('l', 'o') 4 ['lo w', 'lo w', 'lo w e r', 'lo w e s t', 'n e w', 'n e w e r']
+# 2 ('lo', 'w') 4 ['low', 'low', 'low e r', 'low e s t', 'n e w', 'n e w e r']
+# 3 ('e', 'r') 2 ['low', 'low', 'low er', 'low e s t', 'n e w', 'n e w er']
+# 4 ('e', 'w') 2 ['low', 'low', 'low er', 'low e s t', 'n ew', 'n ew er']
+# 5 ('n', 'ew') 2 ['low', 'low', 'low er', 'low e s t', 'new', 'new er']
+# 6 ('e', 's') 1 ['low', 'low', 'low er', 'low es t', 'new', 'new er']
+# 7 ('es', 't') 1 ['low', 'low', 'low er', 'low est', 'new', 'new er']
+# 8 ('low', 'er') 1 ['low', 'low', 'lower', 'low est', 'new', 'new er']
+# ['new', 'est'] ['low', 'est'] ['r', 'e', 'new']</code></pre>
+    </details>
+
+    <div class="dt-ex-list" style="margin-top:1.4rem;">
+      <details class="dt-ex">
+        <summary><span class="dt-ex-no">2</span><span class="dt-ex-q">Manual BPE on the corpus above: write the character-level representation, count the pairs, and perform three merges. If <i>newest</i> never appeared in the training corpus, could a subword tokenizer still represent it? Write one possible tokenization.</span></summary>
+        <div class="dt-ex-sol">
+          <p>Initial pair counts: (l, o) 4, (o, w) 4, (w, e) 3, (e, r) 2, (n, e) 2, (e, w) 2, (e, s) 1, (s, t) 1.</p>
+          <ol class="concept-list">
+            <li>Merge (l, o) → <b>lo</b> (4 times; tied with (o, w)).</li>
+            <li>Now (lo, w) occurs 4 times → <b>low</b>.</li>
+            <li>(e, r), (e, w), (low, e), (n, e) all occur twice; with alphabetical tie-breaking → <b>er</b>.</li>
+          </ol>
+          <p>Yes: <i>newest</i> can always be written with smaller known pieces, e.g. <b>new + est</b> (after the merges ew, new, es, est), or at worst character by character. The widget reproduces this.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- ===== 4. EMBEDDINGS ===== -->
+  <section class="block algo-section ucs" id="embeddings">
+    <span class="badge ucs" style="margin-bottom:0.6rem; display:inline-block;">IDs → vectors</span>
+    <h2 class="section-title">4. From tokens to vectors</h2>
+    <p class="section-lede">Suppose tokenization turns <i>"The cat sat"</i> into tokens, and the tokenizer maps them to the IDs <code>[17, 324, 981]</code>. These numbers are <b>only identifiers</b>: the model should not read <i>cat = 324, dog = 517</i> as meaning that <i>dog</i> is somehow numerically "larger" than <i>cat</i>.</p>
+    <div class="definition-box">
+      <div class="dbox-label">📐 Embedding</div>
+      <p>Every token ID is mapped to a learned vector, its <b>embedding</b>: row number ID of an embedding matrix \(E \in \mathbb{R}^{|V| \times d}\), with \(|V|\) the vocabulary size and \(d\) the model width.</p>
+      \[ \text{cat} \;(324) \;\mapsto\; E_{324} = [0.2, -0.7, 0.4, \dots] \qquad \text{dog} \;(517) \;\mapsto\; E_{517} = [0.3, -0.6, 0.5, \dots] \]
+      <p>The embedding provides a continuous representation that the neural network can transform. The values are learned during training, so tokens used in similar contexts end up with similar vectors.</p>
+    </div>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Try it: IDs versus embeddings</h4>
+    <p class="section-lede">Toy 2-D embeddings (real models use hundreds or thousands of dimensions). Click a token: its nearest neighbours by <b>cosine similarity</b> are listed. Compare with the IDs: <i>cat</i> (324) and <i>car</i> (325) are neighbours by ID but not by meaning.</p>
+    <div class="playground">
+      <div class="pg-grid">
+        <svg id="em-plot" class="ml-plot" viewBox="0 0 400 360" aria-label="Toy word embeddings"></svg>
+        <div id="em-out" class="tf-out"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 5. POSITION ===== -->
+  <section class="block algo-section bfs" id="position">
+    <span class="badge bfs" style="margin-bottom:0.6rem; display:inline-block;">Order</span>
+    <h2 class="section-title">5. Why position matters</h2>
+    <p class="section-lede"><i>dog bites man</i> and <i>man bites dog</i> contain the same tokens, but the meaning is different. If the model only knew which tokens were present, it could not distinguish the two sequences. Self-attention, the core operation below, treats its input as a <b>set</b>: shuffle the input vectors and it produces the same vectors, shuffled. So Transformers need information about <b>token position</b>.</p>
+    <div class="definition-box">
+      <div class="dbox-label">📐 Input representation</div>
+      \[ x_i = \underbrace{E_{\text{token}_i}}_{\text{what}} + \underbrace{P_i}_{\text{where}} \]
+      <p>Different Transformer architectures encode position in different ways: fixed sinusoids (the original Transformer), learned position vectors (GPT-2), or rotations of the queries and keys (RoPE, used in many recent models). The central idea is the same: the model must know both <b>what</b> a token is and <b>where</b> it appears.</p>
+    </div>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Try it: the same bag of tokens</h4>
+    <p class="section-lede">Toy 2-D token and position vectors. Filled dots are the input vectors of <i>dog bites man</i>, rings those of <i>man bites dog</i>. Switch the positional information on and off.</p>
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="strategy-pick" id="ps-mode">
+          <button class="strat-btn active" data-p="0">Tokens only</button>
+          <button class="strat-btn" data-p="1">Tokens + positions</button>
+        </div>
+      </div>
+      <div class="pg-grid">
+        <svg id="ps-plot" class="ml-plot" viewBox="0 0 380 340" aria-label="Sentence vectors with and without position"></svg>
+        <div id="ps-out" class="tf-out"></div>
+      </div>
+    </div>
+
+    <div class="dt-ex-list" style="margin-top:1.4rem;">
+      <details class="dt-ex">
+        <summary><span class="dt-ex-no">3</span><span class="dt-ex-q">(1) Why are token IDs not sufficient as neural-network inputs? (2) What information do embeddings provide? (3) What problem would appear if a Transformer had no positional information?</span></summary>
+        <div class="dt-ex-sol">
+          <p>(1) IDs are arbitrary labels: their numeric order and distances mean nothing, yet a network would treat 517 as "bigger" than 324.</p>
+          <p>(2) A learned, continuous description of each token, in which tokens used in similar ways get similar vectors, and which the layers can transform.</p>
+          <p>(3) It could not tell sequences with the same tokens in a different order apart (<i>dog bites man</i> vs <i>man bites dog</i>): word order, and with it grammar and meaning, would be lost.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- ===== 6. SELF-ATTENTION ===== -->
+  <section class="block algo-section ids" id="attention">
+    <span class="badge ids" style="margin-bottom:0.6rem; display:inline-block;">Communication</span>
+    <h2 class="section-title">6. Self-attention</h2>
+    <p class="section-lede">Self-attention allows each token to <b>gather information from other tokens</b>. In <i>The cat sleeps</i>, the representation of <i>sleeps</i> can pull in information about who is sleeping. Each token vector \(x_i\) is transformed into three vectors by three learned matrices: \(q_i = x_i W_Q\), \(k_i = x_i W_K\), \(v_i = x_i W_V\).</p>
+    <ul class="concept-list">
+      <li><b>Query (Q)</b>: what information am I looking for?</li>
+      <li><b>Key (K)</b>: what information do I contain?</li>
+      <li><b>Value (V)</b>: what information should I contribute?</li>
+    </ul>
+    <p class="section-lede">A token compares its query with every key. The better a key matches, the more of that token's value is copied into the result. For a whole sequence (one row per token):</p>
+    <div class="definition-box">
+      <div class="dbox-label">📐 Scaled dot-product attention</div>
+      \[ \text{Attention}(Q, K, V) = \text{softmax}\!\left( \frac{Q K^T}{\sqrt{d_k}} \right) V \]
+      <p>\(QK^T\) holds the dot product of every query with every key; softmax (row by row) turns each row into weights that sum to 1; multiplying by \(V\) mixes the value vectors with these weights. \(d_k\) is the length of the key vectors: dividing by \(\sqrt{d_k}\) keeps the scores from growing with the dimension, so the softmax does not saturate.</p>
+    </div>
+    <p class="caption-note">💡 Softmax is the same function as in <a href="lab065-linear-logistic.html#multiclass">multi-class logistic regression</a>: \(\text{softmax}(z)_i = e^{z_i} / \sum_j e^{z_j}\). Do not focus on memorising the formula yet: the next section computes a tiny example.</p>
+  </section>
+
+  <!-- ===== 7. MANUAL ATTENTION ===== -->
+  <section class="block algo-section dfs" id="attention-calc">
+    <span class="badge dfs" style="margin-bottom:0.6rem; display:inline-block;">By hand</span>
+    <h2 class="section-title">7. Manual attention calculation</h2>
+    <p class="section-lede">The rows correspond to <i>The</i>, <i>cat</i>, <i>sleeps</i>:</p>
+    <div class="math-block">\[ Q = \begin{bmatrix} 1 &amp; 0 \\ 0 &amp; 1 \\ 1 &amp; 1 \end{bmatrix} \qquad K = \begin{bmatrix} 1 &amp; 0 \\ 0 &amp; 1 \\ 1 &amp; 1 \end{bmatrix} \qquad V = \begin{bmatrix} 1 &amp; 2 \\ 3 &amp; 0 \\ 2 &amp; 2 \end{bmatrix} \]</div>
+    <p class="section-lede">Compute attention for the token <b>sleeps</b>, whose query is \(q = [1, 1]\).</p>
+    <ul class="concept-list">
+      <li><b>Step 1, dot products</b>: \(q \cdot k_{\text{The}} = 1\), \(q \cdot k_{\text{cat}} = 1\), \(q \cdot k_{\text{sleeps}} = 2\). The scores are \([1, 1, 2]\).</li>
+      <li><b>Softmax</b> (ignoring the scaling for this tiny example): \(\frac{e^1}{e^1 + e^1 + e^2} \approx 0.21\), so the attention weights are approximately \([0.21, 0.21, 0.58]\).</li>
+      <li><b>Step 2, weighted combination of values</b>: the output is \(0.21\, V_{\text{The}} + 0.21\, V_{\text{cat}} + 0.58\, V_{\text{sleeps}}\), with \(V_{\text{The}} = [1, 2]\), \(V_{\text{cat}} = [3, 0]\), \(V_{\text{sleeps}} = [2, 2]\).</li>
+    </ul>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Try it: the attention calculator</h4>
+    <p class="section-lede">Starts on the example above. Pick the query token, switch the \(\sqrt{d_k}\) scaling and the causal mask on and off, or edit any number in \(Q\), \(K\), \(V\). The heatmap shows the full attention-weight matrix, one row per query.</p>
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="strategy-pick" id="at-q">
+          <button class="strat-btn" data-q="0">Query: The</button>
+          <button class="strat-btn" data-q="1">Query: cat</button>
+          <button class="strat-btn active" data-q="2">Query: sleeps</button>
+        </div>
+      </div>
+      <div class="pg-controls">
+        <div class="strategy-pick">
+          <button class="strat-btn" id="at-scale">Scale by √d<sub>k</sub></button>
+          <button class="strat-btn" id="at-mask">Causal mask</button>
+          <button class="strat-btn" id="at-reset">Reset to the example</button>
+        </div>
+      </div>
+      <div class="at-mats" id="at-mats"></div>
+      <div class="pg-grid" style="margin-top:0.8rem;">
+        <svg id="at-heat" class="ml-plot" viewBox="0 0 320 280" aria-label="Attention weights"></svg>
+        <div id="at-out" class="tf-out"></div>
+      </div>
+    </div>
+
+    <div class="dt-ex-list" style="margin-top:1.4rem;">
+      <details class="dt-ex">
+        <summary><span class="dt-ex-no">4</span><span class="dt-ex-q">Calculate \(0.21[1,2] + 0.21[3,0] + 0.58[2,2]\). What did attention do conceptually? Complete the sentence: "Attention created a new representation of <i>sleeps</i> by …"</span></summary>
+        <div class="dt-ex-sol">
+          <div class="math-block">\[ [0.21 + 0.63 + 1.16,\;\; 0.42 + 0 + 1.16] = [2.00,\; 1.58] \]</div>
+          <p>… by taking a weighted average of the value vectors of all tokens in the sequence, where the weights (how much <i>sleeps</i> "listens" to each token) come from how well its query matches each token's key. The new vector mixes information from <i>The</i> and <i>cat</i> into <i>sleeps</i>, while keeping most of its own value.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- ===== 8. CAUSAL ===== -->
+  <section class="block algo-section ucs" id="causal">
+    <span class="badge ucs" style="margin-bottom:0.6rem; display:inline-block;">No peeking</span>
+    <h2 class="section-title">8. Causal masking</h2>
+    <p class="section-lede">Autoregressive language models predict the next token. In <i>The cat sat on the mat</i>, while predicting the token after <i>The cat</i>, the model must not use information from <i>sat on the mat</i>: that would be cheating. A <b>causal mask</b> prevents each position from attending to future positions.</p>
+    <div class="definition-box">
+      <div class="dbox-label">📐 Causal mask</div>
+      \[ \text{score}_{ij} \leftarrow -\infty \quad \text{for every future position } j &gt; i \qquad\Rightarrow\qquad \text{softmax}: \; e^{-\infty} = 0 \]
+      <p>Future positions get a very large negative score before the softmax, so they receive weight 0 and contribute nothing. Position \(i\) may attend to positions \(1 \dots i\) only: a lower-triangular pattern.</p>
+    </div>
+    <p class="caption-note">💡 Why it matters in training: the model is trained to predict <b>every</b> position's next token at once, in one pass over the sentence. The mask makes each of these predictions use only the tokens before it, exactly as at generation time, when the future does not exist yet.</p>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Try it: attention with and without the mask</h4>
+    <p class="section-lede">Invented attention scores for <i>The cat sat on the mat</i>. Rows are the tokens that attend (queries), columns the tokens attended to (keys). Click a row to see its weights. Switch the mask on: all weight above the diagonal moves back onto the past.</p>
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="strategy-pick" id="cm-mode">
+          <button class="strat-btn" data-m="0">No mask</button>
+          <button class="strat-btn active" data-m="1">Causal mask</button>
+        </div>
+      </div>
+      <div class="pg-grid">
+        <svg id="cm-heat" class="ml-plot cm-click" viewBox="0 0 380 350" aria-label="Attention matrix with causal mask"></svg>
+        <div id="cm-out" class="tf-out"></div>
+      </div>
+    </div>
+
+    <div class="dt-ex-list" style="margin-top:1.4rem;">
+      <details class="dt-ex">
+        <summary><span class="dt-ex-no">5</span><span class="dt-ex-q">In <i>The scientist wrote the paper</i>: (1) while processing <i>The</i>, which later tokens may it attend to in a causal language model? (2) While processing <i>wrote</i>, may it attend to <i>scientist</i>? (3) To <i>paper</i>? (4) Why is causal masking necessary during next-token training?</span></summary>
+        <div class="dt-ex-sol">
+          <p>(1) None: <i>The</i> is the first token, so it can only attend to itself.</p>
+          <p>(2) Yes, <i>scientist</i> comes earlier. (3) No, <i>paper</i> is in the future.</p>
+          <p>(4) Training predicts the next token at every position simultaneously from the full sentence. Without the mask, position \(i\) could simply look at token \(i + 1\), the answer it is supposed to predict, and learn nothing useful. It would also behave differently at generation time, when later tokens are not available.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- ===== 9. BLOCK ===== -->
+  <section class="block algo-section bfs" id="block">
+    <span class="badge bfs" style="margin-bottom:0.6rem; display:inline-block;">Architecture</span>
+    <h2 class="section-title">9. The Transformer block</h2>
+    <p class="section-lede">A simplified Transformer language model:</p>
+    <div class="tf-flow" id="block-flow">
+      <div class="tf-fl">Input text</div><div class="tf-arr">↓</div>
+      <div class="tf-fl">Tokenization → token IDs</div><div class="tf-arr">↓</div>
+      <div class="tf-fl">Embeddings + positional information</div><div class="tf-arr">↓</div>
+      <div class="tf-fl tf-blockbox"><span class="tf-rep">× N blocks</span><div class="tf-sub attn">Self-attention <small>+ residual</small></div><div class="tf-sub mlp">Feed-forward / MLP <small>+ residual</small></div></div><div class="tf-arr">↓</div>
+      <div class="tf-fl">Final hidden representation → linear output layer → vocabulary logits</div><div class="tf-arr">↓</div>
+      <div class="tf-fl">Softmax → next-token probabilities</div>
+    </div>
+    <p class="section-lede" style="margin-top:1rem;">There are two especially important operations inside each block:</p>
+    <ul class="concept-list">
+      <li><b>Self-attention</b> lets tokens exchange information: <b>attention = communication between token positions</b>.</li>
+      <li><b>Feed-forward / MLP layer</b>: after attention, each token representation is <b>independently</b> transformed by a small neural network (the <a href="lab11-neural-networks.html#structures">MLP</a> of Lab 11, typically two layers with a nonlinearity, applied to every position with the same weights): <b>MLP = computation within each token position</b>.</li>
+      <li>A compact mental model is therefore: <b>communicate → compute</b>, repeated in every block.</li>
+      <li>Real models run several attention computations in parallel in each block (<b>multi-head attention</b>), each with its own \(W_Q, W_K, W_V\), so that different heads can track different relations. GPT-2 small, for example, has 12 blocks with 12 heads each and 768-dimensional token vectors.</li>
+    </ul>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">See it: communicate, then compute</h4>
+    <p class="section-lede">Five token positions, each holding a vector (the coloured bars). Switch between the two sublayers: attention moves information <b>between</b> columns (only from the past, because of the mask); the MLP changes each column <b>on its own</b>.</p>
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="strategy-pick" id="cc-mode">
+          <button class="strat-btn active" data-m="attn">Self-attention</button>
+          <button class="strat-btn" data-m="mlp">MLP</button>
+        </div>
+      </div>
+      <div class="fig-scroll"><svg id="cc-plot" class="ml-plot" viewBox="0 0 620 320" aria-label="Attention versus MLP"></svg></div>
+      <p id="cc-out" class="note-line"></p>
+    </div>
+  </section>
+
+  <!-- ===== 10. RESIDUAL ===== -->
+  <section class="block algo-section ids" id="residual">
+    <span class="badge ids" style="margin-bottom:0.6rem; display:inline-block;">Depth</span>
+    <h2 class="section-title">10. Residual connections</h2>
+    <p class="section-lede">A Transformer does not simply replace the current representation with the result of every operation. Instead it computes</p>
+    <div class="math-block">\[ x_{\text{new}} = x + \text{Attention}(x) \qquad\text{and later}\qquad x_{\text{new}} = x + \text{MLP}(x) \]</div>
+    <ul class="concept-list">
+      <li>This is a <b>residual connection</b>: new representation = old representation + useful modification. Each sublayer only has to learn a <b>change</b>, and the original information is never overwritten.</li>
+      <li>Residual connections help <b>information and gradients</b> travel through very deep networks: the derivative of \(x + f(x)\) is \(1 + f'(x)\), so there is always a direct path of slope 1 for back-propagation (<a href="lab11-neural-networks.html#backprop">Lab 11</a>) that does not fade layer after layer.</li>
+      <li>The vector that flows through all the blocks and that every sublayer reads from and adds to is often called the <b>residual stream</b>.</li>
+    </ul>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Try it: 24 layers with and without residuals</h4>
+    <p class="section-lede">A 16-dimensional vector passes through 24 random layers \(f_\ell(x) = \tanh(g\, W_\ell x)\), where \(g\) is the layer strength. The plot shows how similar the representation still is to the input (cosine similarity). Without residuals every layer <b>replaces</b> the vector and the input is soon forgotten; with residuals every layer <b>adds</b> to it.</p>
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="beam-control show" style="margin:0;"><label>layer strength</label><input type="range" id="rs-g" min="0.1" max="1.5" value="0.3" step="0.05"><span class="val" id="rs-g-val">0.30</span></div>
+        <div class="play-btns"><button class="toggle-btn" id="rs-new">New random layers</button></div>
+      </div>
+      <div class="pg-grid">
+        <svg id="rs-plot" class="ml-plot" viewBox="0 0 420 260" aria-label="Similarity to the input across layers"></svg>
+        <div id="rs-out" class="tf-out"></div>
+      </div>
+    </div>
+
+    <div class="dt-ex-list" style="margin-top:1.4rem;">
+      <details class="dt-ex">
+        <summary><span class="dt-ex-no">6</span><span class="dt-ex-q">(1) What is the main role of self-attention? (2) Of the MLP? (3) What is the intuition behind a residual connection? (4) Why might stacking many Transformer blocks be more useful than using only one?</span></summary>
+        <div class="dt-ex-sol">
+          <p>(1) Moving information between positions: each token gathers what it needs from the (earlier) tokens.</p>
+          <p>(2) Processing each position's gathered information on its own: nonlinear feature computation, and much of the model's stored knowledge (most of the parameters are in the MLPs).</p>
+          <p>(3) Keep what you have and add a correction: \(x + f(x)\). Nothing is lost, and gradients flow straight through.</p>
+          <p>(4) Each block builds on the previous ones: later blocks can combine information that earlier blocks gathered, forming more abstract features (like the hidden layers of <a href="lab11-neural-networks.html#expressive">Lab 11</a>, where depth gave compact representations). One round of communication can only relate tokens directly; several rounds can chain relations, e.g. "she" → "scientist" → "who wrote the papers".</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- ===== 11. LOGITS ===== -->
+  <section class="block algo-section dfs" id="logits">
+    <span class="badge dfs" style="margin-bottom:0.6rem; display:inline-block;">Output</span>
+    <h2 class="section-title">11. From hidden states to the next token</h2>
+    <p class="section-lede">Return to <i>The cat sat on the</i>. After many Transformer blocks, the model has a final vector for each token position. The final position holds a contextual representation \(h_{\text{last}}\), which has "read" the whole prompt.</p>
+    <div class="definition-box">
+      <div class="dbox-label">📐 Logits and softmax</div>
+      \[ z = h_{\text{last}}\, W_{\text{out}} \in \mathbb{R}^{|V|} \qquad\qquad P(\text{next} = w) = \frac{e^{z_w / T}}{\sum_{w'} e^{z_{w'} / T}} \]
+      <p>A linear layer maps \(h_{\text{last}}\) to one score per vocabulary token: the <b>logits</b>. Softmax converts them into probabilities. \(T\) is the <b>temperature</b> (\(T = 1\) is the plain softmax).</p>
+    </div>
+    <ul class="concept-list" style="margin-top:1rem;">
+      <li>The model can then <b>choose</b> the next token (greedy decoding: take the most probable) or <b>sample</b> it from the distribution.</li>
+      <li><b>Temperature</b>: \(T &lt; 1\) sharpens the distribution (safer, more repetitive text), \(T &gt; 1\) flattens it (more varied, more errors). As \(T \to 0\), sampling becomes greedy.</li>
+      <li><b>Top-k sampling</b>: sample only among the \(k\) most probable tokens, so that very unlikely tokens (<i>moon</i>) are never picked.</li>
+    </ul>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Try it: logits to probabilities to a token</h4>
+    <p class="section-lede">The logits from the exercise (<i>mat</i> 8.2, <i>floor</i> 6.7, <i>chair</i> 5.1, <i>moon</i> −0.3), plus a few more vocabulary entries (invented) so that, as in the exercise, <i>mat</i> gets about 0.61. Change the temperature and sample.</p>
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="beam-control show" style="margin:0;"><label>temperature \(T\)</label><input type="range" id="lg-t" min="0.1" max="3" value="1" step="0.05"><span class="val" id="lg-t-val">1.00</span></div>
+        <div class="beam-control show" style="margin:0;"><label>top-k</label><input type="range" id="lg-k" min="1" max="9" value="9" step="1"><span class="val" id="lg-k-val">all</span></div>
+      </div>
+      <div class="pg-controls">
+        <div class="strategy-pick">
+          <button class="strat-btn" id="lg-sample">Sample 1 token</button>
+          <button class="strat-btn" id="lg-sample100">Sample 100 tokens</button>
+          <button class="strat-btn" id="lg-clear">Clear samples</button>
+        </div>
+      </div>
+      <div id="lg-out" class="tf-out"></div>
+    </div>
+    <p class="caption-note">💡 The exercise's table lists <i>chair</i> with probability 0.05. With these logits that cannot happen together with <i>mat</i> 0.61 and <i>floor</i> 0.14: softmax fixes the <b>ratio</b> of two probabilities by the difference of their logits, \(P_{\text{floor}} / P_{\text{chair}} = e^{6.7 - 5.1} \approx 4.95\), so <i>chair</i> gets about 0.03. The other vocabulary tokens only change the shared denominator.</p>
+  </section>
+
+  <!-- ===== 12. PIPELINE ===== -->
+  <section class="block algo-section bfs" id="pipeline">
+    <span class="badge bfs" style="margin-bottom:0.6rem; display:inline-block;">Everything together</span>
+    <h2 class="section-title">12. The complete pipeline</h2>
+    <p class="section-lede">You should now be able to explain every step: <b>text → tokens → token IDs → embeddings + positional information → Transformer blocks → contextual token representations → vocabulary logits → probabilities → next token</b>.</p>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">See it: follow <i>The cat sat on the</i> through the model</h4>
+    <p class="section-lede">Step through the stages. The sizes are those of GPT-2 small (vocabulary 50 257 tokens, 768-dimensional vectors, 12 blocks); the token IDs and numbers are illustrative.</p>
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="play-btns" style="margin-left:0;">
+          <button class="icon-btn" id="pl-prev" title="Previous stage">⏮</button>
+          <button class="icon-btn" id="pl-next" title="Next stage">⏭</button>
+          <button class="icon-btn" id="pl-reset" title="Reset">↺</button>
+        </div>
+        <span class="tf-step" id="pl-step"></span>
+      </div>
+      <div class="pl-grid">
+        <div id="pl-stages" class="pl-stages"></div>
+        <div id="pl-out" class="tf-out pl-out"></div>
+      </div>
+    </div>
+
+    <h3 class="section-title" id="generate" style="font-size:1.15rem; margin-top:2rem;">How a generative model writes text</h3>
+    <p class="section-lede">A generative language model repeats the pipeline in a loop, <b>autoregressively</b>: predict a distribution for the next token, pick one (greedy or sampling), append it to the input, and predict again, until an end token or a length limit. Everything a chatbot writes is produced this way, one token at a time.</p>
+    <h4 style="margin:1.4rem 0 0.4rem;">Try it: the generation loop</h4>
+    <p class="section-lede">To keep it in the browser, the Transformer is replaced by a tiny count-based model (how often each word followed the previous two words in 24 short training sentences). The loop around it is exactly the one a real LLM runs. Step one token at a time, or generate to the end.</p>
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="play-btns" style="margin-left:0;">
+          <button class="icon-btn" id="gn-step" title="Generate one token">⏭</button>
+          <button class="icon-btn" id="gn-run" title="Generate to the end">⏩</button>
+          <button class="icon-btn" id="gn-reset" title="Back to the prompt">↺</button>
+        </div>
+        <div class="strategy-pick" id="gn-mode">
+          <button class="strat-btn active" data-m="sample">Sample</button>
+          <button class="strat-btn" data-m="greedy">Greedy</button>
+        </div>
+        <div class="beam-control show" style="margin:0;"><label>temperature</label><input type="range" id="gn-t" min="0.2" max="2" value="1" step="0.1"><span class="val" id="gn-t-val">1.0</span></div>
+      </div>
+      <div id="gn-text" class="gn-text"></div>
+      <div id="gn-out" class="tf-out"></div>
+    </div>
+  </section>
+
+  <!-- ===== 13. CODING ===== -->
+  <section class="block" id="coding">
+    <h2 class="section-title">13. Mini coding exercise</h2>
+    <p class="section-lede">Implement scaled dot-product attention with NumPy (or PyTorch):</p>
+    <div class="math-block">\[ \text{scores} = \frac{QK^T}{\sqrt{d_k}} \qquad \text{weights} = \text{softmax}(\text{scores}) \qquad \text{output} = \text{weights}\, V \]</div>
+    <details class="code-card" open>
+      <summary>
+        <span class="code-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="code-file">attention_exercise.py</span>
+        <span class="code-lang">Python</span>
+        <button type="button" class="code-copy">Copy</button>
+        <span class="code-chevron" aria-hidden="true">▾</span>
+      </summary>
+      <pre class="code-body"><code class="lang-py">import numpy as np
+
+def softmax(x, axis=-1):
+    x = x - np.max(x, axis=axis, keepdims=True)    # subtract the max for numerical stability
+    exp_x = np.exp(x)
+    return exp_x / np.sum(exp_x, axis=axis, keepdims=True)
+
+def attention(Q, K, V, mask=None):
+    # 1. Compare queries with keys.
+    scores = ______________________________
+
+    # 2. Scale the scores.
+    scores = ______________________________
+
+    # 3. Apply the causal mask if provided.
+    if mask is not None:
+        scores = ______________________________
+
+    # 4. Convert scores to attention weights.
+    weights = ______________________________
+
+    # 5. Combine the value vectors.
+    output = ______________________________
+
+    return output, weights</code></pre>
+    </details>
+    <details class="code-card">
+      <summary>
+        <span class="code-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="code-file">attention_solution.py</span>
+        <span class="code-lang">Python</span>
+        <button type="button" class="code-copy">Copy</button>
+        <span class="code-chevron" aria-hidden="true">▾</span>
+      </summary>
+      <pre class="code-body"><code class="lang-py">import numpy as np
+
+def softmax(x, axis=-1):
+    x = x - np.max(x, axis=axis, keepdims=True)
+    exp_x = np.exp(x)
+    return exp_x / np.sum(exp_x, axis=axis, keepdims=True)
+
+def attention(Q, K, V, mask=None):
+    scores = Q @ K.T                                   # 1. (n_queries, n_keys) similarity matrix
+    scores = scores / np.sqrt(K.shape[-1])             # 2. divide by sqrt(d_k)
+    if mask is not None:
+        scores = np.where(mask, scores, -np.inf)       # 3. forbidden positions -> -infinity
+    weights = softmax(scores, axis=-1)                 # 4. every row sums to 1
+    output = weights @ V                               # 5. weighted average of the values
+    return output, weights
+
+Q = np.array([[1, 0], [0, 1], [1, 1]], dtype=float)    # The, cat, sleeps
+K = np.array([[1, 0], [0, 1], [1, 1]], dtype=float)
+V = np.array([[1, 2], [3, 0], [2, 2]], dtype=float)
+
+# the exercise's example: no scaling, query "sleeps"
+w = softmax(Q[2] @ K.T)
+print(w.round(2), (w @ V).round(2))                    # [0.21 0.21 0.58] [2.   1.58]
+
+causal = np.tril(np.ones((3, 3), dtype=bool))          # position i may see 0..i
+out, weights = attention(Q, K, V, mask=causal)
+print(weights.round(3))
+# [[1.    0.    0.   ]
+#  [0.33  0.67  0.   ]
+#  [0.248 0.248 0.503]]
+print(out.round(3))
+# [[1.    2.   ]
+#  [2.34  0.66 ]
+#  [2.    1.503]]</code></pre>
+    </details>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.6rem;">Questions after implementation</h3>
+    <div class="dt-ex-list">
+      <details class="dt-ex">
+        <summary><span class="dt-ex-no">a</span><span class="dt-ex-q">What is the shape of <code>Q @ K.T</code>?</span></summary>
+        <div class="dt-ex-sol"><p>(number of queries) × (number of keys): with \(n\) tokens, \(n \times n\). One score for every (query, key) pair; here 3 × 3.</p></div>
+      </details>
+      <details class="dt-ex">
+        <summary><span class="dt-ex-no">b</span><span class="dt-ex-q">What does one row of the attention-weight matrix represent?</span></summary>
+        <div class="dt-ex-sol"><p>How much one token (the query) attends to each token of the sequence: the mixing proportions used to build that token's output from the value vectors.</p></div>
+      </details>
+      <details class="dt-ex">
+        <summary><span class="dt-ex-no">c</span><span class="dt-ex-q">Why do the values in one row sum to 1?</span></summary>
+        <div class="dt-ex-sol"><p>The softmax is applied row by row, and softmax outputs are positive and normalised to sum to 1. So the output is a weighted <b>average</b> (a convex combination) of the value vectors.</p></div>
+      </details>
+      <details class="dt-ex">
+        <summary><span class="dt-ex-no">d</span><span class="dt-ex-q">What changes after a causal mask is applied?</span></summary>
+        <div class="dt-ex-sol"><p>Every weight above the diagonal becomes exactly 0, and the remaining weights in each row are renormalised to sum to 1. The first token can only attend to itself (row 1 = [1, 0, 0]).</p></div>
+      </details>
+      <details class="dt-ex">
+        <summary><span class="dt-ex-no">e</span><span class="dt-ex-q">What happens if one attention score becomes much larger than all others?</span></summary>
+        <div class="dt-ex-sol"><p>Its weight approaches 1 and all others approach 0: attention becomes a hard lookup that copies a single value vector. The softmax then saturates and its gradients become tiny, which is one reason for the \(1/\sqrt{d_k}\) scaling.</p></div>
+      </details>
+    </div>
+  </section>
+
+  <!-- ===== 14. CHALLENGE ===== -->
+  <section class="block" id="challenge">
+    <h2 class="section-title">14. Conceptual challenge</h2>
+    <p class="section-lede">Consider: <i>The scientist who wrote the papers was tired because she …</i></p>
+    <div class="dt-ex-list">
+      <details class="dt-ex">
+        <summary><span class="dt-ex-no">A</span><span class="dt-ex-q">Why might a word-level tokenizer struggle more than a subword tokenizer with rare scientific terminology?</span></summary>
+        <div class="dt-ex-sol"><p>Rare terms (<i>photoluminescence</i>, <i>transcriptomics</i>) are probably not in a word vocabulary and become one "unknown" token, losing all information. A subword tokenizer splits them into known pieces (<i>photo, lumin, escence</i>) that carry meaning shared with other words.</p></div>
+      </details>
+      <details class="dt-ex">
+        <summary><span class="dt-ex-no">B</span><span class="dt-ex-q">Which earlier words might the token <i>she</i> attend strongly to?</span></summary>
+        <div class="dt-ex-sol"><p><i>scientist</i> (the likely referent), and perhaps <i>tired</i> and <i>was</i> (what is being said about her) or <i>because</i> (the clause structure). Different heads may track different relations.</p></div>
+      </details>
+      <details class="dt-ex">
+        <summary><span class="dt-ex-no">C</span><span class="dt-ex-q">Could the token <i>scientist</i> attend to the later token <i>tired</i> in a causal language model while processing <i>scientist</i>?</span></summary>
+        <div class="dt-ex-sol"><p>No. <i>tired</i> is a future position, and the causal mask sets its score to −∞, so its weight is 0. Information flows only from earlier to later positions: later, <i>tired</i> can attend to <i>scientist</i>, not the other way round.</p></div>
+      </details>
+      <details class="dt-ex">
+        <summary><span class="dt-ex-no">D</span><span class="dt-ex-q">What does the MLP do that self-attention does not?</span></summary>
+        <div class="dt-ex-sol"><p>It applies a nonlinear transformation to each position's vector on its own, turning the gathered information into new features, and it stores much of the model's knowledge in its weights. Attention only moves information between positions, as weighted averages of value vectors (mixing, not new per-token computation).</p></div>
+      </details>
+      <details class="dt-ex">
+        <summary><span class="dt-ex-no">E</span><span class="dt-ex-q">Why does the model produce logits for the entire vocabulary rather than directly outputting one word?</span></summary>
+        <div class="dt-ex-sol"><p>The next token is uncertain: several continuations can be plausible. A full probability distribution expresses that uncertainty, is needed to train with cross-entropy (the probability of the correct token must be defined), and lets us choose how to decode (greedy, sampling, temperature, top-k).</p></div>
+      </details>
+      <details class="dt-ex">
+        <summary><span class="dt-ex-no">F</span><span class="dt-ex-q">What would go wrong if the model had no information about token position?</span></summary>
+        <div class="dt-ex-sol"><p>Attention would see the sentence as an unordered bag of tokens: <i>she</i> could not tell whether <i>scientist</i> came before or after it, <i>dog bites man</i> would equal <i>man bites dog</i>, and word order, grammar and much of the meaning would be lost.</p></div>
+      </details>
+    </div>
+  </section>
+
+  <!-- ===== 15. EXPLANATION ===== -->
+  <section class="block algo-section ucs" id="explanation">
+    <span class="badge ucs" style="margin-bottom:0.6rem; display:inline-block;">Interpretation</span>
+    <h2 class="section-title">15. Attention is not automatically an explanation</h2>
+    <p class="section-lede">Suppose you inspect one attention head and find <b>"she" → "scientist": 0.70</b>. Can you conclude "the model believes with 70% certainty that <i>she</i> refers to <i>scientist</i>"? <b>No.</b></p>
+    <ul class="concept-list">
+      <li>Attention weights are part of the model's <b>internal computation</b>. They are not automatically a faithful explanation of the model's reasoning or beliefs.</li>
+      <li>There are many heads in many layers, and they may perform different computations. One head's weights are one piece of a large computation.</li>
+      <li>A weight says how much of a <b>value vector</b> is copied, not how important it is: a large weight on a value vector with small or irrelevant content changes little. Later MLPs and layers can substantially transform the representation.</li>
+    </ul>
+    <div class="dt-ex-list" style="margin-top:1rem;">
+      <details class="dt-ex">
+        <summary><span class="dt-ex-no">7</span><span class="dt-ex-q">Explain why "High attention weight proves that one word caused the model's final prediction" is too strong. Write a better, more careful interpretation.</span></summary>
+        <div class="dt-ex-sol">
+          <p>Attention weights are correlational, local to one head and one layer, and apply to value vectors that later layers keep transforming. Other heads, the MLPs and the residual stream also shape the output, so a high weight is neither necessary nor sufficient for causing the prediction.</p>
+          <p><b>Better:</b> "In this head and layer, the representation of <i>she</i> copied a large share of its information from the position of <i>scientist</i>. This suggests the model may use this link. To show that it causes the prediction, we would need an intervention, e.g. removing or changing that information and checking whether the prediction changes."</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- ===== 16. CHECKPOINT ===== -->
+  <section class="block" id="checkpoint">
+    <h2 class="section-title">16. Final checkpoint</h2>
+    <p class="section-lede">Without looking back at the notes, explain in your own words how a Transformer turns the text <i>The cat sat on the</i> into a probability distribution over possible next tokens. Include tokenization, embeddings, positional information, self-attention, causal masking, MLP layers, residual connections, logits and softmax.</p>
+    <div class="dt-ex-list">
+      <details class="dt-ex">
+        <summary><span class="dt-ex-no">✓</span><span class="dt-ex-q">A model answer (open it after writing yours)</span></summary>
+        <div class="dt-ex-sol">
+          <p>The text is split by a subword tokenizer (e.g. BPE) into tokens, which are mapped to IDs. Each ID selects a learned embedding vector, and positional information is added so the model knows where each token is. The vectors then pass through a stack of Transformer blocks. In each block, <b>self-attention</b> lets every position gather information from the earlier positions: queries are compared with keys, softmax turns the scaled scores into weights, and the value vectors are averaged with those weights; the <b>causal mask</b> sets the scores of future positions to −∞ so that nothing is read from the future. Then an <b>MLP</b> transforms every position separately. Both sublayers add their result to their input through <b>residual connections</b>. After the last block, the vector at the final position (<i>the</i>) represents the whole prompt; a linear layer turns it into one <b>logit</b> per vocabulary token, and <b>softmax</b> turns the logits into probabilities, e.g. <i>mat</i> 0.61, <i>floor</i> 0.14. A token is chosen or sampled, appended, and the process repeats to generate text.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- ===== SUMMARY ===== -->
+  <section class="block" id="summary">
+    <h2 class="section-title">Summary: key takeaways</h2>
+    <p class="section-lede">A Transformer tokenizes text into subword units, maps those units to vectors, repeatedly allows token positions to exchange contextual information through self-attention and transform that information through feed-forward layers, and finally converts the resulting representation into scores and probabilities over possible next tokens.</p>
+    <ol class="concept-list">
+      <li><b>Tokenization</b>: subwords (e.g. BPE, learned by repeatedly merging the most frequent pair) balance vocabulary size, sequence length and unseen words.</li>
+      <li><b>Embeddings + position</b>: IDs select learned vectors; positional information tells the model <b>where</b> each token is.</li>
+      <li><b>Self-attention</b> = <b>communication across positions</b>: \(\text{softmax}(QK^T/\sqrt{d_k})V\), with a <b>causal mask</b> so that no position sees the future.</li>
+      <li><b>MLP</b> = <b>computation within a position</b>. <b>Residual connections</b>: new = old + modification.</li>
+      <li><b>Logits → softmax → probabilities → next token</b>, and a generative model repeats this loop token by token.</li>
+      <li>Attention weights are internal computation, <b>not automatically an explanation</b>.</li>
+    </ol>
+    <p class="section-lede" style="margin-top:1rem;">The overall pipeline: <b>text → tokens → vectors → contextual representations → logits → probabilities</b>.</p>
+  </section>
+
+</div>
+
+<footer>Class notes by Elitsa Yotkova · Lab 12 · built with plain HTML, CSS &amp; JS</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="code-cards.js"></script>
+<script src="lab12.js"></script>
+</body>
+</html>
