@@ -45,11 +45,15 @@ The primary course materials are presented in a series of Jupyter Notebooks, pro
 
 | File | Topic Covered | Focus |
 | :--- | :--- | :--- |
-| `00_NumPy_notes.ipynb` | **NumPy Fundamentals** | Notes on NumPy |
-| `01_Uninformed_search.ipynb` | **Uninformed Search** | Core Informed search algorithms - DFS, BFS, DLS, UCS, IDS |
-| `02_Informed_search.ipynb` | **Informed Search** | Heuristics and algorithms like A\* and Greedy Best-First Search. |
-| `03_CSP.ipynb` | **Constraint Satisfaction Problems** | Backtracking search, inference (e.g., Arc Consistency), and problem modeling. |
-| `04_Genetic_Algorithms.ipynb` | **Genetic Algorithms (GAs)** | Principles, encoding, fitness functions, selection, crossover, and mutation. |
-| `05_Games.ipynb` | **Adversarial Search/Game Theory** | Minimax algorithm and Alpha-Beta Pruning. |
+| [`00_NumPy_notes.ipynb`](notebooks/00_NumPy_notes.ipynb) | **NumPy Fundamentals** | Notes on NumPy |
+| [`01_Uninformed_search.ipynb`](notebooks/01_Uninformed_search.ipynb) | **Uninformed Search** | Core uninformed search algorithms - DFS, BFS, DLS, UCS, IDS |
+| [`02_Informed_search.ipynb`](notebooks/02_Informed_search.ipynb) | **Informed Search** | Heuristics and algorithms like A\* and Greedy Best-First Search. |
+| [`03_CSP.ipynb`](notebooks/03_CSP.ipynb) | **Constraint Satisfaction Problems** | Backtracking search, inference (e.g., Arc Consistency), and problem modeling. |
+| [`04_Genetic_Algorithms.ipynb`](notebooks/04_Genetic_Algorithms.ipynb) | **Genetic Algorithms (GAs)** | Principles, encoding, fitness functions, selection, crossover, and mutation. |
+| [`05_Games.ipynb`](notebooks/05_Games.ipynb) | **Adversarial Search/Game Theory** | Minimax algorithm and Alpha-Beta Pruning. |
+| [`06_Introduction_to_ML.ipynb`](notebooks/06_Introduction_to_ML.ipynb) | **Introduction to Machine Learning** | Core ML concepts and paradigms, supervised vs unsupervised learning, and an overview of classical algorithms. |
+| [`07_Knn.ipynb`](notebooks/07_Knn.ipynb) | **K-Nearest Neighbours** | Global vs local, instance-based vs model-based and lazy vs eager learning; KNN, its advantages and disadvantages. |
+| [`08_Naive_Bayes_class.ipynb`](notebooks/08_Naive_Bayes_class.ipynb) | **Naive Bayes Classifier** | Bayes' theorem, the conditional independence assumption, spam classification example, and Laplace smoothing. |
+| [`09_Metrics.ipynb`](notebooks/09_Metrics.ipynb) | **Metrics** | kNN implementation, accuracy, cross-validation, confusion matrix, precision and recall, bias and variance. |
 
-
+The notebooks live in [`notebooks/`](notebooks/), together with the `images/` they use and [`more_topics/`](notebooks/more_topics/) (extra notebooks: ML fundamentals, vector embeddings). Worked solutions in Python are in [`solved_problems/`](solved_problems/).
