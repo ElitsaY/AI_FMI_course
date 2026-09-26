@@ -23,7 +23,7 @@
   --radius-sm: 10px;
   --shadow: 0 10px 26px -14px rgba(36, 39, 44, 0.16);
   --shadow-sm: 0 4px 12px -6px rgba(36, 39, 44, 0.1);
-  --red-ink: var(--red-ink);
+  --red-ink: #b8394f;
   color-scheme: light;
 }
 
