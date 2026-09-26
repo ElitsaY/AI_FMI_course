@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lab 10 — K-Means and Clustering | Class Notes</title>
+<meta name="description" content="Interactive notes on clustering: the K-means algorithm, its cost, local optima and random restarts, the elbow method and silhouette analysis, K-means++, soft K-means, hierarchical clustering and cluster evaluation metrics.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+
+<header class="site-nav">
+  <span class="brand"><span class="dot"></span> Class Notes</span>
+  <nav>
+    <a href="../index.html">Home</a>
+    <a href="lab01-uninformed-search.html">Lab 01</a>
+    <a href="lab02-informed-search.html">Lab 02</a>
+    <a href="lab03-csp.html">Lab 03</a>
+    <a href="lab04-genetic-algorithms.html">Lab 04</a>
+    <a href="lab05-games.html">Lab 05</a>
+    <a href="lab06-intro-ml.html">Lab 06</a>
+    <a href="lab065-linear-logistic.html">Lab 6.5</a>
+    <a href="lab07-knn.html">Lab 07</a>
+    <a href="lab08-naive-bayes.html">Lab 08</a>
+    <a href="lab09-decision-trees.html">Lab 09</a>
+  </nav>
+</header>
+
+<section class="hero art-hero art-km">
+  <svg id="km-hero-bg" class="hero-art" viewBox="0 0 1200 300" preserveAspectRatio="xMidYMid slice" aria-hidden="true"></svg>
+  <div class="wrap">
+    <p class="eyebrow">Lab 10</p>
+    <h1>K-Means and Clustering</h1>
+    <div class="badges">
+      <span class="badge ids">Unsupervised learning</span>
+      <span class="badge dfs">K-means</span>
+      <span class="badge ucs">Choosing K</span>
+      <span class="badge bfs">Hierarchical clustering</span>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+
+  <!-- ===== OVERVIEW ===== -->
+  <section class="block" id="overview">
+    <h2 class="section-title">Overview of the lab</h2>
+    <ol class="concept-list">
+      <li><a href="#unsupervised">Unsupervised learning</a></li>
+      <li><a href="#clustering">Clustering</a></li>
+      <li><a href="#kmeans">The K-means algorithm</a></li>
+      <li><a href="#example">Example: K-means step by step</a></li>
+      <li><a href="#fit">How well does it fit the data?</a></li>
+      <li><a href="#always">Does it always work?</a></li>
+      <li><a href="#howmany">How many clusters? Elbow method and silhouette analysis</a></li>
+      <li><a href="#variants">K-means variants: K-medians, K-medoids, K-modes, K-means++, soft K-means</a></li>
+      <li><a href="#hierarchical">Hierarchical methods: divisive and agglomerative</a></li>
+      <li><a href="#evaluation">Cluster evaluation metrics</a></li>
+      <li><a href="#python">K-means in Python</a></li>
+    </ol>
+  </section>
+
+  <!-- ===== UNSUPERVISED ===== -->
+  <section class="block" id="unsupervised">
+    <h2 class="section-title">Unsupervised learning</h2>
+    <p class="section-lede">We have data \(D = \{x_1, \dots, x_N\}\), each example a vector of features \(x_i = (a_1, a_2, \dots, a_M)^T\), but <b>no labels</b>. A model with parameters \(\{\theta_1, \dots, \theta_L\}\) is fit to the data and maps an input \(x\) to an output \(y\). Nobody tells us the correct \(y\): the model has to discover structure in \(D\) by itself.</p>
+    <ul class="concept-list">
+      <li><b>Clustering</b>: \(y\) is <b>categorical</b>, the group (cluster) the example belongs to. This lab.</li>
+      <li><b>Dimensionality reduction</b>: \(x \in \mathbb{R}^M \Rightarrow y \in \mathbb{R}^K\) with \(K &lt; M\), a shorter description of the same example (e.g. PCA).</li>
+    </ul>
+    <p class="caption-note">💡 Compare with <a href="lab06-intro-ml.html">supervised learning</a> (<a href="lab07-knn.html">KNN</a>, <a href="lab08-naive-bayes.html">Naive Bayes</a>, <a href="lab09-decision-trees.html">decision trees</a>): there, every training example comes with its correct label, and the model learns to reproduce it.</p>
+  </section>
+
+  <!-- ===== CLUSTERING ===== -->
+  <section class="block algo-section ids" id="clustering">
+    <span class="badge ids" style="margin-bottom:0.6rem; display:inline-block;">The problem</span>
+    <h2 class="section-title">Clustering</h2>
+    <p class="section-lede">Group the data so that points in the same cluster are <b>similar</b> (close) and points in different clusters are <b>dissimilar</b> (far apart).</p>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Try it: where are the clusters?</h4>
+    <p class="section-lede">Look at the unlabelled data first. What is the shape of each cluster? How many clusters are there? Then reveal the clusters that generated the data, and the answer K-means gives with K = 4.</p>
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="strategy-pick" id="wc-view">
+          <button class="strat-btn active" data-v="raw">Unlabelled data</button>
+          <button class="strat-btn" data-v="true">True clusters</button>
+          <button class="strat-btn" data-v="km">K-means, K = 4</button>
+        </div>
+      </div>
+      <div class="pg-grid">
+        <svg id="wc-plot" class="ml-plot" viewBox="0 0 420 380" aria-label="Unlabelled data"></svg>
+        <div id="wc-out" class="km-out"></div>
+      </div>
+    </div>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.8rem;">The clustering problem</h3>
+    <ul class="concept-list">
+      <li>Given a set of data samples \(x_1, \dots, x_N\),</li>
+      <li>assign the data to \(K\) clusters: <b>partitioning</b> the dataset, also called <b>segmentation</b>.</li>
+      <li>\(K\) may be given, or chosen automatically.</li>
+    </ul>
+    <p class="section-lede">Techniques fall into:</p>
+    <ul class="concept-list">
+      <li><b>Combinatorial techniques</b>: work directly on the data (K-means, hierarchical clustering).</li>
+      <li><b>Mixture modelling</b>: assume the data is IID (independent and identically distributed) and model the underlying probability density function (pdf), e.g. a mixture of Gaussians.</li>
+      <li><b>Mode seeking</b>, also known as bump hunting: look for the peaks of the density.</li>
+    </ul>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.8rem;">Clustering techniques</h3>
+    <p class="section-lede">We will focus on:</p>
+    <ul class="concept-list">
+      <li><b>K-means</b></li>
+      <li><b>Gaussian mixture modelling</b>, also called <b>soft K-means</b></li>
+      <li><b>Hierarchical clustering</b>: agglomerative / divisive</li>
+    </ul>
+    <p class="section-lede">These techniques are used regularly, often as <b>part of a much larger system</b> that might include supervised learning, e.g. to discretise a continuous input to make classification easier, or to represent a pdf for a <a href="lab08-naive-bayes.html">Bayes classifier</a>.</p>
+  </section>
+
+  <!-- ===== K-MEANS ===== -->
+  <section class="block algo-section bfs" id="kmeans">
+    <span class="badge bfs" style="margin-bottom:0.6rem; display:inline-block;">Algorithm</span>
+    <h2 class="section-title">K-means</h2>
+    <p class="section-lede">A wonderfully simple algorithm:</p>
+    <div class="derivation km-pseudo">
+<pre>K-means(data, K):
+    initialise K cluster centres m_1, …, m_K
+    repeat until done:
+        assign each data point to the nearest cluster centre      <span># assignment step</span>
+        replace each cluster centre with the mean of the          <span># update step</span>
+            data points assigned to it</pre>
+    </div>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.8rem;">K-means concepts</h3>
+    <ul class="concept-list">
+      <li>Assume the data is 2-D and was generated from \(K\) clusters.</li>
+      <li>We model the problem with \(K\) <b>prototype</b> vectors \(m_1, \dots, m_K\). We call them <b>means</b>, and you will see why.</li>
+      <li>We assign a data point \(x\) to a cluster based on <b>distance</b>: \(x\) goes to the <b>closest</b> prototype.</li>
+    </ul>
+    <div class="definition-box">
+      <div class="dbox-label">📐 Assignment step</div>
+      \[ y = \arg\min_{k = 1 \dots K} \; \text{Distance}(x, m_k) \]
+      <p>How do we define distance? Usually the Euclidean distance \(\lVert x - m_k \rVert\). This is similar to <a href="lab07-knn.html">nearest-neighbour</a> classification, with the \(K\) prototypes as the only "training points".</p>
+    </div>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.8rem;">K-means update</h3>
+    <p class="section-lede">We <b>update</b> each prototype using the points that were assigned to it, by taking their average / centroid / mean:</p>
+    <div class="definition-box">
+      <div class="dbox-label">📐 Update step</div>
+      \[ m'_k = \frac{1}{N_k} \sum_{x_i \text{ assigned to } k} x_i \qquad k = 1 \dots K \]
+      <p>\(m'_k\) is the new prototype, \(N_k\) the number of points assigned to cluster \(k\).</p>
+    </div>
+  </section>
+
+  <!-- ===== EXAMPLE ===== -->
+  <section class="block algo-section ucs" id="example">
+    <span class="badge ucs" style="margin-bottom:0.6rem; display:inline-block;">Example</span>
+    <h2 class="section-title">Example: K-means step by step</h2>
+    <p class="section-lede">Three true clusters, \(K = 3\). The centres are initialised by <b>randomly selecting data points</b>, and the first choice is unlucky: two centres start in the top-left cluster and one in the right cluster. Step through the algorithm: each step is either an <b>assignment</b> (points take the colour of the nearest centre; the shading shows the region of each centre) or an <b>update</b> (each centre jumps to the mean of its points; the thin line is its path).</p>
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="play-btns" style="margin-left:0;">
+          <button class="icon-btn" id="km-prev" title="Step back">⏮</button>
+          <button class="icon-btn" id="km-play" title="Play / pause">▶</button>
+          <button class="icon-btn" id="km-next" title="Step forward">⏭</button>
+          <button class="icon-btn" id="km-reset" title="Reset">↺</button>
+        </div>
+        <span class="km-step" id="km-step"></span>
+      </div>
+      <div class="pg-controls">
+        <div class="beam-control show" style="margin:0;"><label>\(K\)</label><input type="range" id="km-k" min="2" max="6" value="3" step="1"><span class="val" id="km-k-val">3</span></div>
+        <div class="strategy-pick">
+          <button class="strat-btn" id="km-slide">Start from the slide</button>
+          <button class="strat-btn" id="km-rand">New random start</button>
+          <button class="strat-btn" id="km-true">Show true clusters</button>
+        </div>
+      </div>
+      <div class="pg-grid">
+        <svg id="km-plot" class="ml-plot km-click" viewBox="0 0 420 380" aria-label="K-means iterations"></svg>
+        <div>
+          <div class="stat-strip km-stats" id="km-stats"></div>
+          <svg id="km-cost" class="ml-plot" viewBox="0 0 420 200" aria-label="Cost after each step"></svg>
+          <div class="frontier-box" style="margin-top:0.6rem;"><h5>Log</h5><div class="log-box" id="km-log"></div></div>
+        </div>
+      </div>
+      <p class="note-line">💡 Click on the plot to place the initial centres yourself (the first K clicks after <i>Reset</i>).</p>
+    </div>
+    <p class="caption-note">🎬 Video: <a href="https://www.youtube.com/watch?v=_aWzGGNrcic" target="_blank" rel="noopener">K-means clustering: how it works</a> (Victor Lavrenko).</p>
+  </section>
+
+  <!-- ===== QUESTION TIME ===== -->
+  <section class="block" id="questions">
+    <h2 class="section-title">Question time</h2>
+    <ol class="concept-list">
+      <li><a href="#fit">How well does it fit the data?</a></li>
+      <li><a href="#fit">When should we terminate? Will it always terminate?</a></li>
+      <li><a href="#always">Does it always work?</a></li>
+      <li><a href="#howmany">How do we tell how many clusters there are (i.e. what is \(K\))?</a></li>
+    </ol>
+  </section>
+
+  <!-- ===== FIT ===== -->
+  <section class="block algo-section dfs" id="fit">
+    <span class="badge dfs" style="margin-bottom:0.6rem; display:inline-block;">Objective</span>
+    <h2 class="section-title">How well does it fit the data?</h2>
+    <p class="section-lede">K-means is a <b>local search</b> technique (remember <a href="lab02-informed-search.html">hill climbing</a>) for optimising the <b>distortion</b> of the data: the within-cluster scatter, i.e. how far the points are from their own centre.</p>
+    <div class="definition-box">
+      <div class="dbox-label">📐 K-means cost (within-cluster sum of squares, WCSS)</div>
+      \[ J = \sum_{k=1}^{K} \; \sum_{i:\, y_i = k} \lVert x_i - m_k \rVert^2 \]
+      <p>The sum of squared distances from each point to the centre of its cluster. scikit-learn calls it <code>inertia_</code>.</p>
+    </div>
+    <p class="caption-note">💡 The slide writes the cost as \(C = \sum_k N_k \sum_{y_i = k} \lVert x_i - m_k \rVert^2\), with an extra factor \(N_k\). That version comes from <i>The Elements of Statistical Learning</i>, eq. (14.31). The book's authors have since listed it in their <a href="https://hastie.su.domains/ElemStatLearn/errata2.html" target="_blank" rel="noopener">errata</a>: without the \(N_k\) "gives the correct objective for the K-means algorithm". The guarantees below hold for \(J\).</p>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.8rem;">How does the cost change with each iteration?</h3>
+    <p class="section-lede">It <b>never increases</b>. Look at the cost curve in the <a href="#example">example</a>: it drops fast, then flattens. Each of the two steps can only lower \(J\):</p>
+    <ul class="concept-list">
+      <li><b>Assignment step</b>: the centres are fixed. Moving a point to its <b>nearest</b> centre can only shorten its distance, so \(J\) cannot go up.</li>
+      <li><b>Update step</b>: the assignments are fixed. For one cluster, the point \(c\) that minimises \(\sum_i \lVert x_i - c \rVert^2\) is exactly the <b>mean</b>, because
+        <div class="math-block">\[ \sum_{i} \lVert x_i - c \rVert^2 = \sum_{i} \lVert x_i - \bar{x} \rVert^2 + N \lVert c - \bar{x} \rVert^2 \]</div>
+        and the second term is 0 only for \(c = \bar{x}\). That is why the prototypes are called <b>means</b>.</li>
+    </ul>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Try it: the mean minimises the squared distances</h4>
+    <p class="section-lede">Click (or drag) anywhere to move the candidate centre \(c\) of this cluster. The dashed lines are the distances; the cost is the sum of their squares. The cross marks the mean.</p>
+    <div class="playground">
+      <div class="pg-grid">
+        <svg id="mn-plot" class="ml-plot km-click" viewBox="0 0 420 380" aria-label="Candidate centre and squared distances"></svg>
+        <div id="mn-out" class="km-out"></div>
+      </div>
+    </div>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.8rem;">When should we terminate? Will it always terminate?</h3>
+    <ul class="concept-list">
+      <li><b>Stop</b> when no point changes its cluster: then the means do not move either, and nothing will ever change again.</li>
+      <li><b>K-means will converge.</b> There are only finitely many ways to split \(N\) points into \(K\) groups, and \(J\) never increases. So the algorithm cannot cycle forever (when it keeps the old centre on ties).</li>
+      <li>In practice you may still want to <b>limit the number of iterations</b>, or stop when \(J\) improves by less than a small tolerance.</li>
+    </ul>
+  </section>
+
+  <!-- ===== ALWAYS ===== -->
+  <section class="block algo-section ids" id="always">
+    <span class="badge ids" style="margin-bottom:0.6rem; display:inline-block;">Pitfall</span>
+    <h2 class="section-title">Does it always work?</h2>
+    <p class="section-lede">Unfortunately, no. K-means finds a <b>local</b> minimum of \(J\), and which one depends on where the centres start. It also assumes roughly <b>round, similarly sized</b> clusters.</p>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Try it: local optima and random restarts</h4>
+    <p class="section-lede">Run K-means from a random start (centres = random data points). Every run is added to the list with its final cost \(J\). Some runs get stuck: one centre sits between two true clusters while two centres share one cluster. <i>10 restarts</i> runs ten times and keeps the best. On the second dataset (the shapes from the slide) even the best run does not recover the true clusters.</p>
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="strategy-pick" id="lo-data">
+          <button class="strat-btn active" data-d="blobs">4 round clusters</button>
+          <button class="strat-btn" data-d="shapes">Shapes from the slide</button>
+        </div>
+      </div>
+      <div class="pg-controls">
+        <div class="strategy-pick">
+          <button class="strat-btn" id="lo-run">Run once</button>
+          <button class="strat-btn" id="lo-ten">10 restarts, keep best</button>
+          <button class="strat-btn" id="lo-truth">Show true clusters</button>
+          <button class="strat-btn" id="lo-clear">Clear</button>
+        </div>
+      </div>
+      <div class="pg-grid">
+        <svg id="lo-plot" class="ml-plot" viewBox="0 0 420 380" aria-label="K-means result of one run"></svg>
+        <div>
+          <div id="lo-out" class="km-out"></div>
+          <div id="lo-runs" class="lo-runs"></div>
+        </div>
+      </div>
+    </div>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.8rem;">What happened?</h3>
+    <ul class="concept-list">
+      <li>K-means can get <b>stuck in local optima</b>: effectively, the result depends on the starting condition.</li>
+      <li>How can we "fix" this? Use <b>random restarts</b> (remember <a href="lab02-informed-search.html">local search</a>?) and <b>keep track of the best solution</b> so far, the one with the lowest \(J\). A smarter start is <a href="#kmpp">K-means++</a>.</li>
+      <li>K-means will converge, but you may want to limit the iterations.</li>
+      <li>No restart helps when the clusters are <b>not round</b>: K-means cuts space into convex regions around the centres, so thin, long or very unequal clusters are split or merged wrongly.</li>
+    </ul>
+  </section>
+
+  <!-- ===== HOW MANY ===== -->
+  <section class="block algo-section bfs" id="howmany">
+    <span class="badge bfs" style="margin-bottom:0.6rem; display:inline-block;">Choosing K</span>
+    <h2 class="section-title">How many clusters?</h2>
+    <p class="section-lede">\(J\) always goes down as \(K\) grows. With \(K = N\) every point is its own centre and \(J = 0\). So we cannot just pick the \(K\) with the lowest cost.</p>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.6rem;">The elbow method</h3>
+    <p class="section-lede">Plot the cost against \(K\). The curve falls steeply while each new centre splits a real cluster, then flattens once the extra centres only split clusters that are already good. Choose the \(K\) at the bend, the <b>"elbow"</b>. It points to the true value of \(K\) when the clusters are clear.</p>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.6rem;">Silhouette analysis</h3>
+    <p class="section-lede">For every point \(i\), compare how close it is to its own cluster with how close it is to the nearest other cluster:</p>
+    <div class="definition-box">
+      <div class="dbox-label">📐 Silhouette coefficient of point \(i\)</div>
+      \[ s(i) = \frac{b(i) - a(i)}{\max\{a(i),\, b(i)\}} \in [-1, 1] \]
+      <p>\(a(i)\) = mean distance from \(i\) to the other points of its own cluster; \(b(i)\) = mean distance from \(i\) to the points of the <b>nearest other</b> cluster.</p>
+    </div>
+    <ul class="concept-list" style="margin-top:1rem;">
+      <li>\(s \approx 1\): well inside its cluster, far from the others. \(s \approx 0\): on the border between two clusters. \(s &lt; 0\): probably in the wrong cluster.</li>
+      <li>The <b>mean silhouette</b> over all points scores the whole clustering. Choose the \(K\) with the highest mean silhouette, and check the silhouette plot: every cluster should reach above the mean, with no negative values.</li>
+    </ul>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Try it: elbow and silhouette together</h4>
+    <p class="section-lede">Three true clusters. For each \(K\), K-means is run with 10 random restarts. Pick a \(K\) to see the clustering and its silhouette plot: one horizontal bar per point, sorted, grouped by cluster; the dashed line is the mean.</p>
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="strategy-pick" id="ek-k"></div>
+      </div>
+      <div class="pg-grid">
+        <svg id="ek-plot" class="ml-plot" viewBox="0 0 420 380" aria-label="Clustering for the chosen K"></svg>
+        <div>
+          <svg id="ek-curves" class="ml-plot" viewBox="0 0 420 250" aria-label="Cost and mean silhouette vs K"></svg>
+          <p class="bt-legend"><span class="k ln cost"></span> cost J (left axis) &nbsp; <span class="k ln sil"></span> mean silhouette (right axis)</p>
+        </div>
+      </div>
+      <div class="pg-grid" style="margin-top:0.6rem;">
+        <svg id="ek-sil" class="ml-plot" viewBox="0 0 420 300" aria-label="Silhouette plot"></svg>
+        <div id="ek-out" class="km-out"></div>
+      </div>
+    </div>
+    <p class="caption-note">🎬 More: <a href="https://scikit-learn.org/1.5/auto_examples/cluster/plot_kmeans_silhouette_analysis.html" target="_blank" rel="noopener">silhouette analysis in scikit-learn</a> · <a href="https://www.youtube.com/watch?v=zQfEc7vA1gU" target="_blank" rel="noopener">k-means Elbow Method and Silhouette Method</a> · <a href="https://www.youtube.com/watch?v=Qh7VxLsaU9M&amp;t=76s" target="_blank" rel="noopener">Find the number of clusters in KMeans. Silhouette score. Python code example</a></p>
+  </section>
+
+  <!-- ===== SUMMARY OF K-MEANS ===== -->
+  <section class="block" id="ksummary">
+    <h2 class="section-title">K-means summary</h2>
+    <ul class="concept-list">
+      <li>A <b>practical algorithm</b>, good to have in the toolbox.</li>
+      <li><b>Implementation</b>: run with <b>random restarts</b>, keep track of the <b>best solution</b> found, provide (or estimate) \(K\). It can be slow on big datasets: every iteration computes \(N \cdot K\) distances.</li>
+      <li>You can use <b>different distance metrics</b>, as part of the algorithm design (see the variants below).</li>
+      <li><b>Speeding up K-means</b>: faster nearest-neighbour algorithms and data structures (e.g. k-d trees).</li>
+    </ul>
+  </section>
+
+  <!-- ===== VARIANTS ===== -->
+  <section class="block algo-section ucs" id="variants">
+    <span class="badge ucs" style="margin-bottom:0.6rem; display:inline-block;">Variants</span>
+    <h2 class="section-title">K-means variants</h2>
+    <p class="section-lede">The "centre" of a cluster is whatever point minimises the total distance to the cluster's points, so the right centre depends on the distance you use.</p>
+    <div class="table-wrap">
+      <table class="summary">
+        <thead><tr><th>Variant</th><th>Use it when your distance is…</th><th>Centre of a cluster</th><th>Minimises</th></tr></thead>
+        <tbody>
+          <tr data-s="ids"><td><b>K-means</b></td><td><b>squared Euclidean</b></td><td>the arithmetic <b>mean</b></td><td>within-cluster variance: squared deviations from the mean (not distances)</td></tr>
+          <tr data-s="dfs"><td><b>K-medians</b></td><td><b>taxicab</b> (Manhattan, L1)</td><td>the coordinate-wise <b>median</b></td><td>absolute deviations = Manhattan distances</td></tr>
+          <tr data-s="ucs"><td><b>K-medoids</b></td><td><b>any other</b> distance</td><td>the <b>medoid</b>: the actual data point with the smallest total distance to the others</td><td>the sum of distances, for any distance</td></tr>
+          <tr data-s="bfs"><td><b>K-modes</b></td><td>dissimilarity for <b>categorical</b> data: the number of mismatching features</td><td>the <b>mode</b> (most frequent value) of each feature</td><td>total mismatches</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Try it: mean, median and medoid</h4>
+    <p class="section-lede">One cluster with an outlier. Drag the outlier (or click anywhere to move it) and watch the three centres. The mean is pulled strongly by the outlier; the median and the medoid barely move. That is why K-medians and K-medoids are more <b>robust to outliers</b>.</p>
+    <div class="playground">
+      <div class="pg-grid">
+        <svg id="md-plot" class="ml-plot km-click" viewBox="0 0 420 380" aria-label="Mean, median and medoid of a cluster"></svg>
+        <div id="md-out" class="km-out"></div>
+      </div>
+    </div>
+
+    <h3 class="section-title" id="kmpp" style="font-size:1.15rem; margin-top:2rem;">K-means++</h3>
+    <p class="section-lede">Plain K-means picks the initial centroids at <b>random</b> from the data points, and this randomisation affects the final clusters. There are two ways to avoid the problem: <b>repeat K-means</b> (random restarts, keeping the clustering with small intra-cluster and large inter-cluster distance), or use <b>K-means++</b>, a smart centroid initialisation. The rest of the algorithm is the same as K-means.</p>
+    <div class="definition-box">
+      <div class="dbox-label">📐 K-means++ initialisation</div>
+      <ol class="concept-list">
+        <li>Pick the first centroid \(C_1\) uniformly at random from the data points.</li>
+        <li>For every point, compute its squared distance to the <b>nearest</b> centroid chosen so far:
+          \[ d_i = \min_{j = 1 \dots m} \lVert x_i - C_j \rVert^2 \]
+          (\(m\) = number of centroids already picked).</li>
+        <li>Pick the next centroid at random, choosing \(x_i\) with probability \(\dfrac{d_i}{\sum_j d_j}\): far-away points are likely, points next to an existing centroid are almost never chosen.</li>
+        <li>Repeat steps 2–3 until there are \(K\) centroids.</li>
+      </ol>
+    </div>
+    <p class="caption-note">❗ The slide writes \(\max_j\) ("distance from the farthest centroid"). The original algorithm (Arthur &amp; Vassilvitskii, <i>k-means++: The Advantages of Careful Seeding</i>, SODA 2007) uses the distance to the <b>nearest</b> chosen centroid, as above, and <b>samples</b> the next centroid with probability proportional to \(d_i\) rather than taking the maximum. Always taking the farthest point is a different method (farthest-point initialisation), which is sensitive to outliers.</p>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Try it: K-means++ seeding</h4>
+    <p class="section-lede">Five clusters, \(K = 5\). Pick the centroids one by one. The area of each point is proportional to its probability of being picked next, \(d_i / \sum_j d_j\).</p>
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="strategy-pick">
+          <button class="strat-btn" id="pp-next">Pick next centroid</button>
+          <button class="strat-btn" id="pp-run">Run K-means from here</button>
+          <button class="strat-btn" id="pp-reset">Start over</button>
+        </div>
+      </div>
+      <div class="pg-grid">
+        <svg id="pp-plot" class="ml-plot" viewBox="0 0 420 380" aria-label="K-means++ seeding"></svg>
+        <div>
+          <div id="pp-out" class="km-out"></div>
+          <div id="pp-cmp" class="km-out" style="margin-top:0.8rem;"></div>
+        </div>
+      </div>
+    </div>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:2rem;">Soft K-means</h3>
+    <ul class="concept-list">
+      <li><b>K-means</b> makes a <b>hard</b> assignment: on convergence every point belongs to exactly one cluster. It uses the L2 norm (squared Euclidean distance) between a point and its centroid.</li>
+      <li><b>Soft K-means / EM</b> makes a <b>soft</b> assignment: every point belongs to every cluster with some probability (a <b>responsibility</b>). The full version, a Gaussian mixture model trained with the EM algorithm, is based on the expected probability of a point belonging to each cluster rather than on the L2 norm. It also learns each cluster's shape, so it is less limited to round clusters than K-means.</li>
+    </ul>
+    <p class="section-lede">The simplest soft K-means keeps the K-means loop and replaces the hard assignment with responsibilities controlled by a <b>stiffness</b> \(\beta\):</p>
+    <div class="definition-box">
+      <div class="dbox-label">📐 Soft K-means</div>
+      \[ r_{ik} = \frac{e^{-\beta \lVert x_i - m_k \rVert^2}}{\sum_{j} e^{-\beta \lVert x_i - m_j \rVert^2}} \qquad m_k = \frac{\sum_i r_{ik}\, x_i}{\sum_i r_{ik}} \]
+      <p>Each point pulls on every centre with weight \(r_{ik}\). As \(\beta \to \infty\) the nearest centre gets \(r = 1\) and we are back to hard K-means. As \(\beta \to 0\), every point belongs equally to every cluster.</p>
+    </div>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Try it: stiffness</h4>
+    <p class="section-lede">Three overlapping clusters. The colour of each point mixes the cluster colours by its responsibilities. Lower the stiffness: the borders blur, and at very low \(\beta\) all centres collapse into the overall mean. Click a point to see its responsibilities.</p>
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="beam-control show" style="margin:0;"><label>stiffness \(\beta\)</label><input type="range" id="sk-b" min="-3" max="1.5" value="0" step="0.05"><span class="val" id="sk-b-val">1.00</span></div>
+      </div>
+      <div class="pg-grid">
+        <svg id="sk-plot" class="ml-plot km-click" viewBox="0 0 420 380" aria-label="Soft K-means responsibilities"></svg>
+        <div id="sk-out" class="km-out"></div>
+      </div>
+    </div>
+    <p class="caption-note">🎬 Video: <a href="https://www.youtube.com/watch?v=fpM0iZTjLhM" target="_blank" rel="noopener">Soft k-Means Clustering</a> (Bioinformatics Algorithms: An Active Learning Approach).</p>
+  </section>
+
+  <!-- ===== HIERARCHICAL ===== -->
+  <section class="block algo-section dfs" id="hierarchical">
+    <span class="badge dfs" style="margin-bottom:0.6rem; display:inline-block;">Hierarchical</span>
+    <h2 class="section-title">Hierarchical methods</h2>
+    <ul class="concept-list">
+      <li>Recall K-means: input = \(K\) and a measure of dissimilarity (distances); output = the cluster centres.</li>
+      <li><b>Hierarchical techniques avoid needing to specify \(K\)</b>: input = a measure of dissimilarity (e.g. distances); output = a <b>hierarchical model</b> of data similarity.</li>
+      <li>The output is a tree, the <b>dendrogram</b>: the root holds all the data, each level splits it into finer clusters. Cutting the tree at some level gives a flat clustering.</li>
+    </ul>
+    <div class="fig-pair" style="margin-top:1rem;">
+      <svg id="hm-agg" class="ml-plot" viewBox="0 0 300 220" aria-label="Agglomerative clustering: bottom up"></svg>
+      <svg id="hm-div" class="ml-plot" viewBox="0 0 300 220" aria-label="Divisive clustering: top down"></svg>
+    </div>
+    <ul class="concept-list" style="margin-top:0.8rem;">
+      <li><b>Agglomerative</b> (bottom up): start with every point in its own cluster, merge the closest groups.</li>
+      <li><b>Divisive</b> (top down): start with all the data in one cluster, split it recursively.</li>
+    </ul>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.8rem;">Divisive methods: hierarchical K-means</h3>
+    <ul class="concept-list">
+      <li>Hierarchical K-means is a <b>divisive</b> method: start with all the data in 1 cluster, split it using "flat" K-means, then recursively split each cluster.</li>
+      <li>\(K\) is usually small (\(K = 2\): <b>bisecting K-means</b>).</li>
+      <li>You need to decide <b>when to stop</b> (a number of clusters, a maximum cost per cluster…).</li>
+    </ul>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Try it: split, split, split</h4>
+    <p class="section-lede">The data from the slide. Each click splits one cluster in two with K-means (\(K = 2\)). Here we split the cluster with the largest cost \(J\), which is a common rule. The tree on the right grows as the dendrogram of the splits; the lines join each parent centre to its two children.</p>
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="strategy-pick">
+          <button class="strat-btn" id="hk-split">Split a cluster</button>
+          <button class="strat-btn" id="hk-reset">Start over</button>
+        </div>
+      </div>
+      <div class="pg-grid">
+        <svg id="hk-plot" class="ml-plot" viewBox="0 0 420 340" aria-label="Hierarchical K-means"></svg>
+        <div>
+          <svg id="hk-tree" class="ml-plot" viewBox="0 0 360 240" aria-label="Tree of splits"></svg>
+          <div id="hk-out" class="km-out"></div>
+        </div>
+      </div>
+    </div>
+
+    <h3 class="section-title" id="agglomerative" style="font-size:1.15rem; margin-top:2rem;">Agglomerative techniques</h3>
+    <ul class="concept-list">
+      <li>Work in the reverse direction (<b>bottom up</b>).</li>
+      <li>Given \(N\) data points and a dissimilarity measure: start with all the data in separate clusters, then repeat \(N - 1\) times: find the <b>closest</b> two groups and merge them.</li>
+      <li>How do we measure the dissimilarity <b>between groups</b>? With a dissimilarity \(d_{ij}\) between two data points, the distance between groups \(G_1\) and \(G_2\) is defined by a <b>linkage</b>:</li>
+    </ul>
+    <div class="definition-box">
+      <div class="dbox-label">📐 Linkages</div>
+      \[ \text{Single linkage (SL):} \quad d_{SL}(G_1, G_2) = \min_{i \in G_1,\, j \in G_2} d_{ij} \]
+      \[ \text{Complete linkage (CL):} \quad d_{CL}(G_1, G_2) = \max_{i \in G_1,\, j \in G_2} d_{ij} \]
+      \[ \text{Group average (GA):} \quad d_{GA}(G_1, G_2) = \frac{1}{N_{G_1} N_{G_2}} \sum_{i \in G_1} \sum_{j \in G_2} d_{ij} \]
+      \[ \text{Centroid linkage:} \quad d_{C}(G_1, G_2) = \lVert \bar{x}_{G_1} - \bar{x}_{G_2} \rVert \]
+    </div>
+    <ul class="concept-list" style="margin-top:1rem;">
+      <li>If the data is nicely clustered, the particular choice does not matter. If it is <b>not</b>, you will get different clusters.</li>
+      <li><b>Single link</b> → less compact clusters: <b>chaining</b>. Two groups merge as soon as <i>one</i> pair of points is close, so a chain of points glues far-apart groups together.</li>
+      <li><b>Complete link</b> → more compact clusters. Two groups merge only when <i>all</i> their points are close.</li>
+      <li><b>Group average</b> lies in between.</li>
+    </ul>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Try it: single link vs complete link</h4>
+    <p class="section-lede">The eight points \(d_1 \dots d_8\) from the slide (Manning et al., <i>Introduction to Information Retrieval</i>, Fig. 17.2). Step through the merges and compare the two clusters that remain before the last merge: single link joins the two <b>rows</b> (\(d_2\)–\(d_3\) is only 1.5 apart), complete link joins the two <b>squares</b>. The second dataset shows chaining. The dendrogram grows below: the height of each join is the linkage distance of that merge.</p>
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="strategy-pick" id="ag-link">
+          <button class="strat-btn active" data-l="single">Single</button>
+          <button class="strat-btn" data-l="complete">Complete</button>
+          <button class="strat-btn" data-l="average">Group average</button>
+          <button class="strat-btn" data-l="centroid">Centroid</button>
+        </div>
+        <div class="strategy-pick" id="ag-data">
+          <button class="strat-btn active" data-d="d8">d1–d8</button>
+          <button class="strat-btn" data-d="chain">Chaining</button>
+        </div>
+      </div>
+      <div class="pg-controls">
+        <div class="play-btns" style="margin-left:0;">
+          <button class="icon-btn" id="ag-prev" title="Step back">⏮</button>
+          <button class="icon-btn" id="ag-next" title="Step forward">⏭</button>
+          <button class="icon-btn" id="ag-end" title="Go to 2 clusters">⏩</button>
+          <button class="icon-btn" id="ag-reset" title="Reset">↺</button>
+        </div>
+        <span class="km-step" id="ag-step"></span>
+      </div>
+      <div class="pg-grid">
+        <svg id="ag-plot" class="ml-plot" viewBox="0 0 420 300" aria-label="Agglomerative clustering"></svg>
+        <div class="frontier-box"><h5>Merges</h5><div class="log-box" id="ag-log"></div></div>
+      </div>
+      <div class="fig-scroll" style="margin-top:0.8rem;"><svg id="ag-dendro" class="ml-plot" viewBox="0 0 640 230" aria-label="Dendrogram"></svg></div>
+    </div>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.8rem;">Dendrograms</h3>
+    <ul class="concept-list">
+      <li>The leaves are the data points; each join is a merge, drawn at the height of its linkage distance. <b>Cutting</b> the dendrogram with a horizontal line at height \(h\) gives the clusters that exist at that height: choose \(K\) <i>after</i> clustering, where there is a large gap between consecutive heights.</li>
+      <li><b>Single linkage</b> tends to produce a "staircase" dendrogram: points are added one at a time to one big growing cluster (chaining).</li>
+      <li><b>Complete linkage</b> and <b>Ward's method</b> (merge the two groups whose union increases the total within-cluster sum of squares \(J\) the least, the agglomerative cousin of K-means) give more balanced trees with clearly separated groups.</li>
+      <li><b>Centroid linkage</b> can produce <b>inversions</b>: a merge lower than the previous one. Try it on the chaining data.</li>
+    </ul>
+  </section>
+
+  <!-- ===== EVALUATION ===== -->
+  <section class="block algo-section bfs" id="evaluation">
+    <span class="badge bfs" style="margin-bottom:0.6rem; display:inline-block;">Evaluation</span>
+    <h2 class="section-title">Cluster evaluation metrics: assessing compactness and separation</h2>
+    <p class="section-lede">A good clustering is <b>compact</b> (small distances inside a cluster, intra-cluster) and <b>well separated</b> (large distances between clusters, inter-cluster). <b>Internal</b> metrics measure this from the data alone. <b>External</b> metrics compare the clustering with ground-truth labels, when we happen to have them (e.g. to benchmark an algorithm).</p>
+    <div class="table-wrap">
+      <table class="summary">
+        <thead><tr><th>Metric</th><th>Type</th><th>Needs true labels?</th><th>Explanation</th></tr></thead>
+        <tbody>
+          <tr data-s="ids"><td><b>Silhouette score</b></td><td>intra + inter</td><td>no</td><td>compactness within a cluster vs separation from the nearest other cluster; high = well separated, compact clusters (range −1 … 1)</td></tr>
+          <tr data-s="ids"><td><b>Davies–Bouldin index</b></td><td>intra + inter</td><td>no</td><td>average similarity of each cluster to its most similar cluster (spread / distance between centres); <b>lower</b> is better</td></tr>
+          <tr data-s="ids"><td><b>Dunn index</b></td><td>intra + inter</td><td>no</td><td>smallest distance between points in different clusters / largest within-cluster distance; higher is better</td></tr>
+          <tr data-s="ids"><td><b>Within-cluster sum of squares (WCSS)</b></td><td>intra</td><td>no</td><td>the K-means cost \(J\): squared distances of points to their centroids; lower is better, but always drops as \(K\) grows</td></tr>
+          <tr data-s="ids"><td><b>Gap statistic</b></td><td>intra + inter</td><td>no</td><td>compares the WCSS with that of a random (uniform, structureless) reference dataset</td></tr>
+          <tr data-s="dfs"><td><b>Adjusted Rand Index (ARI)</b></td><td>intra + inter</td><td>yes</td><td>similarity of two clusterings (true vs predicted), counting pairs of points put together or apart, corrected for chance; 1 = identical, ≈ 0 = random</td></tr>
+          <tr data-s="dfs"><td><b>Normalized Mutual Information (NMI)</b></td><td>intra + inter</td><td>yes</td><td>shared information between the ground truth and the clustering (the <a href="lab09-decision-trees.html#gain">information gain</a> idea), scaled to 0 … 1</td></tr>
+          <tr data-s="dfs"><td><b>Fowlkes–Mallows Index (FMI)</b></td><td>intra + inter</td><td>yes</td><td>geometric mean of pairwise precision and recall</td></tr>
+          <tr data-s="dfs"><td><b>Cluster purity</b></td><td>intra</td><td>yes</td><td>fraction of points that belong to the majority true class of their cluster; how homogeneous the clusters are</td></tr>
+          <tr data-s="dfs"><td><b>V-measure</b></td><td>intra + inter</td><td>yes</td><td>harmonic mean of <b>homogeneity</b> (each cluster contains only one class) and <b>completeness</b> (each class is in one cluster)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="caption-note">💡 Purity is easy to fool: with \(K = N\) every cluster is pure (purity 1). ARI and NMI do not reward this.</p>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Try it: score a clustering</h4>
+    <p class="section-lede">The three-cluster data from the elbow widget, now with its true labels. Choose \(K\) and a start (the best of 10 restarts, or a single random run, which may be stuck), and compare the metrics.</p>
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="strategy-pick" id="ev-k"></div>
+        <div class="strategy-pick">
+          <button class="strat-btn active" id="ev-best">Best of 10</button>
+          <button class="strat-btn" id="ev-one">One random run</button>
+        </div>
+      </div>
+      <div class="pg-grid">
+        <svg id="ev-plot" class="ml-plot" viewBox="0 0 420 380" aria-label="Clustering being scored"></svg>
+        <div id="ev-out" class="km-out"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== PYTHON ===== -->
+  <section class="block" id="python">
+    <h2 class="section-title">K-means in Python</h2>
+    <p class="section-lede">K-means from scratch with NumPy, then the library versions.</p>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.4rem;">1. K-means from scratch</h3>
+    <details class="code-card">
+      <summary>
+        <span class="code-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="code-file">kmeans.py</span>
+        <span class="code-lang">Python</span>
+        <button type="button" class="code-copy">Copy</button>
+        <span class="code-chevron" aria-hidden="true">▾</span>
+      </summary>
+      <pre class="code-body"><code class="lang-py">import numpy as np
+
+def assign(X, centres):
+    # squared distance from every point to every centre: shape (N, K)
+    d2 = ((X[:, None, :] - centres[None, :, :]) ** 2).sum(axis=2)
+    return d2.argmin(axis=1)                      # index of the nearest centre
+
+def update(X, labels, centres):
+    new = centres.copy()
+    for k in range(len(centres)):
+        members = X[labels == k]
+        if len(members):                          # an empty cluster keeps its old centre
+            new[k] = members.mean(axis=0)
+    return new
+
+def cost(X, labels, centres):
+    return ((X - centres[labels]) ** 2).sum()     # J = within-cluster sum of squares
+
+def kmeans(X, K, max_iter=100, rng=None):
+    rng = np.random.default_rng(rng)
+    centres = X[rng.choice(len(X), K, replace=False)]   # K random data points
+    labels = assign(X, centres)
+    for _ in range(max_iter):
+        centres = update(X, labels, centres)
+        new_labels = assign(X, centres)
+        if np.array_equal(new_labels, labels):     # nothing changed: converged
+            break
+        labels = new_labels
+    return labels, centres, cost(X, labels, centres)
+
+def kmeans_restarts(X, K, restarts=10, seed=0):
+    runs = [kmeans(X, K, rng=seed + r) for r in range(restarts)]
+    return min(runs, key=lambda run: run[2])       # keep the lowest cost
+
+rng = np.random.default_rng(42)
+X = np.vstack([rng.normal(c, 0.8, size=(60, 2)) for c in [(2.5, 7.5), (2.5, 2.5), (8, 5)]])
+labels, centres, J = kmeans_restarts(X, K=3)
+print(np.round(centres[np.argsort(centres[:, 0])], 1))  # close to the true centres
+# [[2.4 2.5]
+#  [2.5 7.4]
+#  [8.2 4.9]]
+print(round(J, 1))                                 # 202.7</code></pre>
+    </details>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.6rem;">2. K-means++ initialisation</h3>
+    <details class="code-card">
+      <summary>
+        <span class="code-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="code-file">kmeans_pp.py</span>
+        <span class="code-lang">Python</span>
+        <button type="button" class="code-copy">Copy</button>
+        <span class="code-chevron" aria-hidden="true">▾</span>
+      </summary>
+      <pre class="code-body"><code class="lang-py">def kmeans_pp_init(X, K, rng=None):
+    rng = np.random.default_rng(rng)
+    centres = [X[rng.integers(len(X))]]            # 1. first centre: uniformly at random
+    for _ in range(K - 1):
+        C = np.array(centres)
+        # 2. squared distance of every point to its NEAREST chosen centre
+        d = ((X[:, None, :] - C[None, :, :]) ** 2).sum(axis=2).min(axis=1)
+        # 3. sample the next centre with probability proportional to d
+        centres.append(X[rng.choice(len(X), p=d / d.sum())])
+    return np.array(centres)</code></pre>
+    </details>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.6rem;">3. scikit-learn: K-means, the elbow and the silhouette</h3>
+    <details class="code-card">
+      <summary>
+        <span class="code-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="code-file">sklearn_kmeans.py</span>
+        <span class="code-lang">Python</span>
+        <button type="button" class="code-copy">Copy</button>
+        <span class="code-chevron" aria-hidden="true">▾</span>
+      </summary>
+      <pre class="code-body"><code class="lang-py">from sklearn.cluster import KMeans
+from sklearn.metrics import silhouette_score, adjusted_rand_score
+
+y_true = np.repeat([0, 1, 2], 60)                  # the generating cluster of each point in X
+
+for K in range(2, 7):
+    km = KMeans(n_clusters=K, init="k-means++", n_init=10, random_state=0).fit(X)
+    print(K, round(km.inertia_, 1),                # inertia_ = J, for the elbow plot
+          round(silhouette_score(X, km.labels_), 3))
+# 2 926.9 0.583
+# 3 202.7 0.744    &lt;- the elbow and the largest silhouette
+# 4 170.8 0.617
+# 5 139.7 0.491
+# 6 120.5 0.358
+
+km = KMeans(n_clusters=3, n_init=10, random_state=0).fit(X)
+print(adjusted_rand_score(y_true, km.labels_))     # 1.0: the clustering matches the truth</code></pre>
+    </details>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.6rem;">4. Hierarchical clustering and the dendrogram</h3>
+    <details class="code-card">
+      <summary>
+        <span class="code-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="code-file">hierarchical.py</span>
+        <span class="code-lang">Python</span>
+        <button type="button" class="code-copy">Copy</button>
+        <span class="code-chevron" aria-hidden="true">▾</span>
+      </summary>
+      <pre class="code-body"><code class="lang-py">import matplotlib.pyplot as plt
+from scipy.cluster.hierarchy import linkage, dendrogram, fcluster
+from sklearn.cluster import AgglomerativeClustering
+
+# the eight points d1..d8 from the single-link vs complete-link example
+D = np.array([[1, 3], [2, 3], [3.5, 3], [4.5, 3],
+              [1, 1], [2, 1], [3.5, 1], [4.5, 1]])
+
+for method in ["single", "complete"]:
+    Z = linkage(D, method=method)                  # the N-1 merges and their heights
+    print(method, fcluster(Z, t=2, criterion="maxclust"))   # cut into 2 clusters
+# single   [1 1 1 1 2 2 2 2]   -> the two rows
+# complete [1 1 2 2 1 1 2 2]   -> the two squares
+
+dendrogram(linkage(D, "complete"), labels=[f"d{i}" for i in range(1, 9)])
+plt.show()
+
+AgglomerativeClustering(n_clusters=2, linkage="ward").fit_predict(D)</code></pre>
+    </details>
+  </section>
+
+  <!-- ===== SUMMARY ===== -->
+  <section class="block" id="summary">
+    <h2 class="section-title">Summary: key takeaways</h2>
+    <ol class="concept-list">
+      <li><b>Clustering</b> is unsupervised: group unlabelled data so that points in a cluster are close and clusters are far apart.</li>
+      <li><b>K-means</b> alternates two steps: <b>assign</b> each point to the nearest centre, <b>update</b> each centre to the mean of its points.</li>
+      <li>It is a local search on the cost \(J = \sum_k \sum_{y_i = k} \lVert x_i - m_k \rVert^2\): \(J\) never increases, and the algorithm always <b>converges</b>, but to a <b>local</b> optimum that depends on the start. Use <b>random restarts</b> (keep the best) or <b>K-means++</b>.</li>
+      <li>K-means assumes round, similar clusters. Choose \(K\) with the <b>elbow method</b> or <b>silhouette analysis</b>.</li>
+      <li><b>Variants</b>: K-medians (Manhattan), K-medoids (any distance), K-modes (categorical), soft K-means / EM (probabilistic assignments).</li>
+      <li><b>Hierarchical clustering</b> builds a dendrogram without fixing \(K\): divisive (e.g. bisecting K-means) or agglomerative with single (chaining), complete (compact), average or centroid linkage.</li>
+      <li><b>Evaluate</b> with internal metrics (silhouette, Davies–Bouldin, WCSS) or, when labels exist, external ones (ARI, NMI, purity).</li>
+    </ol>
+  </section>
+
+</div>
+
+<footer>Class notes by Elitsa Yotkova · Lab 10 · built with plain HTML, CSS &amp; JS</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="code-cards.js"></script>
+<script src="lab10.js"></script>
+</body>
+</html>

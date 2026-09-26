@@ -1265,3 +1265,75 @@ b.c0, .dt-out .c0 { color: var(--indigo); } b.c1, .dt-out .c1 { color: #b8394f; 
 .dt-stats .stat .n { font-size: 1.2rem; }
 .pr-table td, .pr-table th { padding: 0.45rem 0.6rem; font-size: 0.84rem; }
 .pr-table tr.now td { background: color-mix(in srgb, var(--bfs) 12%, transparent); font-weight: 700; }
+
+/* ---- Lab 10: K-means and clustering ---- */
+.k0, .kv0 { --kc: var(--indigo); } .k1, .kv1 { --kc: #d9546e; } .k2, .kv2 { --kc: var(--bfs); } .k3, .kv3 { --kc: var(--ucs); }
+.k4, .kv4 { --kc: var(--dfs); } .k5, .kv5 { --kc: var(--pink); } .k6, .kv6 { --kc: color-mix(in srgb, var(--bfs) 55%, var(--ink)); } .k7, .kv7 { --kc: color-mix(in srgb, var(--dfs) 55%, var(--ink)); }
+.art-km .hero-art .h0 { fill: var(--indigo); opacity: 0.4; } .art-km .hero-art .h1 { fill: #d9546e; opacity: 0.4; }
+.art-km .hero-art .h2 { fill: var(--bfs); opacity: 0.4; } .art-km .hero-art .h3 { fill: var(--ucs); opacity: 0.5; }
+.art-km .hero-art .hx { stroke: var(--ink); stroke-width: 4; opacity: 0.35; stroke-linecap: round; }
+.ml-plot .km-frame { fill: none; stroke: var(--line); stroke-width: 1.5; }
+.ml-plot .kv0, .ml-plot .kv1, .ml-plot .kv2, .ml-plot .kv3, .ml-plot .kv4, .ml-plot .kv5, .ml-plot .kv6, .ml-plot .kv7 { fill: color-mix(in srgb, var(--kc) 13%, var(--surface)); }
+.ml-plot .kp { fill: var(--kc); stroke: var(--surface); stroke-width: 1.2; }
+.ml-plot .kp.kgrey { fill: color-mix(in srgb, var(--ink-soft) 60%, var(--surface)); }
+.ml-plot .kc circle { fill: var(--surface); stroke: var(--kc); stroke-width: 3.5; }
+.ml-plot .kc .kx { stroke: var(--kc); stroke-width: 3; stroke-linecap: round; }
+.ml-plot .kc-l { font-size: 12px; font-weight: 800; fill: var(--ink); font-family: 'Poppins', sans-serif; }
+.ml-plot .kc-dot { fill: var(--kc); stroke: var(--surface); stroke-width: 2.5; }
+.ml-plot .km-trail { fill: none; stroke: var(--ink); stroke-width: 1.4; stroke-dasharray: 3 3; opacity: 0.6; }
+.ml-plot .km-costline { fill: none; stroke: var(--line); stroke-width: 2; }
+.ml-plot .km-costdot { fill: var(--dfs); } .ml-plot .km-costdot.update { fill: var(--indigo); }
+.ml-plot .lbl { font-size: 12px; font-weight: 700; fill: var(--ink); font-family: 'Poppins', sans-serif; }
+.km-click { cursor: crosshair; touch-action: none; }
+.km-out p { margin: 0 0 0.5rem; font-size: 0.92rem; overflow-wrap: anywhere; }
+.km-out .big { font-size: 1.02rem; }
+.km-out .note, .note-line { font-size: 0.82rem; color: var(--ink-soft); }
+.note-line { margin: 0.8rem 0 0; }
+.km-out .concept-list { margin: 0.3rem 0 0.6rem; }
+.km-step { font-size: 0.85rem; font-weight: 700; color: var(--ink-soft); }
+.km-pseudo pre { margin: 0.4rem 0; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.8rem; line-height: 1.55; color: var(--ink); }
+.km-pseudo pre span { color: var(--ink-soft); }
+.km-stats { margin: 0 0 0.6rem; }
+.km-stats .stat { min-width: 90px; padding: 0.6rem 0.5rem; }
+.km-stats .stat .n { font-size: 1.2rem; }
+.km-stats .stat .n.km-phase { font-size: 1rem; line-height: 1.75rem; }
+.ml-plot .mn-line { stroke: var(--ink-soft); stroke-width: 1.3; stroke-dasharray: 4 4; }
+.ml-plot .mn-mean, .ml-plot .md-mean { stroke: var(--ink); stroke-width: 3.5; stroke-linecap: round; }
+.ml-plot .mn-c { fill: var(--ucs); stroke: var(--ink); stroke-width: 2; }
+.ml-plot .md-out { fill: #d9546e; stroke: var(--ink); stroke-width: 2; cursor: grab; }
+.ml-plot .md-medoid { fill: none; stroke: var(--bfs); stroke-width: 3.5; }
+.ml-plot .md-median { fill: var(--ucs); stroke: var(--ink); stroke-width: 1.5; }
+.bt-legend .k.mdk { width: 14px; height: 14px; vertical-align: -2px; }
+.bt-legend .k.mdk.mean { background: none; border-radius: 0; position: relative; }
+.bt-legend .k.mdk.mean::before, .bt-legend .k.mdk.mean::after { content: ''; position: absolute; left: 6px; top: -1px; width: 3px; height: 16px; background: var(--ink); transform: rotate(45deg); }
+.bt-legend .k.mdk.mean::after { transform: rotate(-45deg); }
+.bt-legend .k.mdk.median { background: var(--ucs); transform: rotate(45deg) scale(0.8); border-radius: 2px; }
+.bt-legend .k.mdk.medoid { background: none; border: 3px solid var(--bfs); border-radius: 50%; }
+.bt-legend .k.ln.cost { background: var(--dfs); } .bt-legend .k.ln.sil { background: var(--indigo); }
+.ml-plot .ek-cost { fill: none; stroke: var(--dfs); stroke-width: 2.5; } .ml-plot .ek-cost-dot { fill: var(--dfs); }
+.ml-plot .ek-sil { fill: none; stroke: var(--indigo); stroke-width: 2.5; } .ml-plot .ek-sil-dot { fill: var(--indigo); }
+.ml-plot .kbar { fill: var(--kc); }
+.ml-plot .ek-mean { stroke: #d9546e; stroke-width: 2; stroke-dasharray: 6 4; }
+.lo-runs h5 { margin: 0.4rem 0 0.4rem; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-soft); }
+.lo-chip { cursor: pointer; font-family: inherit; color: var(--ink); background: var(--surface); }
+.lo-chip.best { border-color: var(--bfs); }
+.lo-chip.cur { background: var(--indigo); border-color: var(--indigo); color: #fff; }
+.sk-pt { cursor: pointer; stroke: var(--surface); stroke-width: 1.2; }
+.sk-pt.sel { stroke: var(--ink); stroke-width: 2.5; }
+.sk-r { display: inline-block; width: 80px; height: 10px; border-radius: 999px; background: var(--bg); border: 1px solid var(--line); overflow: hidden; vertical-align: 0; margin-right: 0.3rem; }
+.sk-r i { display: block; height: 100%; background: var(--kc); }
+.ml-plot .hm-edge { stroke: var(--ink-soft); stroke-width: 1.6; opacity: 0.6; }
+.ml-plot .hm-node { fill: color-mix(in srgb, var(--ids) 14%, var(--surface)); stroke: var(--ids); stroke-width: 2; }
+.ml-plot .hm-t { font-size: 11px; font-weight: 800; fill: var(--ink); font-family: 'Poppins', sans-serif; }
+.ml-plot .hm-arrow { fill: none; stroke: var(--ink-soft); stroke-width: 1.6; }
+.ml-plot .hk-link { stroke: var(--ink); stroke-width: 1.2; opacity: 0.55; }
+.ml-plot .hk-inner { fill: var(--surface); stroke: var(--ink); stroke-width: 1.8; }
+.ml-plot .hk-t { font-size: 12px; font-weight: 700; fill: var(--ink-soft); font-family: 'Poppins', sans-serif; paint-order: stroke; stroke: var(--surface); stroke-width: 4px; }
+.ml-plot .hk-t.leaf { fill: var(--kc); font-weight: 800; }
+.ml-plot .ag-hull { fill: color-mix(in srgb, var(--kc) 16%, var(--surface)); stroke: color-mix(in srgb, var(--kc) 16%, var(--surface)); stroke-width: 26; stroke-linejoin: round; }
+.ml-plot .ag-name { font-size: 11px; font-weight: 700; fill: var(--ink); }
+.ml-plot .ag-den { fill: none; stroke: var(--ink-soft); stroke-width: 2; }
+.ml-plot .ag-den.cur { stroke: var(--ucs); stroke-width: 3.5; }
+.ml-plot .ag-cut { stroke: #d9546e; stroke-width: 1.6; stroke-dasharray: 6 4; }
+.pp-table td, .pp-table th, .ev-table td, .ev-table th { padding: 0.45rem 0.6rem; font-size: 0.84rem; }
+.icon-btn:disabled, .strat-btn:disabled { opacity: 0.4; cursor: not-allowed; }
