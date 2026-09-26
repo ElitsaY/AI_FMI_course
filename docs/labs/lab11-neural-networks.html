@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lab 11 — Neural Networks | Class Notes</title>
+<meta name="description" content="Interactive notes on neural networks: the artificial neuron and activation functions, logical functions and the XOR problem, multilayer perceptrons and their expressive power, gradient descent, perceptron learning, back-propagation, and handwritten digit recognition.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+
+<header class="site-nav">
+  <span class="brand"><span class="dot"></span> Class Notes</span>
+  <nav>
+    <a href="../index.html">Home</a>
+    <a href="lab01-uninformed-search.html">Lab 01</a>
+    <a href="lab02-informed-search.html">Lab 02</a>
+    <a href="lab03-csp.html">Lab 03</a>
+    <a href="lab04-genetic-algorithms.html">Lab 04</a>
+    <a href="lab05-games.html">Lab 05</a>
+    <a href="lab06-intro-ml.html">Lab 06</a>
+    <a href="lab065-linear-logistic.html">Lab 6.5</a>
+    <a href="lab07-knn.html">Lab 07</a>
+    <a href="lab08-naive-bayes.html">Lab 08</a>
+    <a href="lab09-decision-trees.html">Lab 09</a>
+    <a href="lab10-kmeans.html">Lab 10</a>
+  </nav>
+</header>
+
+<section class="hero art-hero art-nn">
+  <svg id="nn-hero-bg" class="hero-art" viewBox="0 0 1200 300" preserveAspectRatio="xMidYMid slice" aria-hidden="true"></svg>
+  <div class="wrap">
+    <p class="eyebrow">Lab 11</p>
+    <h1>Neural Networks</h1>
+    <div class="badges">
+      <span class="badge ids">Neurons &amp; activations</span>
+      <span class="badge dfs">Multilayer perceptrons</span>
+      <span class="badge ucs">Gradient descent</span>
+      <span class="badge bfs">Back-propagation</span>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+
+  <!-- ===== OVERVIEW ===== -->
+  <section class="block" id="overview">
+    <h2 class="section-title">Overview of the lab</h2>
+    <ol class="concept-list">
+      <li><a href="#intro">Neural networks: why and why now</a></li>
+      <li><a href="#neuron">Brains and the artificial neuron</a></li>
+      <li><a href="#activation">Activation functions</a></li>
+      <li><a href="#logic">Implementing logical functions: the limits of one neuron</a></li>
+      <li><a href="#structures">Network structures and multilayer perceptrons</a></li>
+      <li><a href="#expressive">Expressive power of MLPs</a></li>
+      <li><a href="#learning">Learning: cost function and gradient descent</a></li>
+      <li><a href="#perceptron">Perceptron learning</a></li>
+      <li><a href="#backprop">Back-propagation</a></li>
+      <li><a href="#playground">Train a multilayer perceptron</a></li>
+      <li><a href="#digits">Handwritten digit recognition</a></li>
+      <li><a href="#python">Neural networks in Python</a></li>
+    </ol>
+  </section>
+
+  <!-- ===== INTRO ===== -->
+  <section class="block" id="intro">
+    <h2 class="section-title">Neural networks</h2>
+    <p class="section-lede">Neural networks have existed since the 1950s–60s. Why are they only now so popular? Because now there are <b>fast enough computers</b> and there is <b>enough data</b> to train large networks.</p>
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.6rem;">Why go beyond linear models?</h3>
+    <ul class="concept-list">
+      <li>So far we used <b>linear models</b>: <a href="lab065-linear-logistic.html">linear and logistic regression</a>. Some functions cannot be represented by linear models: linear regression cannot represent a quadratic function, and a linear classifier cannot represent <b>XOR</b>.</li>
+      <li>One way around this is to define <b>features</b> (basis functions): linear regression can fit a cubic polynomial with the feature map \(\psi(x) = (1, x, x^2, x^3)\). But the features must be <b>designed by hand</b>, and we may need <b>very many</b> of them.</li>
+      <li>Neural networks take a different approach: connect together lots of <b>simple processing units</b>, each computing a linear function followed by a nonlinearity. Together they can compute surprisingly complex functions, and they <b>learn</b> their own features from data.</li>
+    </ul>
+    <p class="caption-note">📖 Sources: the course slides (after Russell &amp; Norvig, <i>AIMA</i>), Roger Grosse's lecture notes <i>Multilayer Perceptrons</i> (University of Toronto), and Samy Baladram's <a href="https://medium.com/data-science/multilayer-perceptron-explained-a-visual-guide-with-mini-2d-dataset-0ae8100c5d1c" target="_blank" rel="noopener">Multilayer Perceptron, Explained: A Visual Guide with Mini 2D Dataset</a>, which walks through a tiny network on an 8-point dataset step by step.</p>
+  </section>
+
+  <!-- ===== NEURON ===== -->
+  <section class="block algo-section ids" id="neuron">
+    <span class="badge ids" style="margin-bottom:0.6rem; display:inline-block;">Building block</span>
+    <h2 class="section-title">Brains and the artificial neuron</h2>
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:0.6rem;">Brains</h3>
+    <ul class="concept-list">
+      <li>About \(10^{11}\) neurons of more than 20 types, \(10^{14}\) synapses, 1–10 ms cycle time.</li>
+      <li>A neuron receives signals through its <b>dendrites</b>, sums them in the cell body, and fires along its <b>axon</b> when the total is large enough. Signals are noisy "spike trains" of electrical potential.</li>
+    </ul>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.6rem;">The McCulloch–Pitts "unit"</h3>
+    <p class="section-lede">The output is a "squashed" linear function of the inputs: a weighted sum of the inputs, passed through an <b>activation function</b> \(g\).</p>
+    <div class="definition-box">
+      <div class="dbox-label">📐 Artificial neuron (unit)</div>
+      \[ a = g\Big(\sum_{j} w_j x_j + b\Big) \]
+      <p>\(x_j\): inputs · \(w_j\): weights · \(b\): bias · \(g\): activation function · \(a\): the unit's activation (output). The slides write the bias as an extra weight \(W_{0}\) on a fixed input \(a_0 = -1\), i.e. \(b = -W_0\): the same thing.</p>
+    </div>
+    <ul class="concept-list" style="margin-top:1rem;">
+      <li>Linear regression is such a unit with \(g(z) = z\); a binary linear classifier uses a hard threshold at 0; <a href="lab065-linear-logistic.html#logistic">logistic regression</a> uses \(g = \sigma\), the sigmoid.</li>
+      <li>A gross oversimplification of real neurons, but its purpose is to understand what <b>networks of simple units</b> can do.</li>
+    </ul>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Try it: one neuron with two inputs</h4>
+    <p class="section-lede">The shading shows the unit's output \(a\) for every input \((x_1, x_2)\). Changing the weights moves the <b>location, orientation and steepness of the cliff</b>: the weights set its direction, the bias shifts it. Click the plot to move the probe input.</p>
+    <div class="playground">
+      <div class="nb-sliders">
+        <label><span>\(w_1\)</span><input type="range" id="nu-w1" min="-3" max="3" value="1" step="0.1"><span class="val" id="nu-w1-val">1.0</span></label>
+        <label><span>\(w_2\)</span><input type="range" id="nu-w2" min="-3" max="3" value="2" step="0.1"><span class="val" id="nu-w2-val">2.0</span></label>
+        <label><span>bias \(b\)</span><input type="range" id="nu-b" min="-4" max="4" value="-1" step="0.1"><span class="val" id="nu-b-val">-1.0</span></label>
+      </div>
+      <div class="pg-controls" style="margin-top:0.8rem;">
+        <div class="strategy-pick" id="nu-act">
+          <button class="strat-btn" data-a="step">Step</button>
+          <button class="strat-btn active" data-a="sigmoid">Sigmoid</button>
+          <button class="strat-btn" data-a="relu">ReLU</button>
+          <button class="strat-btn" data-a="linear">Linear</button>
+        </div>
+      </div>
+      <div class="pg-grid">
+        <svg id="nu-plot" class="ml-plot nn-click" viewBox="0 0 380 380" aria-label="Neuron output over the input plane"></svg>
+        <div>
+          <svg id="nu-diagram" class="ml-plot" viewBox="0 0 360 190" aria-label="The neuron"></svg>
+          <div id="nu-out" class="nn-out"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== ACTIVATION ===== -->
+  <section class="block algo-section dfs" id="activation">
+    <span class="badge dfs" style="margin-bottom:0.6rem; display:inline-block;">Nonlinearity</span>
+    <h2 class="section-title">Activation functions</h2>
+    <div class="table-wrap">
+      <table class="summary">
+        <thead><tr><th>Name</th><th>\(g(z)\)</th><th>Derivative \(g'(z)\)</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr data-s="ids"><td><b>Step / threshold</b></td><td>\(1\) if \(z &gt; 0\), else \(0\)</td><td>\(0\) (undefined at 0)</td><td>the original perceptron; easy to design by hand, impossible to train with gradients</td></tr>
+          <tr data-s="dfs"><td><b>Sigmoid</b> (logistic)</td><td>\(\sigma(z) = \dfrac{1}{1 + e^{-z}}\)</td><td>\(\sigma(z)(1 - \sigma(z))\)</td><td>a soft threshold with outputs in (0, 1); saturates for large \(|z|\)</td></tr>
+          <tr data-s="ucs"><td><b>tanh</b></td><td>\(\tanh(z)\)</td><td>\(1 - \tanh^2(z)\)</td><td>like the sigmoid but in (−1, 1), centred at 0</td></tr>
+          <tr data-s="bfs"><td><b>ReLU</b> (rectified linear unit)</td><td>\(\max(0, z)\)</td><td>\(1\) if \(z &gt; 0\), else \(0\)</td><td>the default in modern deep networks: cheap, does not saturate for \(z &gt; 0\)</td></tr>
+          <tr><td><b>Linear</b></td><td>\(z\)</td><td>\(1\)</td><td>used in the output unit for regression</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <ul class="concept-list" style="margin-top:1rem;">
+      <li>Changing the bias moves the threshold location.</li>
+      <li><b>Soft thresholds.</b> With a hard threshold the derivative is 0 almost everywhere, so gradient descent gets no signal and cannot learn the weights. So we replace it with a soft one. This costs no expressive power: scaling up the weights and bias, \(\sigma(5z)\), \(\sigma(20z)\), …, makes the sigmoid as close to a step as we want.</li>
+    </ul>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Try it: activation functions and their derivatives</h4>
+    <p class="section-lede">The solid curve is \(g(k z - s)\), the dashed curve its derivative (the learning signal). Increase the steepness \(k\) of the sigmoid: it turns into a step, and its derivative into a narrow spike.</p>
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="strategy-pick" id="af-act">
+          <button class="strat-btn" data-a="step">Step</button>
+          <button class="strat-btn active" data-a="sigmoid">Sigmoid</button>
+          <button class="strat-btn" data-a="tanh">tanh</button>
+          <button class="strat-btn" data-a="relu">ReLU</button>
+        </div>
+      </div>
+      <div class="pg-controls">
+        <div class="beam-control show" style="margin:0;"><label>steepness \(k\)</label><input type="range" id="af-k" min="0.5" max="20" value="1" step="0.5"><span class="val" id="af-k-val">1.0</span></div>
+        <div class="beam-control show" style="margin:0;"><label>shift \(s\)</label><input type="range" id="af-s" min="-3" max="3" value="0" step="0.1"><span class="val" id="af-s-val">0.0</span></div>
+      </div>
+      <div class="pg-grid">
+        <svg id="af-plot" class="ml-plot" viewBox="0 0 420 280" aria-label="Activation function and derivative"></svg>
+        <div id="af-out" class="nn-out"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== LOGIC ===== -->
+  <section class="block algo-section ucs" id="logic">
+    <span class="badge ucs" style="margin-bottom:0.6rem; display:inline-block;">Perceptrons</span>
+    <h2 class="section-title">Implementing logical functions</h2>
+    <p class="section-lede">A single threshold unit (inputs 0/1, output 1 if \(W_1 x_1 + W_2 x_2 - W_0 &gt; 0\)) implements the basic logic gates. McCulloch and Pitts: <b>every Boolean function can be implemented</b> by a network of such units.</p>
+    <div class="table-wrap">
+      <table class="summary">
+        <thead><tr><th>Gate</th><th>\(W_0\) (bias weight)</th><th>\(W_1\)</th><th>\(W_2\)</th><th>Fires when</th></tr></thead>
+        <tbody>
+          <tr data-s="ids"><td><b>AND</b></td><td>1.5</td><td>1</td><td>1</td><td>\(x_1 + x_2 &gt; 1.5\)</td></tr>
+          <tr data-s="dfs"><td><b>OR</b></td><td>0.5</td><td>1</td><td>1</td><td>\(x_1 + x_2 &gt; 0.5\)</td></tr>
+          <tr data-s="ucs"><td><b>NOT</b></td><td>−0.5</td><td>−1</td><td>—</td><td>\(-x_1 &gt; -0.5\), i.e. \(x_1 = 0\)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.8rem;">Expressiveness of perceptrons</h3>
+    <ul class="concept-list">
+      <li>A <b>perceptron</b> (Rosenblatt, 1957, 1960) is a single layer of units with \(g\) = step function. It can represent AND, OR, NOT, majority, etc., <b>but not XOR</b>.</li>
+      <li>It represents a <b>linear separator</b> in input space: \(\sum_j W_j x_j &gt; 0\), or \(\mathbf{W} \cdot \mathbf{x} &gt; 0\). The points where it fires lie on one side of a straight line (a hyperplane in more dimensions).</li>
+      <li>XOR (1 when exactly one input is 1) puts the two "1" points on opposite corners: no single line separates them. Minsky &amp; Papert (1969) pointed this out and "pricked the neural network balloon" for more than a decade.</li>
+    </ul>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Try it: find the weights</h4>
+    <p class="section-lede">Choose a gate to load the weights from the table, then move the sliders. The line is where \(W_1 x_1 + W_2 x_2 = W_0\); the unit fires on the shaded side. For XOR, try to get all four rows right.</p>
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="strategy-pick" id="lg-gate">
+          <button class="strat-btn active" data-g="AND">AND</button>
+          <button class="strat-btn" data-g="OR">OR</button>
+          <button class="strat-btn" data-g="NAND">NAND</button>
+          <button class="strat-btn" data-g="XOR">XOR</button>
+        </div>
+      </div>
+      <div class="nb-sliders">
+        <label><span>\(W_0\) (bias weight)</span><input type="range" id="lg-w0" min="-2" max="2" value="1.5" step="0.1"><span class="val" id="lg-w0-val">1.5</span></label>
+        <label><span>\(W_1\)</span><input type="range" id="lg-w1" min="-2" max="2" value="1" step="0.1"><span class="val" id="lg-w1-val">1.0</span></label>
+        <label><span>\(W_2\)</span><input type="range" id="lg-w2" min="-2" max="2" value="1" step="0.1"><span class="val" id="lg-w2-val">1.0</span></label>
+      </div>
+      <div class="pg-grid" style="margin-top:0.8rem;">
+        <svg id="lg-plot" class="ml-plot" viewBox="0 0 340 340" aria-label="Unit square with the separating line"></svg>
+        <div id="lg-out" class="nn-out"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== STRUCTURES ===== -->
+  <section class="block algo-section bfs" id="structures">
+    <span class="badge bfs" style="margin-bottom:0.6rem; display:inline-block;">Architecture</span>
+    <h2 class="section-title">Network structures</h2>
+    <ul class="concept-list">
+      <li><b>Feed-forward networks</b>: single-layer perceptrons, multi-layer perceptrons. The units form a graph <b>without cycles</b>, so everything is computed in one pass from inputs to outputs. Feed-forward networks implement <b>functions</b> and have no internal state.</li>
+      <li><b>Recurrent networks</b>: the graph has cycles, so the output feeds back in.
+        <ul class="concept-list">
+          <li><b>Hopfield networks</b> have symmetric weights (\(W_{i,j} = W_{j,i}\)), \(g(x) = \text{sign}(x)\), \(a_i = \pm 1\): holographic associative memory.</li>
+          <li><b>Boltzmann machines</b> use stochastic activation functions (≈ MCMC in Bayes nets).</li>
+          <li><b>Recurrent neural nets</b> have directed cycles with delays ⇒ they have internal state (like flip-flops) and can oscillate; used for sequences.</li>
+        </ul>
+      </li>
+    </ul>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.8rem;">Multilayer perceptrons (MLP)</h3>
+    <p class="section-lede">The simplest feed-forward network. The units are arranged in <b>layers</b>, and every unit in one layer is connected to every unit in the next: the network is <b>fully connected</b>. The number of hidden units is typically chosen by hand.</p>
+    <ul class="concept-list">
+      <li><b>Input layer</b>: one unit per input feature. <b>Output layer</b>: one unit for regression or binary classification, \(K\) units for \(K\)-class classification.</li>
+      <li><b>Hidden layers</b>: everything in between. "Hidden", because we do not know ahead of time what these units should compute: that has to be learned.</li>
+      <li>The number of layers is the <b>depth</b>, the number of units in a layer is the <b>width</b>. "Deep learning" = training networks with many layers.</li>
+      <li>"MLP" is an unfortunate name: the original perceptron was a particular 1950s algorithm, and MLPs have very little to do with it.</li>
+    </ul>
+    <p class="section-lede"><b>Feed-forward example</b> (units 1, 2 are inputs, 3, 4 hidden, 5 the output). A feed-forward network is a <b>parameterised family of nonlinear functions</b>:</p>
+    <div class="math-block">\[ a_5 = g(W_{3,5}\, a_3 + W_{4,5}\, a_4) = g\big(W_{3,5}\, g(W_{1,3}\, a_1 + W_{2,3}\, a_2) + W_{4,5}\, g(W_{1,4}\, a_1 + W_{2,4}\, a_2)\big) \]</div>
+    <p class="section-lede">Adjusting the weights changes the function: that is how we will <b>learn</b>. For whole layers we write it with matrices: one weight matrix \(\mathbf{W}^{(\ell)}\) and bias vector \(\mathbf{b}^{(\ell)}\) per layer, and \(\phi\) applied element-wise:</p>
+    <div class="math-block">\[ \mathbf{h}^{(1)} = \phi^{(1)}\big(\mathbf{W}^{(1)} \mathbf{x} + \mathbf{b}^{(1)}\big) \qquad \mathbf{h}^{(2)} = \phi^{(2)}\big(\mathbf{W}^{(2)} \mathbf{h}^{(1)} + \mathbf{b}^{(2)}\big) \qquad \mathbf{y} = \phi^{(3)}\big(\mathbf{W}^{(3)} \mathbf{h}^{(2)} + \mathbf{b}^{(3)}\big) \]</div>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.8rem;">Example: an MLP that computes XOR</h3>
+    <p class="section-lede">XOR = "one of the inputs is 1, but not both of them". Let hidden unit \(h_1\) detect whether <b>at least one</b> input is 1 (OR) and \(h_2\) whether <b>both</b> are 1 (AND). The output fires only if \(h_1 = 1\) and \(h_2 = 0\). All activations are hard thresholds at 0.</p>
+    <h4 style="margin:1.4rem 0 0.4rem;">Try it: feed the four inputs through</h4>
+    <p class="section-lede">Pick an input. The right plot shows <b>feature learning</b>: in the hidden space \((h_1, h_2)\) the four inputs land on only three points, and there a single line separates XOR. The hidden layer has made the data <b>linearly separable</b>.</p>
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="strategy-pick" id="xr-in">
+          <button class="strat-btn" data-x="0,0">x = (0, 0)</button>
+          <button class="strat-btn active" data-x="0,1">x = (0, 1)</button>
+          <button class="strat-btn" data-x="1,0">x = (1, 0)</button>
+          <button class="strat-btn" data-x="1,1">x = (1, 1)</button>
+        </div>
+      </div>
+      <div class="pg-grid">
+        <svg id="xr-net" class="ml-plot" viewBox="0 0 380 300" aria-label="XOR network"></svg>
+        <div>
+          <svg id="xr-space" class="ml-plot" viewBox="0 0 300 270" aria-label="Hidden feature space"></svg>
+          <div id="xr-out" class="nn-out"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== EXPRESSIVE ===== -->
+  <section class="block algo-section ids" id="expressive">
+    <span class="badge ids" style="margin-bottom:0.6rem; display:inline-block;">Theory</span>
+    <h2 class="section-title">Expressive power of MLPs</h2>
+    <ul class="concept-list">
+      <li><b>Linear networks are no more powerful than one layer.</b> With \(\phi(z) = z\), a deep network computes \(\mathbf{y} = \mathbf{W}^{(L)} \cdots \mathbf{W}^{(2)} \mathbf{W}^{(1)} \mathbf{x}\), which is a single linear layer with \(\mathbf{W} = \mathbf{W}^{(L)} \cdots \mathbf{W}^{(1)}\). The <b>nonlinearity</b> is what gives depth its power.</li>
+      <li><b>Universality.</b> With nonlinear activations, all continuous functions can be represented with 2 layers (one hidden layer), and all functions with 3 layers. The idea: combine two opposite-facing threshold functions to make a <b>ridge</b>; combine two perpendicular ridges to make a <b>bump</b>; add bumps of various sizes and locations to fit any surface.</li>
+      <li><b>The catch</b>: the proof needs <b>exponentially many</b> hidden units (like the proof that decision trees can represent any Boolean function). Universality only says that a large enough network can memorise the training set, which is not very interesting. We want <b>compact</b> networks that compute fast and <b>generalise</b>.</li>
+      <li><b>The power of depth.</b> Deep networks can represent some functions much more compactly. The <b>parity</b> function (1 if an odd number of the inputs are 1) needs an exponentially large shallow network, but a deep network with size <i>linear</i> in the number of inputs: chain XOR units.</li>
+    </ul>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Try it: ridges, bumps and curve fitting</h4>
+    <p class="section-lede">Every picture below is built only from sigmoid units. Raise the steepness to sharpen the thresholds. In <i>Fit a curve</i>, each bump uses 2 hidden units, and its height is the target's value at the bump's centre: more bumps, better fit.</p>
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="strategy-pick" id="un-mode">
+          <button class="strat-btn active" data-m="ridge">Ridge (2 units)</button>
+          <button class="strat-btn" data-m="bump">Bump (4 + 1 units)</button>
+          <button class="strat-btn" data-m="fit">Fit a curve</button>
+        </div>
+      </div>
+      <div class="pg-controls">
+        <div class="beam-control show" style="margin:0;"><label>steepness</label><input type="range" id="un-k" min="1" max="20" value="4" step="0.5"><span class="val" id="un-k-val">4.0</span></div>
+        <div class="beam-control show" style="margin:0;" id="un-n-wrap"><label>bumps</label><input type="range" id="un-n" min="1" max="30" value="6" step="1"><span class="val" id="un-n-val">6</span></div>
+      </div>
+      <div class="pg-grid">
+        <svg id="un-plot" class="ml-plot" viewBox="0 0 380 340" aria-label="Function built from sigmoid units"></svg>
+        <div id="un-out" class="nn-out"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== LEARNING ===== -->
+  <section class="block algo-section dfs" id="learning">
+    <span class="badge dfs" style="margin-bottom:0.6rem; display:inline-block;">Optimisation</span>
+    <h2 class="section-title">Learning: cost function and gradient descent</h2>
+    <p class="section-lede">Learning = adjusting the weights to reduce the <b>error on the training set</b>. We measure the error with a <b>cost function</b> \(J(w)\), e.g. the mean squared error, and look for the weights where it is smallest.</p>
+    <div class="definition-box">
+      <div class="dbox-label">📐 Mean squared error and the gradient descent step</div>
+      \[ \text{MSE} = \frac{1}{N} \sum_{i=1}^{N} (y_i - \hat{y}_i)^2 \qquad\qquad w \leftarrow w - \alpha \, \frac{\partial J}{\partial w} \]
+      <p>\(\alpha\) is the <b>learning rate</b>. The gradient points uphill, so we step against it.</p>
+    </div>
+    <ul class="concept-list" style="margin-top:1rem;">
+      <li>\(\nabla_w J &lt; 0\) (negative gradient): increasing \(w\) lowers the cost, so \(w\) grows. \(\nabla_w J &gt; 0\): \(w\) shrinks. At the <b>minimum</b>, \(\nabla_w J = 0\) and the steps stop.</li>
+      <li>Starting from an initial weight, we take <b>incremental steps</b> downhill until we reach the minimum cost.</li>
+      <li><b>Learning rate</b>: <b>too low</b> needs many updates before reaching the minimum; <b>just right</b> swiftly reaches it; <b>too high</b> causes drastic updates that overshoot and can diverge.</li>
+    </ul>
+    <p class="caption-note">💡 This is the same gradient descent as in <a href="lab065-linear-logistic.html#linear">Lab 6.5</a>. The only new part for neural networks is how to compute the derivatives for weights deep inside the network: <a href="#backprop">back-propagation</a>.</p>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Try it: the learning rate</h4>
+    <p class="section-lede">\(J(w) = (w - 2)^2 + 1\), starting at \(w = 5.5\). For this cost any \(\alpha &gt; 1\) diverges. Try the three presets, then your own.</p>
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="strategy-pick" id="gd-pre">
+          <button class="strat-btn" data-lr="0.05">Too low (0.05)</button>
+          <button class="strat-btn active" data-lr="0.3">Just right (0.3)</button>
+          <button class="strat-btn" data-lr="1.05">Too high (1.05)</button>
+        </div>
+      </div>
+      <div class="pg-controls">
+        <div class="beam-control show" style="margin:0;"><label>learning rate \(\alpha\)</label><input type="range" id="gd-lr" min="0.01" max="1.1" value="0.3" step="0.01"><span class="val" id="gd-lr-val">0.30</span></div>
+        <div class="play-btns">
+          <button class="icon-btn" id="gd-step" title="One step">⏭</button>
+          <button class="icon-btn" id="gd-run" title="Ten steps">⏩</button>
+          <button class="icon-btn" id="gd-reset" title="Reset">↺</button>
+        </div>
+      </div>
+      <div class="pg-grid">
+        <svg id="gd-plot" class="ml-plot" viewBox="0 0 420 300" aria-label="Gradient descent on a 1-D cost"></svg>
+        <div id="gd-out" class="nn-out"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== PERCEPTRON LEARNING ===== -->
+  <section class="block algo-section ucs" id="perceptron">
+    <span class="badge ucs" style="margin-bottom:0.6rem; display:inline-block;">One layer</span>
+    <h2 class="section-title">Perceptron learning</h2>
+    <p class="section-lede">Learn by adjusting the weights to reduce the error on the training set. The <b>squared error</b> for an example with input \(\mathbf{x}\) and true output \(y\) is \(E = \tfrac12 \text{Err}^2 = \tfrac12 (y - h_{\mathbf{W}}(\mathbf{x}))^2\). Gradient descent on \(E\):</p>
+    <div class="derivation">
+      \[ \frac{\partial E}{\partial W_j} = \text{Err} \times \frac{\partial \text{Err}}{\partial W_j} = \text{Err} \times \frac{\partial}{\partial W_j}\Big(y - g\big(\textstyle\sum_{j=0}^{n} W_j x_j\big)\Big) = -\text{Err} \times g'(in) \times x_j \]
+    </div>
+    <div class="definition-box">
+      <div class="dbox-label">📐 Perceptron learning rule</div>
+      \[ W_j \leftarrow W_j + \alpha \times \text{Err} \times g'(in) \times x_j \]
+      <p>E.g. a positive error (output too small) ⇒ increase the network output ⇒ increase the weights on positive inputs, decrease them on negative inputs.</p>
+    </div>
+    <ul class="concept-list" style="margin-top:1rem;">
+      <li>The perceptron learning rule <b>converges to a consistent function for any linearly separable data set</b>.</li>
+      <li>It learns the <b>majority</b> function easily, while a <a href="lab09-decision-trees.html">decision tree</a> is hopeless (it needs a huge tree). But a decision tree learns the <b>restaurant</b> function easily, and a perceptron cannot represent it (it is not linearly separable).</li>
+    </ul>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Try it: train one sigmoid unit</h4>
+    <p class="section-lede">The unit sees each of the four examples in turn and applies the rule (one <b>epoch</b> = one pass over all examples). On AND and OR the error goes to almost 0. On XOR it gets stuck: no line can do it.</p>
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="strategy-pick" id="pl-data">
+          <button class="strat-btn active" data-g="AND">AND</button>
+          <button class="strat-btn" data-g="OR">OR</button>
+          <button class="strat-btn" data-g="XOR">XOR</button>
+        </div>
+        <div class="play-btns">
+          <button class="icon-btn" id="pl-play" title="Train / pause">▶</button>
+          <button class="icon-btn" id="pl-step" title="One epoch">⏭</button>
+          <button class="icon-btn" id="pl-reset" title="Reset">↺</button>
+        </div>
+      </div>
+      <div class="pg-controls">
+        <div class="beam-control show" style="margin:0;"><label>\(\alpha\)</label><input type="range" id="pl-lr" min="0.1" max="5" value="2" step="0.1"><span class="val" id="pl-lr-val">2.0</span></div>
+      </div>
+      <div class="pg-grid">
+        <svg id="pl-plot" class="ml-plot" viewBox="0 0 340 340" aria-label="Decision boundary of the unit"></svg>
+        <div>
+          <svg id="pl-curve" class="ml-plot" viewBox="0 0 380 170" aria-label="Error per epoch"></svg>
+          <div id="pl-out" class="nn-out"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== BACKPROP ===== -->
+  <section class="block algo-section bfs" id="backprop">
+    <span class="badge bfs" style="margin-bottom:0.6rem; display:inline-block;">Many layers</span>
+    <h2 class="section-title">Back-propagation learning</h2>
+    <p class="section-lede">For a hidden unit we do not know its "correct" output, so we cannot compute its error directly. Back-propagation passes the error <b>backwards</b> from the output layer, giving every hidden unit its share of the blame.</p>
+    <div class="definition-box">
+      <div class="dbox-label">📐 Back-propagation</div>
+      <p><b>Output layer</b>: same as for the single-layer perceptron,</p>
+      \[ W_{j,i} \leftarrow W_{j,i} + \alpha \times a_j \times \Delta_i \qquad \text{where } \Delta_i = \text{Err}_i \times g'(in_i) \]
+      <p><b>Hidden layer</b>: back-propagate the error from the output layer,</p>
+      \[ \Delta_j = g'(in_j) \sum_i W_{j,i}\, \Delta_i \qquad\quad W_{k,j} \leftarrow W_{k,j} + \alpha \times a_k \times \Delta_j \]
+    </div>
+    <p class="caption-note">💡 The rules have the same shape at every layer: <b>(input activation) × (delta of the receiving unit)</b>. A hidden unit's delta is the weighted sum of the deltas it feeds into, scaled by its own slope \(g'(in_j)\). Most neuroscientists deny that back-propagation occurs in the brain.</p>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.8rem;">Derivation</h3>
+    <p class="section-lede">The squared error on a single example is \(E = \tfrac12 \sum_i (y_i - a_i)^2\), where the sum is over the output nodes. For an <b>output</b> weight, only \(a_i\) depends on \(W_{j,i}\):</p>
+    <div class="derivation">
+      \[ \frac{\partial E}{\partial W_{j,i}} = -(y_i - a_i) \frac{\partial a_i}{\partial W_{j,i}} = -(y_i - a_i)\, g'(in_i) \frac{\partial in_i}{\partial W_{j,i}} = -(y_i - a_i)\, g'(in_i)\, a_j = -a_j \Delta_i \]
+    </div>
+    <p class="section-lede">For a <b>hidden</b> weight \(W_{k,j}\), every output depends on it through \(a_j\) (chain rule):</p>
+    <div class="derivation">
+      \[ \begin{aligned} \frac{\partial E}{\partial W_{k,j}} &amp;= -\sum_i (y_i - a_i)\, g'(in_i) \frac{\partial in_i}{\partial W_{k,j}} = -\sum_i \Delta_i W_{j,i} \frac{\partial a_j}{\partial W_{k,j}} \\ &amp;= -\sum_i \Delta_i W_{j,i}\, g'(in_j) \frac{\partial in_j}{\partial W_{k,j}} = -\sum_i \Delta_i W_{j,i}\, g'(in_j)\, a_k = -a_k \Delta_j \end{aligned} \]
+      <p>So the gradient step \(W \leftarrow W - \alpha \frac{\partial E}{\partial W}\) is exactly the update rule above.</p>
+    </div>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Try it: back-propagation by hand</h4>
+    <p class="section-lede">The 5-unit network from the <a href="#structures">feed-forward example</a> with sigmoid units and biases, one training example \(\mathbf{x} = (1, 0.5)\) with target \(y = 1\), and \(\alpha = 0.5\). Step through one full update: forward pass, error, output delta, hidden deltas, weight updates. Then repeat the update and watch the error shrink.</p>
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="play-btns" style="margin-left:0;">
+          <button class="icon-btn" id="bp-prev" title="Step back">⏮</button>
+          <button class="icon-btn" id="bp-next" title="Step forward">⏭</button>
+          <button class="icon-btn" id="bp-reset" title="Reset">↺</button>
+        </div>
+        <span class="nn-step" id="bp-step"></span>
+        <button class="strat-btn" id="bp-again">Train on the example again</button>
+      </div>
+      <div class="pg-grid">
+        <svg id="bp-net" class="ml-plot" viewBox="0 0 400 300" aria-label="Network with forward values and deltas"></svg>
+        <div id="bp-out" class="nn-out"></div>
+      </div>
+    </div>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.8rem;">In practice</h3>
+    <ul class="concept-list">
+      <li>At each <b>epoch</b>, sum the gradient updates for all examples and apply them (batch gradient descent). Or update after every example or small random <b>mini-batch</b> (stochastic gradient descent, SGD).</li>
+      <li>A training curve for 100 restaurant examples: the error keeps dropping until the network finds an exact fit.</li>
+      <li><b>Typical problems</b>: slow convergence, local minima.</li>
+      <li>MLPs are quite good for complex pattern recognition tasks, but the resulting hypotheses <b>cannot be understood easily</b> (compare a decision tree).</li>
+    </ul>
+  </section>
+
+  <!-- ===== PLAYGROUND ===== -->
+  <section class="block algo-section dfs" id="playground">
+    <span class="badge dfs" style="margin-bottom:0.6rem; display:inline-block;">All together</span>
+    <h2 class="section-title">Train a multilayer perceptron</h2>
+    <p class="section-lede">Following Samy Baladram's <a href="https://medium.com/data-science/multilayer-perceptron-explained-a-visual-guide-with-mini-2d-dataset-0ae8100c5d1c" target="_blank" rel="noopener">visual guide</a>: a tiny MLP, <b>ReLU</b> hidden units, a <b>sigmoid</b> output unit, and the <b>binary cross-entropy</b> loss (see <a href="lab065-linear-logistic.html#logistic">Lab 6.5</a>), trained with gradient descent and back-propagation. The weights start as random values in \([-0.5, 0.5]\).</p>
+    <div class="definition-box">
+      <div class="dbox-label">📐 Binary cross-entropy</div>
+      \[ L = -\frac{1}{N} \sum_{i=1}^{N} \Big( y_i \log \hat{y}_i + (1 - y_i) \log (1 - \hat{y}_i) \Big) \]
+      <p>With a sigmoid output unit, the output delta becomes simply \(\hat{y} - y\): the \(g'(in)\) factor cancels.</p>
+    </div>
+    <h4 style="margin:1.4rem 0 0.4rem;">Try it: the playground</h4>
+    <p class="section-lede">Press ▶. The shading is the network's output \(\hat{y}\): blue where it predicts class 1 (golf), red where it predicts class 0. The curve is the loss per epoch. The default dataset is an invented 8-point version of the guide's "play golf" example: golf is played at medium temperature and humidity, not at the extremes. No straight line separates it. Try the <i>2-1</i> network (no hidden layer) to see it fail. Small networks sometimes get stuck in a <b>local minimum</b>; press <i>New random weights</i> and train again.</p>
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="strategy-pick" id="mp-data">
+          <button class="strat-btn active" data-d="golf">Play golf (8 points)</button>
+          <button class="strat-btn" data-d="xor">XOR</button>
+          <button class="strat-btn" data-d="circle">Circle</button>
+          <button class="strat-btn" data-d="moons">Two moons</button>
+        </div>
+      </div>
+      <div class="pg-controls">
+        <div class="strategy-pick" id="mp-arch">
+          <button class="strat-btn" data-a="">2-1</button>
+          <button class="strat-btn" data-a="2">2-2-1</button>
+          <button class="strat-btn active" data-a="3,2">2-3-2-1</button>
+          <button class="strat-btn" data-a="8">2-8-1</button>
+          <button class="strat-btn" data-a="8,8">2-8-8-1</button>
+        </div>
+      </div>
+      <div class="pg-controls">
+        <div class="play-btns" style="margin-left:0;">
+          <button class="icon-btn" id="mp-play" title="Train / pause">▶</button>
+          <button class="icon-btn" id="mp-step" title="Ten epochs">⏭</button>
+          <button class="icon-btn" id="mp-reset" title="New random weights">↺</button>
+        </div>
+        <div class="beam-control show" style="margin:0;"><label>learning rate</label><input type="range" id="mp-lr" min="0.01" max="1" value="0.3" step="0.01"><span class="val" id="mp-lr-val">0.30</span></div>
+      </div>
+      <div class="pg-grid">
+        <svg id="mp-plot" class="ml-plot" viewBox="0 0 380 380" aria-label="Network output over the input plane"></svg>
+        <div>
+          <div class="stat-strip nn-stats" id="mp-stats"></div>
+          <svg id="mp-curve" class="ml-plot" viewBox="0 0 380 160" aria-label="Loss per epoch"></svg>
+          <svg id="mp-net" class="ml-plot" viewBox="0 0 380 200" aria-label="Network weights"></svg>
+          <p class="bt-legend"><span class="k ln pos"></span> positive weight &nbsp; <span class="k ln neg"></span> negative weight &nbsp; (thickness = size)</p>
+        </div>
+      </div>
+      <p id="mp-msg" class="note-line"></p>
+    </div>
+  </section>
+
+  <!-- ===== DIGITS ===== -->
+  <section class="block algo-section ids" id="digits">
+    <span class="badge ids" style="margin-bottom:0.6rem; display:inline-block;">Application</span>
+    <h2 class="section-title">Handwritten digit recognition</h2>
+    <p class="section-lede">The classic benchmark is <b>MNIST</b>: 28 × 28 grayscale images of handwritten digits. Each pixel is a number between 0 (black) and 1 (white), and the network ignores the spatial structure: the image is simply a vector of \(28 \times 28 = 784\) inputs. There are 10 output units, one per digit, and the prediction is the most active one.</p>
+    <ul class="concept-list">
+      <li>The hope is that the layers build up a <b>hierarchy of features</b>: pixels → edges → shapes (loops, strokes) → digits. A 9 might be "a loop at the top + a line on the right".</li>
+      <li>Does the network actually do this? Partly. The <b>first-layer</b> weights of a trained network can be drawn as images, and many of them pick up <b>oriented edges</b>. What deeper layers compute is much harder to see.</li>
+    </ul>
+    <div class="table-wrap">
+      <table class="summary">
+        <thead><tr><th>Method (from the slides)</th><th>Test error</th></tr></thead>
+        <tbody>
+          <tr><td>3-nearest-neighbour (<a href="lab07-knn.html">KNN</a>)</td><td>2.4%</td></tr>
+          <tr><td>400–300–10 unit MLP</td><td>1.6%</td></tr>
+          <tr><td>LeNet: 768–192–30–10 unit MLP</td><td>0.9%</td></tr>
+          <tr><td>Best at the time (kernel machines, vision algorithms)</td><td>≈ 0.6%</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="caption-note">💡 These numbers come from the AIMA slides (early 2000s). Convolutional networks, which use the image's spatial structure, have since pushed MNIST much further: an ensemble of deep networks (Tabik et al., 2020, <a href="https://arxiv.org/abs/2001.11486" target="_blank" rel="noopener">MNIST-NET10</a>) misclassifies only 10 of the 10 000 test images, i.e. 0.1%.</p>
+
+    <h4 style="margin:1.4rem 0 0.4rem;">Try it: draw a digit</h4>
+    <p class="section-lede">A real network, trained in Python and running in your browser: <b>64–16–10</b> with sigmoid hidden units and a softmax output. It was trained on scikit-learn's small <i>digits</i> dataset (8 × 8 images with values 0–16, <span id="dg-acc"></span> test accuracy). Draw a digit in the box; it is downsampled to 8 × 8 exactly like the dataset (the number of ink pixels in each 4 × 4 block). The 16 small images are the <b>first-layer weights</b> of the hidden units (red = negative, blue = positive): each unit looks for ink in its blue pixels and no ink in its red ones. At 8 × 8 they are coarse stroke detectors rather than the clean edges seen on MNIST. The bars below them are the units' activations.</p>
+    <div class="playground">
+      <div class="pg-controls">
+        <div class="strategy-pick">
+          <button class="strat-btn" id="dg-clear">Clear</button>
+          <button class="strat-btn" id="dg-sample">Show a test digit</button>
+        </div>
+      </div>
+      <div class="dg-grid">
+        <div class="dg-draw-wrap">
+          <canvas id="dg-canvas" width="256" height="256" class="dg-canvas" aria-label="Drawing area"></canvas>
+          <div class="dg-small"><canvas id="dg-8" width="80" height="80" class="dg-8" aria-label="8 by 8 input"></canvas><span>64 inputs</span></div>
+        </div>
+        <div class="dg-hidden">
+          <h5>16 hidden units</h5>
+          <div id="dg-units" class="dg-units"></div>
+        </div>
+        <div class="dg-outputs">
+          <h5>10 outputs</h5>
+          <div id="dg-probs"></div>
+        </div>
+      </div>
+      <p id="dg-msg" class="note-line"></p>
+    </div>
+  </section>
+
+  <!-- ===== PYTHON ===== -->
+  <section class="block" id="python">
+    <h2 class="section-title">Neural networks in Python</h2>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.2rem;">1. An MLP from scratch with NumPy (XOR)</h3>
+    <p class="section-lede">Forward pass, binary cross-entropy, back-propagation and gradient descent, written out in full. Each training example is a row of <code>X</code>, so the layers are <code>X @ W + b</code>.</p>
+    <details class="code-card">
+      <summary>
+        <span class="code-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="code-file">mlp_numpy.py</span>
+        <span class="code-lang">Python</span>
+        <button type="button" class="code-copy">Copy</button>
+        <span class="code-chevron" aria-hidden="true">▾</span>
+      </summary>
+      <pre class="code-body"><code class="lang-py">import numpy as np
+
+def sigmoid(z):
+    return 1 / (1 + np.exp(-z))
+
+X = np.array([[0, 0], [0, 1], [1, 0], [1, 1]], dtype=float)
+y = np.array([[0], [1], [1], [0]], dtype=float)           # XOR
+
+rng = np.random.default_rng(0)
+W1, b1 = rng.uniform(-1, 1, (2, 4)), np.zeros(4)          # 2 inputs -> 4 hidden units
+W2, b2 = rng.uniform(-1, 1, (4, 1)), np.zeros(1)          # 4 hidden -> 1 output
+lr = 1.0
+
+for epoch in range(5000):
+    # forward pass
+    H = sigmoid(X @ W1 + b1)                               # hidden activations, shape (4, 4)
+    Y = sigmoid(H @ W2 + b2)                               # outputs, shape (4, 1)
+    loss = -np.mean(y * np.log(Y) + (1 - y) * np.log(1 - Y))
+
+    # backward pass (binary cross-entropy + sigmoid output: delta = Y - y)
+    dZ2 = (Y - y) / len(X)
+    dW2, db2 = H.T @ dZ2, dZ2.sum(axis=0)
+    dZ1 = (dZ2 @ W2.T) * H * (1 - H)                       # back-propagate through the sigmoid
+    dW1, db1 = X.T @ dZ1, dZ1.sum(axis=0)
+
+    # gradient descent step
+    W1 -= lr * dW1; b1 -= lr * db1
+    W2 -= lr * dW2; b2 -= lr * db2
+
+print(round(loss, 4))                                      # 0.0014
+print(Y.round(3).ravel())                                  # [0.001 0.999 0.998 0.002]</code></pre>
+    </details>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.6rem;">2. The back-propagation example, checked numerically</h3>
+    <p class="section-lede">The same numbers as the <a href="#backprop">by-hand widget</a>, and a check that the back-propagated gradient equals the numerical derivative \(\frac{E(w + \varepsilon) - E(w - \varepsilon)}{2\varepsilon}\).</p>
+    <details class="code-card">
+      <summary>
+        <span class="code-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="code-file">backprop_by_hand.py</span>
+        <span class="code-lang">Python</span>
+        <button type="button" class="code-copy">Copy</button>
+        <span class="code-chevron" aria-hidden="true">▾</span>
+      </summary>
+      <pre class="code-body"><code class="lang-py">import math
+
+def sig(z):
+    return 1 / (1 + math.exp(-z))
+
+W = {"13": 0.4, "23": -0.6, "14": 0.7, "24": 0.2, "35": 0.5, "45": -0.3,
+     "b3": 0.1, "b4": -0.2, "b5": 0.3}
+a1, a2, y, alpha = 1.0, 0.5, 1.0, 0.5
+
+def forward(W):
+    a3 = sig(W["13"] * a1 + W["23"] * a2 + W["b3"])
+    a4 = sig(W["14"] * a1 + W["24"] * a2 + W["b4"])
+    a5 = sig(W["35"] * a3 + W["45"] * a4 + W["b5"])
+    return a3, a4, a5, 0.5 * (y - a5) ** 2
+
+a3, a4, a5, E = forward(W)
+d5 = (y - a5) * a5 * (1 - a5)                  # output delta: Err * g'(in5)
+d3 = a3 * (1 - a3) * W["35"] * d5              # hidden deltas: g'(in_j) * W_j5 * d5
+d4 = a4 * (1 - a4) * W["45"] * d5
+print(round(E, 5), round(d5, 5), round(d3, 5), round(d4, 5))
+# 0.08235 0.09786 0.01211 -0.00672
+
+grad = {"35": -a3 * d5, "45": -a4 * d5, "b5": -d5,
+        "13": -a1 * d3, "23": -a2 * d3, "b3": -d3,
+        "14": -a1 * d4, "24": -a2 * d4, "b4": -d4}
+eps = 1e-6
+for k in W:                                    # numerical check of every gradient
+    Wp, Wm = dict(W), dict(W)
+    Wp[k] += eps; Wm[k] -= eps
+    numeric = (forward(Wp)[3] - forward(Wm)[3]) / (2 * eps)
+    assert abs(numeric - grad[k]) &lt; 1e-8
+
+W = {k: W[k] - alpha * grad[k] for k in W}     # one gradient descent step
+print(round(forward(W)[3], 5))                 # 0.07419: the error went down</code></pre>
+    </details>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.6rem;">3. scikit-learn: the MLP from the visual guide</h3>
+    <p class="section-lede">The guide's settings: hidden layers (3, 2), ReLU, plain SGD with learning rate 0.1, no momentum, 1000 epochs. On our 8-point golf data the result depends on the random initial weights, which is a small demonstration of local minima.</p>
+    <details class="code-card">
+      <summary>
+        <span class="code-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="code-file">sklearn_mlp.py</span>
+        <span class="code-lang">Python</span>
+        <button type="button" class="code-copy">Copy</button>
+        <span class="code-chevron" aria-hidden="true">▾</span>
+      </summary>
+      <pre class="code-body"><code class="lang-py">import numpy as np
+from sklearn.neural_network import MLPClassifier
+
+# (temperature, humidity) on a 0-3 scale -> play golf? (1 = yes)
+X = np.array([[0, 0], [3, 0], [0, 3], [3, 3], [1, 1], [2, 1], [1, 2], [2, 2]], dtype=float)
+y = np.array([0, 0, 0, 0, 1, 1, 1, 1])
+
+for seed in range(6):
+    mlp = MLPClassifier(hidden_layer_sizes=(3, 2), activation="relu", solver="sgd",
+                        learning_rate_init=0.1, momentum=0, max_iter=1000, random_state=seed)
+    mlp.fit(X, y)
+    print(seed, mlp.score(X, y))
+# 0 0.5
+# 1 0.5
+# 2 0.75
+# 3 1.0     &lt;- this start reaches a perfect fit
+# 4 1.0
+# 5 0.625
+
+print([w.shape for w in mlp.coefs_])   # [(2, 3), (3, 2), (2, 1)]: 14 weights (+ 6 biases)</code></pre>
+    </details>
+
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.6rem;">4. The digit recogniser from this page</h3>
+    <details class="code-card">
+      <summary>
+        <span class="code-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="code-file">digits_mlp.py</span>
+        <span class="code-lang">Python</span>
+        <button type="button" class="code-copy">Copy</button>
+        <span class="code-chevron" aria-hidden="true">▾</span>
+      </summary>
+      <pre class="code-body"><code class="lang-py">from sklearn.datasets import load_digits
+from sklearn.model_selection import train_test_split
+from sklearn.neural_network import MLPClassifier
+
+X, y = load_digits(return_X_y=True)                        # 1797 images, 8 x 8 = 64 values 0..16
+X_tr, X_te, y_tr, y_te = train_test_split(X, y, test_size=0.25, random_state=0, stratify=y)
+
+mlp = MLPClassifier(hidden_layer_sizes=(16,), activation="logistic",
+                    alpha=1e-3, max_iter=2000, random_state=1)
+mlp.fit(X_tr / 16, y_tr)                                   # scale the inputs to 0..1
+print(mlp.score(X_te / 16, y_te))                          # 0.98
+print(mlp.coefs_[0].shape)                                 # (64, 16): the 16 weight images</code></pre>
+    </details>
+  </section>
+
+  <!-- ===== SUMMARY ===== -->
+  <section class="block" id="summary">
+    <h2 class="section-title">Summary: key takeaways</h2>
+    <ol class="concept-list">
+      <li>Most brains have lots of neurons; each neuron ≈ a <b>linear–threshold unit</b> (?): \(a = g(\sum_j w_j x_j + b)\).</li>
+      <li><b>Perceptrons</b> (one-layer networks) are insufficiently expressive: they represent only linear separators, so no XOR.</li>
+      <li><b>Multilayer networks</b> are sufficiently expressive (universal with one hidden layer, but possibly exponentially large; depth helps). The hidden layers <b>learn features</b> that make the problem linearly separable.</li>
+      <li>They are trained by <b>gradient descent</b>, with derivatives computed by <b>error back-propagation</b>: \(\Delta_j = g'(in_j) \sum_i W_{j,i} \Delta_i\), \(W_{k,j} \leftarrow W_{k,j} + \alpha\, a_k \Delta_j\). Smooth activations (sigmoid, tanh, ReLU) make this possible; a hard threshold does not.</li>
+      <li>Typical problems: choosing the learning rate, slow convergence, local minima, and hypotheses that are hard to understand.</li>
+      <li>Many applications: speech, driving, handwriting, fraud detection, etc. The engineering, cognitive modelling and neural system modelling subfields have largely diverged.</li>
+    </ol>
+  </section>
+
+</div>
+
+<footer>Class notes by Elitsa Yotkova · Lab 11 · built with plain HTML, CSS &amp; JS</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="code-cards.js"></script>
+<script src="lab11.js"></script>
+</body>
+</html>

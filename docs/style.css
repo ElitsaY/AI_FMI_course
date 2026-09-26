@@ -1337,3 +1337,83 @@ b.c0, .dt-out .c0 { color: var(--indigo); } b.c1, .dt-out .c1 { color: #b8394f; 
 .ml-plot .ag-cut { stroke: #d9546e; stroke-width: 1.6; stroke-dasharray: 6 4; }
 .pp-table td, .pp-table th, .ev-table td, .ev-table th { padding: 0.45rem 0.6rem; font-size: 0.84rem; }
 .icon-btn:disabled, .strat-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ---- Lab 11: neural networks ---- */
+.art-nn .hero-art .e0 { stroke: var(--ids); stroke-width: 1.2; opacity: 0.22; }
+.art-nn .hero-art .e1 { stroke: #d9546e; stroke-width: 1.2; opacity: 0.16; }
+.art-nn .hero-art .n { fill: var(--surface); stroke: var(--ids); stroke-width: 2.2; opacity: 0.6; }
+.art-nn .hero-art .n.on { fill: color-mix(in srgb, var(--ids) 55%, var(--surface)); }
+.nn-click { cursor: crosshair; }
+.nn-out p { margin: 0 0 0.5rem; font-size: 0.92rem; overflow-wrap: anywhere; }
+.nn-out .big { font-size: 1.02rem; }
+.nn-out .note { font-size: 0.82rem; color: var(--ink-soft); }
+.nn-out .ok { color: var(--bfs); font-weight: 700; } .nn-out .bad { color: #b8394f; font-weight: 700; }
+.nn-step { font-size: 0.85rem; font-weight: 700; color: var(--ink-soft); }
+.ml-plot .nn-frame { fill: none; stroke: var(--line); stroke-width: 1.5; }
+.ml-plot .nn-hi { fill: var(--indigo); } .ml-plot .nn-lo { fill: #d9546e; }
+.ml-plot .nn-boundary { stroke: var(--ink); stroke-width: 2; stroke-dasharray: 7 5; }
+.ml-plot .nn-wvec { stroke: var(--ink); stroke-width: 2.5; marker-end: none; stroke-linecap: round; }
+.ml-plot .nn-probe { fill: var(--ucs); stroke: var(--ink); stroke-width: 2; }
+.ml-plot .nd-in { fill: var(--surface); stroke: var(--ink-soft); stroke-width: 2; }
+.ml-plot .nd-sum { fill: color-mix(in srgb, var(--ids) 14%, var(--surface)); stroke: var(--ids); stroke-width: 2; }
+.ml-plot .nd-out { fill: color-mix(in srgb, var(--ucs) 24%, var(--surface)); stroke: var(--ucs); stroke-width: 2.5; }
+.ml-plot .nd-t { font-size: 12px; font-weight: 700; fill: var(--ink); }
+.ml-plot .nd-v { font-size: 11px; font-weight: 600; fill: var(--ink-soft); font-variant-numeric: tabular-nums; }
+.ml-plot .nd-w { font-size: 11px; font-weight: 700; fill: var(--ink); }
+.ml-plot .nd-e { stroke-linecap: round; } .ml-plot .nd-e.pos { stroke: var(--indigo); stroke-width: 2; } .ml-plot .nd-e.neg { stroke: #d9546e; }
+.ml-plot .af-f { fill: none; stroke: var(--dfs); stroke-width: 3; }
+.ml-plot .af-d { fill: none; stroke: var(--ink-soft); stroke-width: 2; stroke-dasharray: 6 5; }
+.ml-plot .af-jump { stroke: var(--dfs); stroke-width: 1.5; stroke-dasharray: 3 3; }
+.bt-legend .k.ln.af-fk { background: var(--dfs); } .bt-legend .k.ln.af-dk { background: var(--ink-soft); }
+.ml-plot .lg-pt { stroke: var(--surface); stroke-width: 2.5; }
+.ml-plot .lg-pt.t1 { fill: var(--indigo); } .ml-plot .lg-pt.t0 { fill: #d9546e; }
+.ml-plot .lg-pt.bad { stroke: var(--ink); stroke-width: 3; stroke-dasharray: 3 2; }
+.ml-plot .lg-pt.cur { stroke: var(--ucs); stroke-width: 4; }
+.ml-plot .lg-pt-t { font-family: 'Poppins', sans-serif; font-size: 11px; font-weight: 800; fill: #fff; pointer-events: none; }
+.nn-table td, .nn-table th { padding: 0.4rem 0.55rem; font-size: 0.84rem; }
+.ml-plot .xr-e { stroke: var(--line); stroke-width: 2.5; } .ml-plot .xr-e.on { stroke: var(--indigo); stroke-width: 4; } .ml-plot .xr-e.neg.on { stroke: #d9546e; }
+.ml-plot .xr-w { font-size: 12px; font-weight: 800; fill: var(--ink); paint-order: stroke; stroke: var(--surface); stroke-width: 4px; }
+.ml-plot .xr-n { fill: var(--surface); stroke: var(--ink-soft); stroke-width: 2; } .ml-plot .xr-n.on { fill: color-mix(in srgb, var(--indigo) 22%, var(--surface)); stroke: var(--indigo); stroke-width: 3; }
+.ml-plot .xr-lab { font-size: 10.5px; font-weight: 700; fill: var(--ink-soft); }
+.ml-plot .un-bump { fill: none; stroke: var(--ucs); stroke-width: 1.2; opacity: 0.8; }
+.ml-plot .un-target { fill: none; stroke: var(--ink-soft); stroke-width: 2; stroke-dasharray: 6 5; }
+.ml-plot .un-fit { fill: none; stroke: var(--indigo); stroke-width: 3; }
+.bt-legend .k.ln.un-tk { background: var(--ink-soft); } .bt-legend .k.ln.un-fk { background: var(--indigo); } .bt-legend .k.ln.un-bk { background: var(--ucs); }
+.ml-plot .gd-cost { fill: none; stroke: var(--indigo); stroke-width: 2.5; }
+.ml-plot .gd-step { stroke: #d9546e; stroke-width: 2; }
+.ml-plot .gd-tan { stroke: var(--ucs); stroke-width: 2; stroke-dasharray: 5 4; }
+.ml-plot .pl-line, .ml-plot .mp-loss { fill: none; stroke: #d9546e; stroke-width: 2.2; }
+.ml-plot .bp-e { stroke: var(--line); stroke-width: 2.5; }
+.ml-plot .bp-e.fwd { stroke: var(--indigo); stroke-width: 4; } .ml-plot .bp-e.bwd { stroke: var(--dfs); stroke-width: 4; stroke-dasharray: 8 5; }
+.ml-plot .bp-w { font-size: 11px; font-weight: 700; fill: var(--ink); paint-order: stroke; stroke: var(--surface); stroke-width: 4px; }
+.ml-plot .bp-w.upd { fill: var(--bfs); }
+.ml-plot .bp-n { fill: var(--surface); stroke: var(--ink-soft); stroke-width: 2; }
+.ml-plot .bp-n.in { fill: color-mix(in srgb, var(--ink-soft) 8%, var(--surface)); }
+.ml-plot .bp-n.cur { fill: color-mix(in srgb, var(--dfs) 20%, var(--surface)); stroke: var(--dfs); stroke-width: 3; }
+.ml-plot .bp-d { font-size: 11px; font-weight: 800; fill: var(--dfs); font-variant-numeric: tabular-nums; }
+.bp-h { margin: 0 0 0.5rem; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-soft); }
+.ml-plot .mp-pt { stroke: var(--surface); stroke-width: 1.8; } .ml-plot .mp-pt.c1 { fill: var(--indigo); } .ml-plot .mp-pt.c0 { fill: #d9546e; }
+.ml-plot .mp-w.pos { stroke: var(--indigo); opacity: 0.7; } .ml-plot .mp-w.neg { stroke: #d9546e; opacity: 0.7; }
+.ml-plot .mp-n { fill: var(--surface); stroke: var(--ink); stroke-width: 1.8; }
+.bt-legend .k.ln.pos { background: var(--indigo); } .bt-legend .k.ln.neg { background: #d9546e; }
+.nn-stats { margin: 0 0 0.6rem; }
+.nn-stats .stat { min-width: 70px; padding: 0.5rem 0.4rem; }
+.nn-stats .stat .n { font-size: 1.1rem; }
+.dg-grid { display: grid; grid-template-columns: auto 1fr 1fr; gap: 1.2rem; align-items: start; }
+.dg-grid > * { min-width: 0; }
+.dg-draw-wrap { display: grid; gap: 0.6rem; justify-items: start; }
+.dg-canvas { width: 256px; max-width: 100%; aspect-ratio: 1; border: 2px solid var(--line); border-radius: var(--radius-sm); touch-action: none; cursor: crosshair; background: var(--surface); }
+.dg-small { display: flex; align-items: center; gap: 0.6rem; font-size: 0.8rem; color: var(--ink-soft); font-weight: 700; }
+.dg-8 { width: 80px; height: 80px; border: 1px solid var(--line); border-radius: 6px; image-rendering: pixelated; }
+.dg-hidden h5, .dg-outputs h5 { margin: 0 0 0.5rem; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-soft); }
+.dg-units { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; }
+.dg-unit canvas { width: 100%; aspect-ratio: 1; image-rendering: pixelated; border: 1px solid var(--line); border-radius: 4px; display: block; background: var(--surface); }
+.dg-act { height: 6px; background: var(--bg); border: 1px solid var(--line); border-radius: 999px; overflow: hidden; margin-top: 3px; }
+.dg-act i { display: block; height: 100%; background: var(--ucs); }
+.dg-row { display: grid; grid-template-columns: 1.2rem 1fr 3.4rem; gap: 0.5rem; align-items: center; font-size: 0.85rem; margin-bottom: 0.25rem; }
+.dg-row span { font-family: 'Poppins', sans-serif; font-weight: 800; }
+.dg-row b { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+.dg-bar { height: 12px; background: var(--bg); border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+.dg-bar i { display: block; height: 100%; background: color-mix(in srgb, var(--indigo) 45%, var(--surface)); }
+.dg-row.best .dg-bar i { background: var(--indigo); } .dg-row.best b { color: var(--indigo); font-weight: 800; }
+@media (max-width: 760px) { .dg-grid { grid-template-columns: 1fr; } .dg-draw-wrap { justify-items: center; } }
