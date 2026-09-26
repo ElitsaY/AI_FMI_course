@@ -66,7 +66,7 @@ function renderTreeSVG(svgEl, { showBdm = false } = {}) {
       const t = document.createElementNS(ns, 'text');
       t.setAttribute('x', 14); t.setAttribute('y', y - 8);
       t.setAttribute('font-size', '11'); t.setAttribute('font-weight', '800');
-      t.setAttribute('fill', '#8a5cf6');
+      t.setAttribute('fill', 'var(--indigo)');
       t.textContent = `depth ${i}` + (i === 2 ? '  ← d (shallowest goal, G2)' : i === 3 ? '  ← m (max depth)' : '');
       svgEl.appendChild(t);
     });
@@ -80,7 +80,7 @@ function renderTreeSVG(svgEl, { showBdm = false } = {}) {
     const circle = document.createElementNS(ns, 'circle');
     circle.setAttribute('cx', node.x); circle.setAttribute('cy', node.y); circle.setAttribute('r', 22);
     circle.setAttribute('fill', '#fff');
-    circle.setAttribute('stroke', node.goal ? '#12a894' : '#4b3f97');
+    circle.setAttribute('stroke', node.goal ? 'var(--bfs)' : 'var(--indigo)');
     g.appendChild(circle);
 
     const text = document.createElementNS(ns, 'text');
