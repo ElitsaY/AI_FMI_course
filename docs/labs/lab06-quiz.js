@@ -56,17 +56,17 @@ window.QUIZ = {
       parts: [
         { kind: 'rows', pts: 8, q: 'Identify the learning paradigm.', options: ['Supervised', 'Unsupervised'],
           rows: [
-            { label: '<b>A.</b> The training examples contain house features → known house price.', answer: 0 },
-            { label: '<b>B.</b> A dataset contains customer behaviour but no predefined customer groups; the goal is to discover natural groups in the data.', answer: 1 },
-            { label: '<b>C.</b> Train a spam filter on emails that are each marked spam or not spam.', answer: 0 },
-            { label: '<b>D.</b> Group news articles into topics when no article has a topic label.', answer: 1 },
-            { label: '<b>E.</b> Train a model on chest X-rays that a doctor has labelled healthy or pneumonia.', answer: 0 },
-            { label: '<b>F.</b> Find groups of similar songs from their audio features alone; no genres are given.', answer: 1 },
-            { label: '<b>G.</b> Use past loans, each recorded as repaid or not repaid, to predict whether new applicants will repay.', answer: 0 },
+            { label: '<b>A.</b> Train a spam filter on emails that are each marked spam or not spam.', answer: 0 },
+            { label: '<b>B.</b> Group news articles into topics when no article has a topic label.', answer: 1 },
+            { label: '<b>C.</b> A dataset contains customer behaviour but no predefined customer groups; the goal is to discover natural groups in the data.', answer: 1 },
+            { label: '<b>D.</b> The training examples contain house features → known house price.', answer: 0 },
+            { label: '<b>E.</b> Find groups of similar songs from their audio features alone; no genres are given.', answer: 1 },
+            { label: '<b>F.</b> Use past loans, each recorded as repaid or not repaid, to predict whether new applicants will repay.', answer: 0 },
+            { label: '<b>G.</b> Train a model on chest X-rays that a doctor has labelled healthy or pneumonia.', answer: 0 },
             { label: '<b>H.</b> Organise a photo collection into groups of similar images; the photos have no captions or labels.', answer: 1 },
           ] },
       ],
-      explain: '<p><b>Supervised</b> (the correct target is provided): A house price, C spam label, E doctor’s diagnosis, G repaid / not repaid. <b>Unsupervised</b> (no labels, find structure): B customer groups, D news topics, F similar songs, H similar photos.</p><p>Supervised = inputs + known target; unsupervised = inputs only, no known target. The question to ask is whether each training example comes with the answer the model should learn to give.</p>',
+      explain: '<p><b>Supervised</b> (the correct target is provided): A spam label, D house price, F repaid / not repaid, G doctor’s diagnosis. <b>Unsupervised</b> (no labels, find structure): B news topics, C customer groups, E similar songs, H similar photos.</p><p>Supervised = inputs + known target; unsupervised = inputs only, no known target. The question to ask is whether each training example comes with the answer the model should learn to give.</p>',
     },
     /* ---------- 5 ---------- */
     {
