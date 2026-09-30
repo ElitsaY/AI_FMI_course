@@ -2100,3 +2100,20 @@ svg [fill="#b8394f"] { fill: var(--red-ink); } svg [stroke="#b8394f"] { stroke: 
 .tp-vis .tv-lines { stroke: var(--ink-soft); stroke-width: 2; stroke-linecap: round; opacity: 0.45; }
 .tp-vis .tv-check { fill: none; stroke: var(--bfs); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
 .tp-vis .tv-cm.ok { fill: color-mix(in srgb, var(--bfs) 30%, var(--surface)); } .tp-vis .tv-cm.bad { fill: color-mix(in srgb, #d9546e 22%, var(--surface)); }
+
+/* ---- Lab 12 quiz visuals: token chips, matrices, vectors, masks, heat rows (reuse the lab's .tk-chip / .tf-flow) ---- */
+.qzv .tk-out .tk-row { display: grid; grid-template-columns: 4.6rem minmax(0, 1fr); align-items: center; gap: 0.5rem; }
+.qzv .tk-out .tk-name { margin: 0; }
+.qzv > .tk-chips { justify-content: center; gap: 0.4rem; }
+.qzv .tk-chip b { color: var(--indigo); margin-right: 0.2rem; }
+.qzv-plot .mat { fill: color-mix(in srgb, var(--ids) 10%, var(--surface)); stroke: var(--ids); stroke-width: 2; }
+.qzv-plot .box.hl { fill: color-mix(in srgb, var(--ucs) 22%, var(--surface)); stroke: var(--ucs); }
+.qzv-plot .vec { stroke-width: 3; } .qzv-plot .vec.k { stroke: var(--ids); } .qzv-plot .vec.q { stroke: var(--dfs); }
+.qzv-plot .cell.on { fill: color-mix(in srgb, var(--indigo) 20%, var(--surface)); stroke: var(--indigo); stroke-width: 1.5; }
+.qzv-plot .cell.off { fill: color-mix(in srgb, var(--ink) 5%, var(--surface)); stroke: var(--line); stroke-width: 1.5; }
+.qzv-plot .cellt { font-size: 18px; font-weight: 800; } .qzv-plot .cellt.on { fill: var(--indigo); } .qzv-plot .cellt.off { fill: var(--ink-soft); }
+.qzv-plot .heat { fill: var(--dfs); } .qzv-plot .heat-o { fill: none; stroke: var(--line); stroke-width: 1.5; }
+.qzv-plot .nn-e.skip { fill: none; }
+.qzv-bar.neg .track i { background: #d9546e; }
+.qzv .tf-arr small { font-size: 0.8rem; font-weight: 600; color: var(--ink-soft); }
+.qzv-plot .vec { stroke-width: 2.2; }
