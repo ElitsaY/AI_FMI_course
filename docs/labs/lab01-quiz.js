@@ -119,8 +119,8 @@ window.QUIZ = {
     {
       id: 't9', title: 'Simulate UCS frontier priorities', type: 'Algorithm tracing', level: 'Medium–Hard', skill: 'tracing',
       intro: '<p>Some relevant paths are:</p><ul class="concept-list"><li>S → B → D → G = 1 + 2 + 2 = 5</li><li>S → A → C → G = 4 + 1 + 2 = 7</li><li>S → B → G = 1 + 6 = 7</li><li>S → A → G = 4 + 8 = 12</li></ul>',
-      figure: { nodes: { S: [300, 40], B: [150, 130], A: [450, 130], D: [70, 250], C: [530, 250], G: [300, 330] },
-        edges: [['S', 'B', 1], ['S', 'A', 4], ['B', 'D', 2], ['B', 'G', 6], ['A', 'C', 1], ['A', 'G', 8], ['D', 'G', 2], ['C', 'G', 2]], goals: ['G'], w: 600, h: 370, alt: 'Weighted graph' },
+      figure: { nodes: { S: [220, 40], B: [115, 130], A: [325, 130], D: [40, 245], C: [400, 245], G: [220, 335] },
+        edges: [['S', 'B', 1], ['S', 'A', 4], ['B', 'D', 2], ['B', 'G', 6], ['A', 'C', 1], ['A', 'G', 8], ['D', 'G', 2], ['C', 'G', 2]], goals: ['G'], w: 440, h: 375, alt: 'Weighted graph' },
       parts: [
         { kind: 'mc', pts: 4, q: 'Which solution will UCS return?', options: [M`\(S \rightarrow A \rightarrow G\)`, M`\(S \rightarrow B \rightarrow G\)`, M`\(S \rightarrow A \rightarrow C \rightarrow G\)`, M`\(S \rightarrow B \rightarrow D \rightarrow G\)`], answer: 3, inline: false },
         { kind: 'mc', pts: 2, q: 'Follow-up: when UCS expands B it generates G with cost 7. Why should UCS not stop as soon as a goal is generated?',

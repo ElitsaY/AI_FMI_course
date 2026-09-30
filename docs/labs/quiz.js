@@ -31,10 +31,11 @@ function parseTree(src) {
 }
 
 function drawFigure(fig) {
-  const R = 18, PAD = 30, nodes = [], edges = [], goals = new Set(fig.goals || []), depthRows = [];
-  let W, H;
+  const R = fig.r || 21, PAD = 30, nodes = [], edges = [], goals = new Set(fig.goals || []), depthRows = [];
+  let W, H, HIT = 30;   // HIT: invisible tap radius around each node (phones)
   if (fig.tree) {
     const DX = fig.dx || 62, DY = fig.dy || 70, left = fig.depths ? 58 : 0, root = parseTree(fig.tree);
+    HIT = Math.min(HIT, DX / 2 - 1);
     let leaf = 0, maxD = 0;
     (function walk(n, d) {
       n.depth = d; maxD = Math.max(maxD, d);
@@ -62,15 +63,15 @@ function drawFigure(fig) {
     const p = nodes[e.a], q = nodes[e.b], dx = q.x - p.x, dy = q.y - p.y, L = Math.hypot(dx, dy) || 1, rq = q.more ? 10 : R;
     sv('line', { x1: p.x + dx / L * R, y1: p.y + dy / L * R, x2: q.x - dx / L * rq, y2: q.y - dy / L * rq, class: 'qz-edge' + (e.more ? ' more' : '') }, svg);
     if (e.cost != null) {
-      const mx = (p.x + q.x) / 2, my = (p.y + q.y) / 2, w = String(e.cost).length * 8 + 12;
-      sv('rect', { x: mx - w / 2, y: my - 10, width: w, height: 20, rx: 6, class: 'qz-cost-bg' }, svg);
+      const mx = (p.x + q.x) / 2, my = (p.y + q.y) / 2, w = String(e.cost).length * 10 + 14;
+      sv('rect', { x: mx - w / 2, y: my - 12, width: w, height: 24, rx: 7, class: 'qz-cost-bg' }, svg);
       sv('text', { x: mx, y: my, class: 'qz-cost' }, svg).textContent = e.cost;
     }
   });
   const byLabel = {};
   nodes.forEach(n => {
     const g = sv('g', { class: 'qz-node' + (n.goal ? ' goal' : '') + (n.more ? ' more' : ''), 'data-label': n.label }, svg);
-    if (!n.more) sv('circle', { cx: n.x, cy: n.y, r: R }, g);
+    if (!n.more) { sv('circle', { cx: n.x, cy: n.y, r: HIT, class: 'hit' }, g); sv('circle', { cx: n.x, cy: n.y, r: R }, g); }
     sv('text', { x: n.x, y: n.y }, g).textContent = n.label;
     if (n.more) return;
     const o = sv('g', { class: 'qz-ord', transform: `translate(${n.x + R * 0.9},${n.y - R * 0.9})` }, g);
@@ -137,7 +138,10 @@ function initQuiz() {
       const box = el('div', 'qz-fig'); box.appendChild(T.fig.svg);
       if (task.parts.some(p => p.kind === 'seq')) {
         box.classList.add('pick');
-        box.appendChild(el('p', 'qz-fig-hint', 'Click the nodes in order to fill the highlighted answer box (or type the letters there; Backspace removes the last one).'));
+        box.appendChild(el('p', 'qz-fig-hint', 'Tap the nodes in order to fill the highlighted answer box below (or type the letters in it; Backspace removes the last one).'));
+        T.now = el('div', 'qz-fig-now', '<span class="qz-now-lbl"></span><span class="qz-now-seq"></span><button class="qz-mini" type="button">⌫ Undo</button>');
+        T.now.querySelector('button').addEventListener('click', () => { const P = T.parts.find(p => p.id === T.active); if (P) pop(P); });
+        box.appendChild(T.now);
         Object.keys(T.fig.byLabel).forEach(lab => T.fig.byLabel[lab].addEventListener('click', () => { if (T.active) push(T, T.active, lab); }));
       }
       sec.appendChild(box);
@@ -298,6 +302,11 @@ function initQuiz() {
       g.classList.toggle('in', pos >= 0);
       g.querySelector('.qz-ord text').textContent = pos >= 0 ? pos + 1 : '';
     });
+    if (T.now) {   // live copy of the active answer inside the figure card: on phones the box itself is often off-screen
+      const P = T.parts.find(p => p.id === T.active);
+      T.now.querySelector('.qz-now-lbl').textContent = P ? (P.part.label || 'Answer') : '';
+      T.now.querySelector('.qz-now-seq').textContent = a.length ? a.join(' → ') : 'tap a node…';
+    }
   }
   function push(T, id, lab) { if (graded) return; setActive(T, id); answers[id] = (answers[id] || []).concat(lab); changed(); }
   function pop(P) { if (graded) return; const a = (answers[P.id] || []).slice(0, -1); answers[P.id] = a; changed(); }
