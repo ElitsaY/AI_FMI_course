@@ -21,23 +21,25 @@ This course provides an introduction to the fundamental principles and technique
 
 Lab notes with interactive widgets, served from `docs/` on GitHub Pages: **[elitsay.github.io/AI_FMI_course](https://elitsay.github.io/AI_FMI_course/docs/index.html)**
 
-| Lab | Topic |
-| :--- | :--- |
-| 01 | [Uninformed Search](https://elitsay.github.io/AI_FMI_course/docs/labs/lab01-uninformed-search.html) |
-| 02 | [Informed Search](https://elitsay.github.io/AI_FMI_course/docs/labs/lab02-informed-search.html) |
-| 03 | [Constraint Satisfaction](https://elitsay.github.io/AI_FMI_course/docs/labs/lab03-csp.html) |
-| 04 | [Genetic Algorithms](https://elitsay.github.io/AI_FMI_course/docs/labs/lab04-genetic-algorithms.html) |
-| 05 | [Games](https://elitsay.github.io/AI_FMI_course/docs/labs/lab05-games.html) |
-| 06 | [Introduction to ML](https://elitsay.github.io/AI_FMI_course/docs/labs/lab06-intro-ml.html) |
-| 6.5 | [Linear & Logistic Regression](https://elitsay.github.io/AI_FMI_course/docs/labs/lab065-linear-logistic.html) |
-| 07 | [K-Nearest Neighbours](https://elitsay.github.io/AI_FMI_course/docs/labs/lab07-knn.html) |
-| 08 | [Naive Bayes Classifier](https://elitsay.github.io/AI_FMI_course/docs/labs/lab08-naive-bayes.html) |
-| 09 | [Decision Trees](https://elitsay.github.io/AI_FMI_course/docs/labs/lab09-decision-trees.html) |
-| 10 | [K-Means and Clustering](https://elitsay.github.io/AI_FMI_course/docs/labs/lab10-kmeans.html) |
-| 11 | [Neural Networks](https://elitsay.github.io/AI_FMI_course/docs/labs/lab11-neural-networks.html) |
-| 12 | [Transformers and Generative Models](https://elitsay.github.io/AI_FMI_course/docs/labs/lab12-transformers.html) |
-| 13 | [Post-training and Alignment](https://elitsay.github.io/AI_FMI_course/docs/labs/lab13-alignment.html) |
-| 14 | [Evaluation, Metrics and Data Analysis](https://elitsay.github.io/AI_FMI_course/docs/labs/lab14-evaluation.html) |
+Each lab is followed by a **quiz**: auto-graded in the browser, with an explanation for every answer and a score per skill. Answers stay in the student's browser; nothing is collected. Quizzes for the later labs are on the way.
+
+| Lab | Class notes | Quiz |
+| :--- | :--- | :--- |
+| 01 | [Uninformed Search](https://elitsay.github.io/AI_FMI_course/docs/labs/lab01-uninformed-search.html) | [Quiz](https://elitsay.github.io/AI_FMI_course/docs/labs/lab01-quiz.html) |
+| 02 | [Informed Search](https://elitsay.github.io/AI_FMI_course/docs/labs/lab02-informed-search.html) | coming soon |
+| 03 | [Constraint Satisfaction](https://elitsay.github.io/AI_FMI_course/docs/labs/lab03-csp.html) | coming soon |
+| 04 | [Genetic Algorithms](https://elitsay.github.io/AI_FMI_course/docs/labs/lab04-genetic-algorithms.html) | coming soon |
+| 05 | [Games](https://elitsay.github.io/AI_FMI_course/docs/labs/lab05-games.html) | coming soon |
+| 06 | [Introduction to ML](https://elitsay.github.io/AI_FMI_course/docs/labs/lab06-intro-ml.html) | coming soon |
+| 6.5 | [Linear & Logistic Regression](https://elitsay.github.io/AI_FMI_course/docs/labs/lab065-linear-logistic.html) | coming soon |
+| 07 | [K-Nearest Neighbours](https://elitsay.github.io/AI_FMI_course/docs/labs/lab07-knn.html) | coming soon |
+| 08 | [Naive Bayes Classifier](https://elitsay.github.io/AI_FMI_course/docs/labs/lab08-naive-bayes.html) | coming soon |
+| 09 | [Decision Trees](https://elitsay.github.io/AI_FMI_course/docs/labs/lab09-decision-trees.html) | coming soon |
+| 10 | [K-Means and Clustering](https://elitsay.github.io/AI_FMI_course/docs/labs/lab10-kmeans.html) | coming soon |
+| 11 | [Neural Networks](https://elitsay.github.io/AI_FMI_course/docs/labs/lab11-neural-networks.html) | coming soon |
+| 12 | [Transformers and Generative Models](https://elitsay.github.io/AI_FMI_course/docs/labs/lab12-transformers.html) | coming soon |
+| 13 | [Post-training and Alignment](https://elitsay.github.io/AI_FMI_course/docs/labs/lab13-alignment.html) | coming soon |
+| 14 | [Evaluation, Metrics and Data Analysis](https://elitsay.github.io/AI_FMI_course/docs/labs/lab14-evaluation.html) | coming soon |
 
 ## 💻 Jupyter Notebooks
 
@@ -45,7 +47,6 @@ The primary course materials are presented in a series of Jupyter Notebooks, pro
 
 | File | Topic Covered | Focus |
 | :--- | :--- | :--- |
-| [`00_NumPy_notes.ipynb`](notebooks/00_NumPy_notes.ipynb) | **NumPy Fundamentals** | Notes on NumPy |
 | [`01_Uninformed_search.ipynb`](notebooks/01_Uninformed_search.ipynb) | **Uninformed Search** | Core uninformed search algorithms - DFS, BFS, DLS, UCS, IDS |
 | [`02_Informed_search.ipynb`](notebooks/02_Informed_search.ipynb) | **Informed Search** | Heuristics and algorithms like A\* and Greedy Best-First Search. |
 | [`03_CSP.ipynb`](notebooks/03_CSP.ipynb) | **Constraint Satisfaction Problems** | Backtracking search, inference (e.g., Arc Consistency), and problem modeling. |
