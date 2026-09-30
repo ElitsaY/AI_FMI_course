@@ -1980,3 +1980,6 @@ svg [fill="#b8394f"] { fill: var(--red-ink); } svg [stroke="#b8394f"] { stroke: 
 .qzv-split .a { background: color-mix(in srgb, var(--indigo) 22%, var(--surface)); }
 .qzv-split .b { background: color-mix(in srgb, var(--ucs) 45%, var(--surface)); }
 @media (max-width: 520px) { .qzv { padding: 0.7rem; } .qzv-bar { grid-template-columns: 5.2rem minmax(0, 1fr) 2.8rem; gap: 0.5rem; font-size: 0.82rem; } .qzv-split > div { font-size: 0.72rem; } .qzv-node { min-width: 7.5rem; padding: 0.6rem; } }
+.qzv-splitcard .qzv-mini { width: 280px; }
+.qzv .dt-mb.c3 { background: var(--ucs); }
+.qzv-hint { margin: 0.2rem 0 1rem; font-size: 0.85rem; color: var(--ink-soft); }
