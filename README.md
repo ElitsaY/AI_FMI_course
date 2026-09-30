@@ -25,6 +25,7 @@ Each lab is followed by a **quiz**: auto-graded in the browser, with an explanat
 
 | Lab | Class notes | Quiz |
 | :--- | :--- | :--- |
+| 00 | [Introduction](https://elitsay.github.io/AI_FMI_course/docs/labs/lab00-introduction.html) | — |
 | 01 | [Uninformed Search](https://elitsay.github.io/AI_FMI_course/docs/labs/lab01-uninformed-search.html) | [Quiz](https://elitsay.github.io/AI_FMI_course/docs/labs/lab01-quiz.html) |
 | 02 | [Informed Search](https://elitsay.github.io/AI_FMI_course/docs/labs/lab02-informed-search.html) | [Quiz](https://elitsay.github.io/AI_FMI_course/docs/labs/lab02-quiz.html) |
 | 03 | [Constraint Satisfaction](https://elitsay.github.io/AI_FMI_course/docs/labs/lab03-csp.html) | [Quiz](https://elitsay.github.io/AI_FMI_course/docs/labs/lab03-quiz.html) |
