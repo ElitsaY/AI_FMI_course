@@ -17,7 +17,7 @@ window.QUIZ = {
     {
       id: 't1', title: 'AI or machine learning?', type: 'Concept', level: 'Easy', skill: 'found',
       parts: [
-        { kind: 'mc', pts: 4, q: 'Which statement is correct?', options: ['Every AI system must use machine learning.', 'Machine learning is a branch of AI that learns patterns from data.', 'AI and machine learning mean exactly the same thing.', 'Machine learning cannot make predictions on unseen data.'], answer: 1, inline: false },
+        { kind: 'mc', pts: 5, q: 'Which statement is correct?', options: ['Every AI system must use machine learning.', 'Machine learning is a branch of AI that learns patterns from data.', 'AI and machine learning mean exactly the same thing.', 'Machine learning cannot make predictions on unseen data.'], answer: 1, inline: false },
       ],
       explain: '<p>Machine learning is a <b>branch of AI</b>. Not every AI system uses machine learning: a rule-based system may be AI without learning from data.</p>',
     },
@@ -25,7 +25,7 @@ window.QUIZ = {
     {
       id: 't2', title: 'Classification or regression?', type: 'Task type', level: 'Easy', skill: 'found',
       parts: [
-        { kind: 'rows', pts: 10, q: 'For each task, decide whether it is classification or regression.', options: CR,
+        { kind: 'rows', pts: 9, q: 'For each task, decide whether it is classification or regression.', options: CR,
           rows: [
             { label: '<b>A.</b> Predict the price of an apartment.', answer: 1 },
             { label: '<b>B.</b> Predict whether an email is spam / not spam.', answer: 0 },
@@ -33,13 +33,12 @@ window.QUIZ = {
             { label: '<b>D.</b> Predict whether an image contains a cat / dog / horse.', answer: 0 },
             { label: '<b>E.</b> Predict how many minutes a food delivery will take.', answer: 1 },
             { label: '<b>F.</b> Recognise which digit (0–9) is written in a handwritten image.', answer: 0 },
-            { label: '<b>G.</b> Predict a student’s final exam score out of 100.', answer: 1 },
-            { label: '<b>H.</b> Predict a film’s genre: comedy / drama / horror.', answer: 0 },
-            { label: '<b>I.</b> Predict a loan applicant’s risk level: low / medium / high.', answer: 0 },
-            { label: '<b>J.</b> Predict a household’s electricity consumption next month (kWh).', answer: 1 },
+            { label: '<b>G.</b> Predict a film’s genre: comedy / drama / horror.', answer: 0 },
+            { label: '<b>H.</b> Predict a loan applicant’s risk level: low / medium / high.', answer: 0 },
+            { label: '<b>I.</b> Predict a household’s electricity consumption next month (kWh).', answer: 1 },
           ] },
       ],
-      explain: '<p><b>Regression</b> (a continuous numeric quantity): A price, C weight, E delivery time, G exam score, J electricity consumption. <b>Classification</b> (a discrete class): B spam, D animal, F digit, H genre, I risk level.</p><p>Watch F and I: the digits 0–9 are written as numbers, and low / medium / high has an order, but both are still a fixed set of categories, not a quantity to measure.</p>',
+      explain: '<p><b>Regression</b> (a continuous numeric quantity): A price, C weight, E delivery time, I electricity consumption. <b>Classification</b> (a discrete class): B spam, D animal, F digit, G genre, H risk level.</p><p>Watch F and H: the digits 0–9 are written as numbers, and low / medium / high has an order, but both are still a fixed set of categories, not a quantity to measure.</p>',
     },
     /* ---------- 3 ---------- */
     {
