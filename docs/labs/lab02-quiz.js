@@ -120,7 +120,7 @@ window.QUIZ = {
     },
     /* ---------- 10 ---------- */
     {
-      id: 't10', title: 'Admissible but not consistent', type: 'Heuristic reasoning', level: 'Hard', skill: 'adm',
+      id: 't10', title: 'Admissibility and consistency', type: 'Heuristic reasoning', level: 'Hard', skill: 'adm',
       intro: M`<p>The true cheapest costs to G are \(h^*(S) = 5\), \(h^*(A) = 5\), \(h^*(B) = 2\), \(h^*(G) = 0\).</p>`,
       figure: { nodes: { S: [200, 40], A: [80, 160], B: [320, 160], G: [200, 280] }, edges: [['S', 'A', 2], ['S', 'B', 3], ['A', 'G', 5], ['B', 'G', 2]],
         notes: { S: 'h=5', A: 'h=4', B: 'h=1', G: 'h=0' }, goals: ['G'], w: 400, h: 320, alt: 'Weighted graph with heuristic values' },
