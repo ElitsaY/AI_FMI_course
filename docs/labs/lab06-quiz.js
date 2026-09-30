@@ -80,7 +80,7 @@ window.QUIZ = {
     },
     /* ---------- 6 ---------- */
     {
-      id: 't6', title: 'Training set vs. test set', type: 'Data splits', level: 'Easy–Medium', skill: 'data',
+      id: 't6', title: 'A suspicious accuracy report', type: 'Data splits', level: 'Easy–Medium', skill: 'data',
       intro: '<p>A student trains a model using 10,000 examples. They then report the model’s accuracy using those exact same 10,000 examples.</p>',
       parts: [
         { kind: 'mc', pts: 5, q: 'What is the problem?', options: ['10,000 examples are too few to train on.', 'Accuracy is never a valid metric.', 'They measure performance on the training data, not on unseen data; a separate test set is needed to measure generalization.', 'They should have used unsupervised learning.'], answer: 2, inline: false },
@@ -102,7 +102,7 @@ window.QUIZ = {
     },
     /* ---------- 8 ---------- */
     {
-      id: 't8', title: 'What is overfitting?', type: 'Generalization', level: 'Medium', skill: 'gen',
+      id: 't8', title: 'Diagnose the model: 99% vs. 68%', type: 'Generalization', level: 'Medium', skill: 'gen',
       intro: '<p>A model achieves <b>training accuracy 99%</b> and <b>test accuracy 68%</b>.</p>',
       parts: [
         { kind: 'mc', pts: 6, q: 'Which phenomenon is the strongest warning sign here?', options: ['Underfitting', 'Overfitting', 'Unsupervised learning', 'Feature scaling'], answer: 1 },
@@ -111,7 +111,7 @@ window.QUIZ = {
     },
     /* ---------- 9 ---------- */
     {
-      id: 't9', title: 'What is underfitting?', type: 'Generalization', level: 'Medium', skill: 'gen',
+      id: 't9', title: 'Diagnose the model: 58% vs. 55%', type: 'Generalization', level: 'Medium', skill: 'gen',
       intro: '<p><b>Training accuracy 58%</b>, <b>test accuracy 55%</b>. The task is known to be learnable much more accurately.</p>',
       parts: [
         { kind: 'mc', pts: 5, q: 'Which phenomenon is most likely?', options: ['Overfitting', 'Data leakage', 'Underfitting', 'Too many training examples'], answer: 2 },
