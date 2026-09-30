@@ -1,14 +1,30 @@
 /* ===== Lab 09 quiz: question data (rendered and graded by quiz.js) ===== */
 const M = String.raw;
 const LAB = 'lab09-decision-trees.html';
-const TREE = `                 Outlook?
-              /     |      \\
-          Sunny  Overcast   Rain
-            |       |         |
-        Humidity?  Yes      Wind?
-         /   \\              /   \\
-      High Normal        Weak Strong
-       No    Yes          Yes    No`;
+/* ---------- small static visuals (reuse the lab's .dt-tree / .dt-mb styles) ---------- */
+const svg = (w, h, body, cls = '') => `<svg class="dt-tree ${cls}" viewBox="0 0 ${w} ${h}" role="img">${body}</svg>`;
+const nd = (x, y, w, text, cls, h = 36) => `<g class="nd ${cls}"><rect x="${x - w / 2}" y="${y - h / 2}" width="${w}" height="${h}" rx="10"/><text class="t" x="${x}" y="${y}" text-anchor="middle" dominant-baseline="central">${text}</text></g>`;
+const q = (x, y, w, text) => nd(x, y, w, text, 'q');
+const leaf = (x, y, yes, label) => nd(x, y, 58, label || (yes ? 'Yes' : 'No'), 'leaf ' + (yes ? 'c0' : 'c1'));
+const edge = (x1, y1, x2, y2, label, t = 0.5) => `<line class="edge" x1="${x1}" y1="${y1 + 18}" x2="${x2}" y2="${y2 - 18}"/>`
+  + (label ? `<text class="elabel" x="${x1 + (x2 - x1) * t}" y="${y1 + 18 + (y2 - y1 - 36) * t}" text-anchor="middle" dominant-baseline="central">${label}</text>` : '');
+const viz = (html, cls = '') => `<div class="qzv ${cls}">${html}</div>`;
+const legend = '<p class="qzv-legend"><span><i class="dt-mb c0"></i> Yes</span><span><i class="dt-mb c1"></i> No</span></p>';
+// the weather tree from the lab
+const WEATHER = viz(svg(480, 270,
+  edge(240, 30, 95, 135, 'Sunny') + edge(240, 30, 240, 135, 'Overcast') + edge(240, 30, 385, 135, 'Rain')
+  + edge(95, 135, 40, 240, 'High') + edge(95, 135, 150, 240, 'Normal') + edge(385, 135, 330, 240, 'Weak') + edge(385, 135, 440, 240, 'Strong')
+  + q(240, 30, 118, 'Outlook?') + q(95, 135, 112, 'Humidity?') + leaf(240, 135, true) + q(385, 135, 84, 'Wind?')
+  + leaf(40, 240, false) + leaf(150, 240, true) + leaf(330, 240, true) + leaf(440, 240, false), 'qzv-tree'));
+// class-count cards
+const bag = (yes, no) => '<span class="dt-bag">' + '<i class="dt-mb c0"></i>'.repeat(yes) + '<i class="dt-mb c1"></i>'.repeat(no) + '</span>';
+const card = (title, yes, no) => `<div class="qzv-node"><b>${title}</b>${bag(yes, no)}<span>${yes} Yes · ${no} No</span></div>`;
+const cards = (...items) => viz('<div class="qzv-nodes">' + items.join('') + '</div>' + legend);
+const ARROW = '<span class="qzv-arrow" aria-hidden="true">→</span>';
+// horizontal bars: rows of [label, value, max, shown, cls]
+const bars = rows => '<div class="qzv-bars">' + rows.map(([l, v, max, shown, cls]) => l === null ? `<p class="qzv-group">${v}</p>`
+  : `<div class="qzv-bar ${cls || ''}"><span>${l}</span><span class="track"><i style="width:${100 * v / max}%"></i></span><b>${shown}</b></div>`).join('') + '</div>';
+
 
 window.QUIZ = {
   id: 'lab09',
@@ -37,7 +53,7 @@ window.QUIZ = {
     /* ---------- 2 ---------- */
     {
       id: 't2', title: 'Anatomy of a decision tree', type: 'Reading a tree', level: 'Easy', skill: 'basics',
-      intro: '<pre class="qz-code qz-diagram">' + TREE + '</pre>',
+      intro: WEATHER,
       parts: [
         { kind: 'rows', pts: 5, q: 'What is each part of this tree?', options: ['Root node', 'Internal node', 'Leaf', 'Branch'],
           rows: [
@@ -53,7 +69,7 @@ window.QUIZ = {
     /* ---------- 3 ---------- */
     {
       id: 't3', title: 'Follow the tree', type: 'Reading a tree', level: 'Easy', skill: 'basics',
-      intro: '<p>Use the same tree. A day has <b>Outlook = Sunny</b>, <b>Humidity = Normal</b>, <b>Wind = Strong</b>.</p><pre class="qz-code qz-diagram">' + TREE + '</pre>',
+      intro: '<p>Use the same tree. A day has <b>Outlook = Sunny</b>, <b>Humidity = Normal</b>, <b>Wind = Strong</b>.</p>' + WEATHER,
       parts: [
         { kind: 'mc', pts: 3, q: 'What does the tree predict?', options: ['Yes', 'No'], answer: 0, letters: false },
         { kind: 'mc', pts: 2, q: 'Which feature of this day is never used on its path?', options: ['Outlook', 'Humidity', 'Wind'], answer: 2, letters: false },
@@ -90,21 +106,21 @@ window.QUIZ = {
     /* ---------- 7 ---------- */
     {
       id: 't7', title: '8 Yes, 0 No', type: 'Entropy', level: 'Easy', skill: 'entropy',
-      intro: '<p>A node contains 8 Yes and 0 No examples.</p>',
+      intro: cards(card('Node', 8, 0)),
       parts: [{ kind: 'num', pts: 3, q: 'What is its entropy (in bits)?', prefix: 'H =', answer: 0 }],
       explain: '<p><b>H = 0</b>: the node is completely pure, so there is no uncertainty about the class.</p>',
     },
     /* ---------- 8 ---------- */
     {
       id: 't8', title: '4 Yes, 4 No', type: 'Entropy', level: 'Easy', skill: 'entropy',
-      intro: '<p>A node contains 4 Yes and 4 No examples.</p>',
+      intro: cards(card('Node', 4, 4)),
       parts: [{ kind: 'num', pts: 3, q: 'What is its entropy (in bits)?', prefix: 'H =', answer: 1 }],
       explain: '<p>For two equally likely classes <b>H = 1 bit</b>. In a two-class problem a pure node has entropy 0 and a 50/50 node has entropy 1: it is maximally impure.</p>',
     },
     /* ---------- 9 ---------- */
     {
       id: 't9', title: 'Which node is more impure?', type: 'Entropy', level: 'Medium', skill: 'entropy',
-      intro: '<p>Node A has 3 Yes and 1 No. Node B has 6 Yes and 2 No.</p>',
+      intro: cards(card('Node A', 3, 1), card('Node B', 6, 2)),
       parts: [
         { kind: 'mc', pts: 3, q: 'Which has higher entropy?', options: ['Node A', 'Node B', 'Neither: they are equal'], answer: 2, letters: false },
         { kind: 'num', pts: 3, q: M`Compute the entropy of node A, to two decimal places: \(H = -\sum_i p_i \log_2 p_i\).`, prefix: 'H =', answer: -(0.75 * Math.log2(0.75) + 0.25 * Math.log2(0.25)), tol: 0.006, show: '0.81' },
@@ -114,7 +130,7 @@ window.QUIZ = {
     /* ---------- 10 ---------- */
     {
       id: 't10', title: 'One more Yes', type: 'Entropy', level: 'Medium', skill: 'entropy',
-      intro: '<p>A node starts with 5 Yes and 2 No. Then one more Yes example is added: 6 Yes and 2 No.</p>',
+      intro: '<p>A node starts with 5 Yes and 2 No. Then one more Yes example is added.</p>' + cards(card('Before', 5, 2), ARROW, card('After', 6, 2)),
       parts: [
         { kind: 'mc', pts: 4, q: 'Does the entropy increase or decrease?', options: ['It increases', 'It decreases', 'It stays the same'], answer: 1, letters: false },
       ],
@@ -123,21 +139,26 @@ window.QUIZ = {
     /* ---------- 11 ---------- */
     {
       id: 't11', title: 'Information gain', type: 'Calculation', level: 'Medium', skill: 'gain',
-      intro: '<p>A parent node has entropy H(parent) = 1.0. A split produces two equally sized child nodes with entropy 0 and 0.</p>',
+      intro: '<p>A parent node has entropy H(parent) = 1.0. A split produces two equally sized child nodes with entropy 0 and 0.</p>' + viz(svg(460, 215,
+        edge(230, 40, 120, 170) + edge(230, 40, 340, 170)
+        + `<g class="nd q"><rect x="120" y="12" width="220" height="56" rx="12"/></g>` + [0, 1, 2, 3, 4, 5, 6, 7].map(i => `<circle class="qzv-m c${i < 4 ? 0 : 1}" cx="${146 + i * 24}" cy="40" r="9"/>`).join('')
+        + `<g class="nd q"><rect x="45" y="144" width="150" height="52" rx="12"/></g><g class="nd q"><rect x="265" y="144" width="150" height="52" rx="12"/></g>`
+        + [0, 1, 2, 3].map(i => `<circle class="qzv-m c0" cx="${84 + i * 24}" cy="170" r="9"/><circle class="qzv-m c1" cx="${304 + i * 24}" cy="170" r="9"/>`).join('')
+        + '<text class="cnt" x="350" y="40" dominant-baseline="central">H = 1.0</text><text class="cnt" x="120" y="208" text-anchor="middle">H = 0</text><text class="cnt" x="340" y="208" text-anchor="middle">H = 0</text>', 'qzv-split-svg') + legend),
       parts: [{ kind: 'num', pts: 4, q: 'What is the information gain?', answer: 1, tol: 0.001, show: '1.0' }],
       explain: M`<p>Weighted child entropy \(= 0.5 \cdot 0 + 0.5 \cdot 0 = 0\), so Gain \(= 1.0 - 0 = 1.0\). This is a perfect split: both children are pure.</p>`,
     },
     /* ---------- 12 ---------- */
     {
       id: 't12', title: 'Choose the split', type: 'Selection', level: 'Easy', skill: 'gain',
-      intro: '<p>At the current node: gain(A) = 0.12, gain(B) = 0.42, gain(C) = 0.08, gain(D) = 0.25.</p>',
+      intro: '<p>Information gain of each feature at the current node:</p>' + viz(bars([['Feature A', 0.12, 0.5, '0.12'], ['Feature B', 0.42, 0.5, '0.42'], ['Feature C', 0.08, 0.5, '0.08'], ['Feature D', 0.25, 0.5, '0.25']])),
       parts: [{ kind: 'mc', pts: 3, q: 'Which feature does ID3 choose?', options: ['A', 'B', 'C', 'D'], answer: 1, letters: false }],
       explain: '<p><b>Feature B</b>, because it has the largest information gain (0.42).</p>',
     },
     /* ---------- 13 ---------- */
     {
       id: 't13', title: '90 vs. 10 examples', type: 'Calculation', level: 'Medium', skill: 'gain',
-      intro: '<p>A split creates child A with <b>90 examples</b> and entropy 0.5, and child B with <b>10 examples</b> and entropy 1.0.</p>',
+      intro: '<p>A split creates child A with <b>90 examples</b> and entropy 0.5, and child B with <b>10 examples</b> and entropy 1.0.</p>' + viz('<div class="qzv-split"><div class="a" style="flex:90">Child A · 90 examples · H = 0.5</div><div class="b" style="flex:10">B</div></div><p class="qzv-legend">Child B: 10 examples · H = 1.0</p>'),
       parts: [
         { kind: 'num', pts: 3, q: 'What is the weighted child entropy used by information gain?', answer: 0.55, tol: 0.001 },
         { kind: 'mc', pts: 3, q: 'Why not simply average the two child entropies 50/50?', options: ['A plain average would always give a negative gain.', 'Child A holds 90% of the data, so it should count more.', 'Entropy is only defined for nodes with 50 examples.', 'Averaging would make both children look pure.'], answer: 1, inline: false },
@@ -147,7 +168,9 @@ window.QUIZ = {
     /* ---------- 14 ---------- */
     {
       id: 't14', title: 'A StudentID feature', type: 'Split quality', level: 'Hard', skill: 'gain',
-      intro: '<p>The dataset has an ID-like feature, <code>StudentID</code>: every training example has a unique value, so splitting on it creates one pure child per example.</p>',
+      intro: '<p>The dataset has an ID-like feature, <code>StudentID</code>: every training example has a unique value, so splitting on it creates one pure child per example.</p>' + viz(svg(460, 180,
+        [40, 116, 192, 268, 344, 420].map((x, i) => edge(230, 30, x, 150, 'S' + (i + 1), 0.72)).join('') + q(230, 30, 124, 'StudentID?')
+        + [40, 116, 192, 268, 344, 420].map((x, i) => leaf(x, 150, [1, 0, 1, 1, 0, 1][i])).join(''), 'qzv-tree')),
       parts: [
         { kind: 'mc', pts: 3, q: 'Why can information gain strongly prefer this useless feature?',
           options: ['IDs are numeric, and gain favours numeric features.', 'Every child is pure, so the gain is the maximum possible.', 'IDs are always sorted, which lowers the entropy.', 'Unique values make the parent entropy zero.'], answer: 1, inline: false },
@@ -158,7 +181,9 @@ window.QUIZ = {
     /* ---------- 15 ---------- */
     {
       id: 't15', title: 'Numeric thresholds', type: 'Split candidates', level: 'Medium', skill: 'gain',
-      intro: '<p>A numeric feature has the sorted values <b>2, 5, 8, 12</b>. Candidate thresholds are tested at the midpoints between neighbouring values.</p>',
+      intro: '<p>A numeric feature has the sorted values <b>2, 5, 8, 12</b>. Candidate thresholds are tested at the midpoints between neighbouring values.</p>' + viz(svg(460, 90,
+        '<line class="edge" x1="30" y1="55" x2="430" y2="55"/>' + Array.from({ length: 15 }, (_, v) => `<line class="edge" x1="${30 + v * 400 / 14}" y1="${v % 2 ? 51 : 48}" x2="${30 + v * 400 / 14}" y2="${v % 2 ? 59 : 62}"/>` + (v % 2 ? '' : `<text class="cnt" x="${30 + v * 400 / 14}" y="78" text-anchor="middle">${v}</text>`)).join('')
+        + [2, 5, 8, 12].map((v, i) => `<circle class="qzv-m v" cx="${30 + v * 400 / 14}" cy="55" r="10"/><text class="t" x="${30 + v * 400 / 14}" y="26" text-anchor="middle">${v}</text>`).join(''), 'qzv-line')),
       parts: [
         { kind: 'multi', pts: 6, q: 'Which values are midpoint threshold candidates?', options: ['3.5', '5', '6.5', '7', '10', '12'], answer: [0, 2, 4], letters: false },
       ],
@@ -167,7 +192,7 @@ window.QUIZ = {
     /* ---------- 16 ---------- */
     {
       id: 't16', title: '100% train, 72% test', type: 'Diagnosis', level: 'Medium', skill: 'overfit',
-      intro: '<p>A decision tree achieves training accuracy 100% and test accuracy 72%. It is very deep and has many leaves containing only a few examples.</p>',
+      intro: '<p>A decision tree is very deep and has many leaves containing only a few examples.</p>' + viz(bars([['Training', 100, 100, '100%'], ['Test', 72, 100, '72%', 'val']])),
       parts: [
         { kind: 'mc', pts: 3, q: 'What is the likely problem?', options: ['Underfitting', 'Data leakage', 'Overfitting', 'Too few features'], answer: 2 },
         { kind: 'mc', pts: 2, q: 'Which is it associated with?', options: ['High bias', 'High variance'], answer: 1, letters: false },
@@ -177,6 +202,16 @@ window.QUIZ = {
     /* ---------- 17 ---------- */
     {
       id: 't17', title: 'Shallow vs. deep trees', type: 'Matching', level: 'Medium', skill: 'overfit',
+      intro: viz('<div class="qzv-nodes">' + [
+        ['Shallow tree', [[110, 45, [[60, 125], [160, 125]]]]],
+        ['Deep tree', [[110, 18, [[55, 52], [165, 52]]], [55, 52, [[28, 88], [82, 88]]], [165, 52, [[138, 88], [192, 88]]], [28, 88, [[14, 124], [44, 124]]], [82, 88, [[68, 124], [98, 124]]],
+          [138, 88, [[124, 124], [154, 124]]], [44, 124, [[34, 160], [56, 160]]], [98, 124, [[88, 160], [110, 160]]], [154, 124, [[144, 160], [166, 160]]]]],
+      ].map(([name, inner]) => {
+        const kids = new Set(inner.map(([x, y]) => x + ',' + y));
+        let lines = '', dots = '', k = 0;
+        inner.forEach(([x, y, ch]) => { ch.forEach(([cx, cy]) => { lines += `<line class="edge" x1="${x}" y1="${y}" x2="${cx}" y2="${cy}"/>`; if (!kids.has(cx + ',' + cy)) dots += `<circle class="qzv-m c${k++ % 2}" cx="${cx}" cy="${cy}" r="7"/>`; }); dots += `<circle class="qzv-m q" cx="${x}" cy="${y}" r="7"/>`; });
+        return `<div class="qzv-node"><b>${name}</b>` + svg(220, 175, lines + dots, 'qzv-mini') + '</div>';
+      }).join('') + '</div>'),
       parts: [
         { kind: 'rows', pts: 5, q: 'Which tree typically has…', options: ['Shallow tree', 'Deep tree'],
           rows: [
@@ -232,7 +267,7 @@ window.QUIZ = {
     /* ---------- 21 ---------- */
     {
       id: 't21', title: 'Depth 3 vs. depth 20', type: 'Trade-off', level: 'Hard', skill: 'overfit',
-      intro: '<table class="qz-pq"><thead><tr><th></th><th>Model A</th><th>Model B</th></tr></thead><tbody><tr><td>Max depth</td><td>3</td><td>20</td></tr><tr><td>Training accuracy</td><td>83%</td><td>100%</td></tr><tr><td>Validation accuracy</td><td>81%</td><td>70%</td></tr></tbody></table>',
+      intro: viz(bars([[null, 'Model A · max depth 3'], ['Training', 83, 100, '83%'], ['Validation', 81, 100, '81%', 'val'], [null, 'Model B · max depth 20'], ['Training', 100, 100, '100%'], ['Validation', 70, 100, '70%', 'val']])),
       parts: [
         { kind: 'mc', pts: 4, q: 'Which tree shows stronger evidence of overfitting?', options: ['Model A', 'Model B'], answer: 1, letters: false },
         { kind: 'mc', pts: 4, q: 'Which model would you rather deploy?', options: ['Model A', 'Model B'], answer: 0, letters: false },

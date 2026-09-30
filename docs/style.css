@@ -1948,3 +1948,35 @@ svg [fill="#b8394f"] { fill: var(--red-ink); } svg [stroke="#b8394f"] { stroke: 
   .qz-boards { gap: 1rem; } .qz-boards .puzzle-board { grid-template-columns: repeat(3, 40px); grid-template-rows: repeat(3, 40px); }
 }
 @media (max-width: 520px) { body.home .site-nav { gap: 0.6rem; padding-left: 1rem; padding-right: 1rem; } body.home .site-nav nav { gap: 0.75rem; font-size: 0.85rem; } body.home .site-nav .brand { font-size: 1rem; } }
+
+/* ---- Quiz visuals (Lab 09 onward): static trees, class marbles, bars; reuse the lab's .dt-tree / .dt-mb styles ---- */
+.qzv { margin: 0 0 1.1rem; padding: 1rem; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow-sm); }
+.qzv > svg { display: block; width: 100%; height: auto; margin: 0 auto; }
+.qzv-tree { max-width: 520px; }
+.qzv .dt-tree .nd .t { font-size: 16px; }
+.qzv .dt-tree .elabel { font-size: 14px; }
+.qzv .dt-tree .cnt { font-size: 13px; font-weight: 700; fill: var(--ink-soft); }
+.qzv-m { stroke: var(--surface); stroke-width: 2; }
+.qzv-m.c0 { fill: var(--indigo); } .qzv-m.c1 { fill: #d9546e; } .qzv-m.v { fill: var(--ucs); } .qzv-m.q { fill: var(--surface); stroke: var(--indigo); stroke-width: 2.5; }
+.qzv-legend { display: flex; justify-content: center; gap: 1.1rem; margin: 0.7rem 0 0; font-size: 0.8rem; font-weight: 600; color: var(--ink-soft); }
+.qzv-legend .dt-mb { width: 11px; height: 11px; vertical-align: -1px; margin-right: 0.15rem; }
+.qzv-nodes { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 0.8rem; }
+.qzv-node { display: grid; justify-items: center; gap: 0.45rem; min-width: 8.5rem; padding: 0.75rem 0.9rem; border: 1.5px solid color-mix(in srgb, var(--indigo) 35%, var(--line)); border-radius: var(--radius-sm); background: color-mix(in srgb, var(--indigo) 4%, var(--surface)); }
+.qzv-node > b { font-size: 0.72rem; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-soft); }
+.qzv-node .dt-bag { justify-content: center; max-width: 10.5rem; margin: 0; }
+.qzv-node > span:last-child { font-size: 0.85rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.qzv-node .qzv-mini { width: 190px; max-width: 100%; height: auto; }
+.qzv-arrow { font-size: 1.5rem; font-weight: 700; color: var(--ink-soft); }
+.qzv-bars { display: grid; gap: 0.55rem; max-width: 560px; margin: 0 auto; }
+.qzv-bar { display: grid; grid-template-columns: 6.5rem minmax(0, 1fr) 3.2rem; align-items: center; gap: 0.7rem; font-size: 0.88rem; font-weight: 600; }
+.qzv-bar .track { height: 16px; overflow: hidden; border-radius: 999px; background: color-mix(in srgb, var(--ink) 7%, var(--surface)); }
+.qzv-bar .track i { display: block; height: 100%; border-radius: 999px; background: var(--indigo); }
+.qzv-bar.val .track i { background: var(--ucs); }
+.qzv-bar > b { text-align: right; font-family: 'Poppins', sans-serif; font-variant-numeric: tabular-nums; }
+.qzv-group { margin: 0.5rem 0 0; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-soft); }
+.qzv-group:first-child { margin-top: 0; }
+.qzv-split { display: flex; gap: 5px; height: 2.8rem; }
+.qzv-split > div { display: flex; align-items: center; justify-content: center; min-width: 2.2rem; border-radius: 10px; font-size: 0.85rem; font-weight: 700; color: var(--ink); }
+.qzv-split .a { background: color-mix(in srgb, var(--indigo) 22%, var(--surface)); }
+.qzv-split .b { background: color-mix(in srgb, var(--ucs) 45%, var(--surface)); }
+@media (max-width: 520px) { .qzv { padding: 0.7rem; } .qzv-bar { grid-template-columns: 5.2rem minmax(0, 1fr) 2.8rem; gap: 0.5rem; font-size: 0.82rem; } .qzv-split > div { font-size: 0.72rem; } .qzv-node { min-width: 7.5rem; padding: 0.6rem; } }
