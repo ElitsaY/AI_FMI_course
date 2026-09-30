@@ -1800,6 +1800,7 @@ svg [fill="#b8394f"] { fill: var(--red-ink); } svg [stroke="#b8394f"] { stroke: 
 .qz-head h2.section-title { font-size: 1.45rem; margin: 0; }
 .qz-no { flex-shrink: 0; display: inline-grid; place-items: center; width: 2.2rem; height: 2.2rem; border-radius: 50%; background: color-mix(in srgb, var(--indigo) 16%, var(--surface)); color: var(--ink); font-family: 'Poppins', sans-serif; font-weight: 800; }
 .qz-intro { margin: 0 0 1rem; } .qz-intro p { margin: 0 0 0.6rem; } .qz-intro .concept-list { margin: 0 0 0.6rem; }
+.qz-boards { gap: 1.5rem; margin: 0.6rem 0 0.4rem; }
 .qz-quote { margin: 0.6rem 0 0; padding: 0.6rem 1rem; border-left: 4px solid var(--ucs); background: color-mix(in srgb, var(--ucs) 10%, var(--surface)); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; font-style: italic; }
 .qz-fig { margin: 0 0 1.1rem; padding: 0.8rem; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow-sm); }
 .qz-fig svg { display: block; width: 100%; height: auto; margin: 0 auto; }
@@ -1812,6 +1813,7 @@ svg [fill="#b8394f"] { fill: var(--red-ink); } svg [stroke="#b8394f"] { stroke: 
 .qz-fig .qz-edge.more { stroke-dasharray: 4 4; }
 .qz-fig .qz-cost-bg { fill: var(--surface); stroke: var(--line); }
 .qz-fig .qz-cost { font: 700 16px 'Inter', sans-serif; fill: var(--ink); text-anchor: middle; dominant-baseline: central; }
+.qz-fig .qz-note { font: 700 14px 'Inter', sans-serif; fill: var(--indigo); dominant-baseline: central; }
 .qz-fig .qz-depth { font: 800 11px 'Inter', sans-serif; fill: var(--ink-soft); dominant-baseline: central; }
 .qz-fig .qz-node circle { fill: var(--surface); stroke: var(--indigo); stroke-width: 2.5; transition: fill 0.15s ease; }
 .qz-fig .qz-node.goal circle { stroke: var(--bfs); stroke-dasharray: 4 3; fill: color-mix(in srgb, var(--bfs) 12%, var(--surface)); }
@@ -1860,6 +1862,13 @@ svg [fill="#b8394f"] { fill: var(--red-ink); } svg [stroke="#b8394f"] { stroke: 
 .qz-seq-btns { display: flex; gap: 0.3rem; margin-left: auto; }
 .qz-mini { padding: 0.2rem 0.6rem; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--ink-soft); font: inherit; font-size: 0.74rem; font-weight: 800; cursor: pointer; }
 .qz-mini:hover { border-color: var(--indigo); color: var(--indigo); }
+.qz-numrow { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
+.qz-num-pre { font-weight: 700; color: var(--ink-soft); }
+.qz-num { width: 7rem; padding: 0.5rem 0.7rem; border: 1.5px solid var(--line); border-radius: var(--radius-sm); background: var(--surface); color: var(--ink); -webkit-text-fill-color: var(--ink); font: inherit; font-size: 1rem; font-weight: 700; font-variant-numeric: tabular-nums; opacity: 1; }
+.qz-num::placeholder { color: var(--ink-soft); -webkit-text-fill-color: var(--ink-soft); font-weight: 500; opacity: 0.6; }
+.qz-num:focus { outline: none; border-color: var(--indigo); box-shadow: 0 0 0 3px color-mix(in srgb, var(--indigo) 25%, transparent); }
+.qz-num.correct { border-color: var(--bfs); background: color-mix(in srgb, var(--bfs) 18%, var(--surface)); }
+.qz-num.wrong { border-color: #d9546e; background: color-mix(in srgb, #d9546e 12%, var(--surface)); }
 .qz-fb { margin: 0.7rem 0 0; padding: 0.45rem 0.75rem; border-radius: 8px; font-size: 0.88rem; }
 .qz-fb.ok { background: color-mix(in srgb, var(--bfs) 16%, var(--surface)); }
 .qz-fb.part { background: color-mix(in srgb, var(--ucs) 18%, var(--surface)); }
@@ -1912,5 +1921,6 @@ svg [fill="#b8394f"] { fill: var(--red-ink); } svg [stroke="#b8394f"] { stroke: 
   .qz-bar .wrap { gap: 0.5rem; }
   .qz-btn { padding: 0.5rem 0.8rem; font-size: 0.82rem; }
   .qz-bar .qz-btn[data-act="results"] { display: none; }
+  .qz-boards { gap: 1rem; } .qz-boards .puzzle-board { grid-template-columns: repeat(3, 40px); grid-template-rows: repeat(3, 40px); }
 }
 @media (max-width: 520px) { body.home .site-nav { gap: 0.6rem; padding-left: 1rem; padding-right: 1rem; } body.home .site-nav nav { gap: 0.75rem; font-size: 0.85rem; } body.home .site-nav .brand { font-size: 1rem; } }

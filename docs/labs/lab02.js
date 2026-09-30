@@ -628,72 +628,6 @@ function initSA() {
   update();
 }
 
-/* ---------- quiz ---------- */
-const QUIZ2 = [
-  {
-    q: 'An admissible heuristic must satisfy which condition?',
-    opts: ['h(n) ≥ h*(n) for all n', 'h(n) ≤ h*(n) for all n', 'h(n) = h*(n) for all n', 'h(n) is always 0'],
-    correct: 1,
-  },
-  {
-    q: 'Beam search with queue limit l = 1 is the same as...',
-    opts: ['Breadth-First Search', 'A*', 'Hill Climbing', 'Uniform-Cost Search'],
-    correct: 2,
-  },
-  {
-    q: 'Why is greedy best-first search not optimal?',
-    opts: [
-      'It ignores h(n) completely',
-      'It ranks the frontier only by h(n), ignoring the cost already paid to reach n',
-      'It can only run on trees, not graphs',
-      'It never terminates',
-    ],
-    correct: 1,
-  },
-  {
-    q: 'For A* with GRAPH-SEARCH to be guaranteed optimal, the heuristic must be...',
-    opts: ['Admissible only', 'Consistent', 'Equal to 0 everywhere', 'Larger than the true cost'],
-    correct: 1,
-  },
-  {
-    q: 'Given two admissible heuristics h_a and h_b, is h(n) = max(h_a(n), h_b(n)) admissible?',
-    opts: ['No, taking the max breaks admissibility', 'Yes, and it dominates both h_a and h_b', 'Only if h_a = h_b', 'Only for consistent heuristics'],
-    correct: 1,
-  },
-];
-
-function initQuiz() {
-  const container = document.getElementById('quiz-container');
-  let score = 0;
-
-  const scoreBar = document.createElement('div');
-  scoreBar.className = 'quiz-score';
-  scoreBar.innerHTML = `<span>Score</span><span id="quiz-score-val">0 / ${QUIZ2.length}</span>`;
-
-  QUIZ2.forEach((item, qi) => {
-    const card = document.createElement('div');
-    card.className = 'quiz-card';
-    card.innerHTML = `<p class="q">${qi + 1}. ${item.q}</p>
-      <div class="quiz-opts">
-        ${item.opts.map((o, oi) => `<button class="quiz-opt" data-oi="${oi}">${o}</button>`).join('')}
-      </div>`;
-    card.querySelectorAll('.quiz-opt').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const oi = +btn.dataset.oi;
-        card.querySelectorAll('.quiz-opt').forEach(b => b.disabled = true);
-        if (oi === item.correct) { btn.classList.add('correct'); score++; }
-        else {
-          btn.classList.add('wrong');
-          card.querySelector(`[data-oi="${item.correct}"]`).classList.add('correct');
-        }
-        document.getElementById('quiz-score-val').textContent = `${score} / ${QUIZ2.length}`;
-      });
-    });
-    container.appendChild(card);
-  });
-  container.appendChild(scoreBar);
-}
-
 /* ---------- init ---------- */
 document.addEventListener('DOMContentLoaded', () => {
   initPuzzle();
@@ -704,5 +638,4 @@ document.addEventListener('DOMContentLoaded', () => {
   initHillLandscape();
   initIDAStar();
   initSA();
-  initQuiz();
 });

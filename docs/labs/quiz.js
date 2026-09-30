@@ -1,7 +1,9 @@
 /* ===== Quiz engine: shared by every labNN-quiz.html =====
    The page defines window.QUIZ (in labNN-quiz.js) and has #quiz, #qz-results and .qz-bar.
    Part kinds: mc (one option), multi (all that apply, all-or-nothing), rows (one pill per row,
-   points split per row), seq (node sequence built by clicking the task's figure or typing).
+   points split per row), seq (node sequence built by clicking the task's figure or typing),
+   num (typed number; tol = allowed error, pct = also accept a percentage).
+   Figures may carry notes: { A: 'h=5' } drawn beside the node (h, f or score values).
    Grading runs in the browser; answers are kept in localStorage for this viewer only. */
 (function () {
 'use strict';
@@ -48,7 +50,7 @@ function drawFigure(fig) {
       if (parent != null) edges.push({ a: parent, b: idx, cost: n.cost, more });
       n.children.forEach(c => emit(c, idx));
     })(root, null);
-    W = left + 2 * PAD + Math.max(leaf - 1, 1) * DX; H = 2 * PAD + maxD * DY;
+    W = left + 2 * PAD + Math.max(leaf - 1, 1) * DX + (fig.notes ? 34 : 0); H = 2 * PAD + maxD * DY;
     if (fig.depths) for (let d = 0; d <= maxD; d++) depthRows.push([d, PAD + d * DY]);
   } else {
     const at = {};
@@ -73,6 +75,7 @@ function drawFigure(fig) {
     const g = sv('g', { class: 'qz-node' + (n.goal ? ' goal' : '') + (n.more ? ' more' : ''), 'data-label': n.label }, svg);
     if (!n.more) { sv('circle', { cx: n.x, cy: n.y, r: HIT, class: 'hit' }, g); sv('circle', { cx: n.x, cy: n.y, r: R }, g); }
     sv('text', { x: n.x, y: n.y }, g).textContent = n.label;
+    if (fig.notes && fig.notes[n.label] != null) sv('text', { x: n.x + R + 5, y: n.y, class: 'qz-note' }, svg).textContent = fig.notes[n.label];
     if (n.more) return;
     const o = sv('g', { class: 'qz-ord', transform: `translate(${n.x + R * 0.9},${n.y - R * 0.9})` }, g);
     sv('circle', { r: 9 }, o); sv('text', {}, o);
@@ -93,9 +96,17 @@ function grade(part, ans) {
   if (part.kind === 'mc') { answered = ans != null; ok = ans === part.answer; }
   if (part.kind === 'multi') { const a = (ans || []).slice().sort(), b = part.answer.slice().sort(); answered = a.length > 0; ok = a.length === b.length && a.every((x, i) => x === b[i]); }
   if (part.kind === 'seq') { const a = ans || []; answered = a.length > 0; ok = a.length === part.answer.length && a.every((x, i) => x === part.answer[i]); }
+  if (part.kind === 'num') { const v = toNum(ans, part); answered = ans != null && ans !== ''; ok = v != null && Math.abs(v - part.answer) <= (part.tol || 0) + 1e-9; }
   return { got: ok ? max : 0, max, ok, answered };
 }
+function toNum(ans, part) {
+  if (ans == null || ans === '') return null;
+  const v = parseFloat(String(ans).replace(',', '.').replace('%', ''));
+  if (isNaN(v)) return null;
+  return part.pct && (v > 1 || /%/.test(ans)) ? v / 100 : v;
+}
 function isAnswered(part, ans) {
+  if (part.kind === 'num') return ans != null && ans !== '';
   if (part.kind === 'rows') return !!ans && part.rows.every((r, i) => ans[i] != null);
   if (part.kind === 'mc') return ans != null;
   return !!ans && ans.length > 0;
@@ -224,6 +235,19 @@ function initQuiz() {
       };
     }
 
+    if (part.kind === 'num') {
+      const wrap = el('label', 'qz-numrow');
+      if (part.prefix) wrap.appendChild(el('span', 'qz-num-pre', part.prefix));
+      const inp = el('input', 'qz-num'); inp.type = 'text'; inp.inputMode = 'decimal'; inp.autocomplete = 'off'; inp.spellcheck = false;
+      inp.placeholder = part.placeholder || 'number';
+      wrap.appendChild(inp);
+      if (part.suffix) wrap.appendChild(el('span', 'qz-num-pre', part.suffix));
+      box.appendChild(wrap);
+      inp.addEventListener('input', () => { if (graded) return; answers[P.id] = inp.value.trim() === '' ? undefined : inp.value.trim(); changed(); });
+      refresh = () => { const v = answers[P.id] == null ? '' : answers[P.id]; if (inp.value.trim() !== v) inp.value = v; inp.disabled = graded; };
+      mark = () => { const r = grade(part, answers[P.id]); inp.classList.toggle('correct', r.ok); inp.classList.toggle('wrong', r.answered && !r.ok); };
+    }
+
     if (part.kind === 'seq') {
       const T = P.task; T.seqIds.push(P.id);
       const s = el('div', 'qz-seq'); s.tabIndex = 0; s.setAttribute('role', 'textbox'); s.setAttribute('aria-label', part.label || part.q.replace(/<[^>]+>/g, ''));
@@ -276,6 +300,7 @@ function initQuiz() {
     }
     math(fb);
   }
+  function said(t) { t = String(t); return ` — correct: <b>${t}</b>` + (/[.!?]$/.test(t) ? '' : '.'); }
   function correctText(part, ans) {
     if (part.kind === 'seq') {
       let t = ` — correct: <b>${part.answer.join(' → ')}</b>.`;
@@ -284,8 +309,9 @@ function initQuiz() {
       return t;
     }
     if (part.kind === 'rows') return ' — the correct choice in each row is outlined in green.';
-    if (part.kind === 'multi') return ' — correct: <b>' + part.answer.slice().sort().map(i => part.options[i]).join(', ') + '</b>.';
-    return ' — correct: <b>' + (part.letters === false ? '' : LETTERS[part.answer] + '. ') + part.options[part.answer] + '</b>.';
+    if (part.kind === 'num') return said(part.show || part.answer);
+    if (part.kind === 'multi') return said(part.answer.slice().sort().map(i => part.options[i]).join(', '));
+    return said((part.letters === false ? '' : LETTERS[part.answer] + '. ') + part.options[part.answer]);
   }
 
   /* ----- sequences ----- */
