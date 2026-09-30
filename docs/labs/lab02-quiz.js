@@ -127,9 +127,9 @@ window.QUIZ = {
       parts: [
         { kind: 'mc', pts: 2, q: 'Is the heuristic admissible?', ...YN, answer: 0 },
         { kind: 'mc', pts: 2, q: 'Is it consistent?', ...YN, answer: 1 },
-        { kind: 'mc', pts: 3, q: M`Which edge violates the consistency condition \(h(n) \leq c(n, n') + h(n')\)?`, options: ['S → A', 'S → B', 'A → G', 'B → G'], answer: 1 },
+        { kind: 'mc', pts: 3, q: M`Which edge, if any, violates the consistency condition \(h(n) \leq c(n, n') + h(n')\)?`, options: ['S → A', 'S → B', 'A → G', 'B → G', 'None'], answer: 1 },
       ],
-      explain: M`<p><b>Admissible: yes</b> — \(h(S) = 5 \leq 5\), \(h(A) = 4 \leq 5\), \(h(B) = 1 \leq 2\), \(h(G) = 0 \leq 0\).</p><p><b>Consistent: no</b> — on the edge S → B we need \(5 \leq 3 + 1\), but \(5 > 4\). (S → A: \(5 \leq 2 + 4\) holds; A → G and B → G hold too.)</p><p>Consistency is a stronger requirement: a consistent heuristic is admissible, but an admissible heuristic does not have to be consistent.</p>`,
+      explain: M`<p><b>Admissible: yes</b> — \(h(S) = 5 \leq 5\), \(h(A) = 4 \leq 5\), \(h(B) = 1 \leq 2\), \(h(G) = 0 \leq 0\).</p><p><b>Consistent: no</b> — on the edge S → B we need \(5 \leq 3 + 1\), but \(5 > 4\). The other edges pass: S → A: \(5 \leq 2 + 4\), A → G: \(4 \leq 5 + 0\), B → G: \(1 \leq 2 + 0\).</p><p>Consistency is a stronger requirement: a consistent heuristic is admissible, but an admissible heuristic does not have to be consistent.</p>`,
     },
     /* ---------- 11 ---------- */
     {
