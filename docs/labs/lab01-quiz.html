@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lab 01 Quiz — Uninformed Search | Class Notes</title>
+<meta name="description" content="Auto-graded quiz on uninformed search: b, d and m, complexity, tracing BFS, DFS, DLS, IDS and UCS, and choosing the right algorithm.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<link rel="stylesheet" href="../style.css">
+<script src="../theme.js"></script>
+</head>
+<body>
+
+<header class="site-nav">
+  <button class="side-toggle" type="button" aria-controls="lab-menu" aria-expanded="false" aria-label="Labs menu"><span></span></button>
+  <a class="brand" href="../index.html"><span class="dot"></span> Class Notes</a>
+  <nav><a href="../index.html">Home</a></nav>
+  <button class="theme-toggle" type="button" aria-label="Switch colour theme"><svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg><svg class="sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button>
+</header>
+
+<div class="lab-layout">
+  <aside class="lab-menu" id="lab-menu" aria-label="Labs">
+    <p class="lm-h">Labs</p>
+    <ol>
+      <li><a href="lab01-uninformed-search.html"><span class="lm-n">01</span>Uninformed Search</a><a class="lm-quiz" href="lab01-quiz.html" aria-current="page">Quiz</a></li>
+      <li><a href="lab02-informed-search.html"><span class="lm-n">02</span>Informed Search</a></li>
+      <li><a href="lab03-csp.html"><span class="lm-n">03</span>Constraint Satisfaction</a></li>
+      <li><a href="lab04-genetic-algorithms.html"><span class="lm-n">04</span>Genetic Algorithms</a></li>
+      <li><a href="lab05-games.html"><span class="lm-n">05</span>Games</a></li>
+      <li><a href="lab06-intro-ml.html"><span class="lm-n">06</span>Introduction to ML</a></li>
+      <li><a href="lab065-linear-logistic.html"><span class="lm-n">6.5</span>Linear &amp; Logistic Regression</a></li>
+      <li><a href="lab07-knn.html"><span class="lm-n">07</span>K-Nearest Neighbours</a></li>
+      <li><a href="lab08-naive-bayes.html"><span class="lm-n">08</span>Naive Bayes Classifier</a></li>
+      <li><a href="lab09-decision-trees.html"><span class="lm-n">09</span>Decision Trees</a></li>
+      <li><a href="lab10-kmeans.html"><span class="lm-n">10</span>K-Means and Clustering</a></li>
+      <li><a href="lab11-neural-networks.html"><span class="lm-n">11</span>Neural Networks</a></li>
+      <li><a href="lab12-transformers.html"><span class="lm-n">12</span>Transformers and Generative Models</a></li>
+      <li><a href="lab13-alignment.html"><span class="lm-n">13</span>Post-training and Alignment</a></li>
+      <li><a href="lab14-evaluation.html"><span class="lm-n">14</span>Evaluation, Metrics and Data Analysis</a></li>
+    </ol>
+  </aside>
+  <script>(function(){var b=document.body,t=document.querySelector(".side-toggle"),m=document.getElementById("lab-menu"),c=m.querySelector("[aria-current]");if(c&&m.scrollHeight>m.clientHeight)m.scrollTop=c.offsetTop-m.clientHeight/2;function s(o){b.classList.toggle("menu-open",o);t.setAttribute("aria-expanded",o)}t.addEventListener("click",function(e){e.stopPropagation();s(!b.classList.contains("menu-open"))});document.addEventListener("click",function(e){if(b.classList.contains("menu-open")&&!m.contains(e.target))s(false)});document.addEventListener("keydown",function(e){if(e.key==="Escape")s(false)})})();</script>
+<main class="lab-main">
+
+<section class="hero art-hero art-quiz">
+  <svg class="hero-art" viewBox="0 0 1200 300" preserveAspectRatio="xMidYMid slice" aria-hidden="true"></svg>
+  <div class="wrap">
+    <p class="eyebrow">Lab 01 · Quiz</p>
+    <h1>Uninformed Search Quiz</h1>
+    <div class="badges">
+      <span class="badge dfs">14 tasks</span>
+      <span class="badge bfs">100 points</span>
+      <span class="badge ucs">Auto-graded</span>
+      <span class="badge ids">≈ 30 min</span>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+
+  <!-- work-in-progress notice: remove once the quiz is reviewed -->
+  <div class="wip-note" role="note"><span class="wip-tag">Work in progress</span> This quiz is still being reviewed: questions may change, and some parts may still contain mistakes.</div>
+
+  <section class="block" id="howto">
+    <h2 class="section-title">Before you start</h2>
+    <p class="section-lede">Quiz for <a href="lab01-uninformed-search.html">Lab 01: Uninformed Search</a>. Answer every task, then press <b>Check answers</b> at the bottom: each answer is marked, the explanations appear, and you get a score per skill.</p>
+    <h3 class="section-title" style="font-size:1.15rem;">Assumptions unless stated otherwise</h3>
+    <ul class="concept-list">
+      <li>Children are expanded <b>left-to-right</b>.</li>
+      <li>The root is at <b>depth 0</b>.</li>
+      <li>The goal test happens when a node is <b>removed from the frontier</b> for expansion.</li>
+      <li><b>Notation</b>: \(b\) maximum branching factor, \(d\) depth of the shallowest goal, \(m\) maximum depth of the search tree, \(l\) depth limit.</li>
+    </ul>
+    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.6rem;">How answers are scored</h3>
+    <ul class="concept-list">
+      <li><b>Sequences</b>: click the nodes of the tree in order (or type the letters into the highlighted box). A sequence scores only if it is exactly right.</li>
+      <li><b>Rows</b>: one choice per row; each correct row earns its share of the points.</li>
+      <li><b>Select all that apply</b>: scores only when the selection is exactly right.</li>
+      <li>Your answers are saved in this browser only, so you can leave and come back. Nothing is sent anywhere.</li>
+    </ul>
+  </section>
+
+  <div id="quiz"></div>
+
+  <section class="block qz-results" id="qz-results" hidden>
+    <h2 class="section-title">Your result</h2>
+    <div class="qz-res-body"></div>
+  </section>
+
+  <section class="block" id="framework">
+    <h2 class="section-title">Decision framework</h2>
+    <p class="section-lede">When you select an uninformed search algorithm, reason through these questions:</p>
+    <ol class="concept-list">
+      <li>Are all step costs equal?</li>
+      <li>Is an optimal solution required?</li>
+      <li>Is the solution depth known?</li>
+      <li>Is memory constrained?</li>
+      <li>Can the state space be infinitely deep?</li>
+    </ol>
+    <p class="caption-note">💡 If you can answer these questions and justify the resulting choice, you understand the important trade-offs between uninformed search strategies. The <a href="lab01-uninformed-search.html#summary">summary table</a> in the lab collects them in one place.</p>
+  </section>
+
+</div>
+
+<div class="qz-bar">
+  <div class="wrap">
+    <div class="qz-prog-wrap"><div class="qz-prog"></div><div class="qz-track"><i></i></div></div>
+    <button class="qz-btn" type="button" data-act="check">Check answers</button>
+    <button class="qz-btn ghost" type="button" data-act="results" hidden>See results</button>
+    <button class="qz-btn ghost" type="button" data-act="reset" hidden>Try again</button>
+  </div>
+</div>
+
+<footer>Class notes by Elitsa Yotkova and Kristina Kalemdzhieva · Lab 01 quiz</footer>
+</main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="lab01-quiz.js"></script>
+<script src="quiz.js"></script>
+</body>
+</html>
