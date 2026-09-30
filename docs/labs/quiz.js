@@ -75,9 +75,10 @@ function drawFigure(fig) {
   });
   const byLabel = {};
   nodes.forEach(n => {
-    const g = sv('g', { class: 'qz-node' + (n.goal ? ' goal' : '') + (n.more ? ' more' : ''), 'data-label': n.label }, svg);
+    const role = /^(MAX|MIN)$/.test(n.label) ? ' ' + n.label.toLowerCase() : '';   // game-tree players
+    const g = sv('g', { class: 'qz-node' + (n.goal ? ' goal' : '') + (n.more ? ' more' : '') + role, 'data-label': n.label }, svg);
     if (!n.more) { sv('circle', { cx: n.x, cy: n.y, r: HIT, class: 'hit' }, g); sv('circle', { cx: n.x, cy: n.y, r: R }, g); }
-    sv('text', { x: n.x, y: n.y }, g).textContent = n.label;
+    sv('text', { x: n.x, y: n.y, class: n.label.length > 2 ? 'long' : '' }, g).textContent = n.label;
     if (fig.notes && fig.notes[n.label] != null) sv('text', { x: n.x + R + 5, y: n.y, class: 'qz-note' }, svg).textContent = fig.notes[n.label];
     if (n.more) return;
     const o = sv('g', { class: 'qz-ord', transform: `translate(${n.x + R * 0.9},${n.y - R * 0.9})` }, g);
@@ -104,7 +105,7 @@ function grade(part, ans) {
 }
 function toNum(ans, part) {
   if (ans == null || ans === '') return null;
-  const v = parseFloat(String(ans).replace(',', '.').replace('%', ''));
+  const v = parseFloat(String(ans).replace(',', '.').replace('%', '').replace(/[−–]/g, '-').replace(/\s+/g, ''));
   if (isNaN(v)) return null;
   return part.pct && (v > 1 || /%/.test(ans)) ? v / 100 : v;
 }

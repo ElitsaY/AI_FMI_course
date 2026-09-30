@@ -1821,6 +1821,9 @@ svg [fill="#b8394f"] { fill: var(--red-ink); } svg [stroke="#b8394f"] { stroke: 
 .qz-fig .qz-node circle.hit { fill: transparent !important; stroke: none !important; }   /* invisible tap zone */
 .qz-fig svg, .qz-opt, .qz-pill, .qz-mini, .qz-btn, .qz-seq { touch-action: manipulation; }
 .qz-fig .qz-node text { font: 700 16px 'Poppins', sans-serif; fill: var(--ink); text-anchor: middle; dominant-baseline: central; pointer-events: none; }
+.qz-fig .qz-node text.long { font-size: 11px; letter-spacing: 0.02em; }
+.qz-fig .qz-node.max circle:not(.hit) { stroke: var(--bfs); fill: color-mix(in srgb, var(--bfs) 14%, var(--surface)); }
+.qz-fig .qz-node.min circle:not(.hit) { stroke: #d9546e; fill: color-mix(in srgb, #d9546e 12%, var(--surface)); }
 .qz-fig .qz-node.more text { font-size: 22px; fill: var(--ink-soft); }
 .qz-fig.pick .qz-node:not(.more) { cursor: pointer; }
 .qz-fig.pick .qz-node:not(.more):hover circle { stroke-width: 3.5; fill: color-mix(in srgb, var(--indigo) 14%, var(--surface)); }
