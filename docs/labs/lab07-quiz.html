@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lab 03 Quiz — Constraint Satisfaction | Class Notes</title>
-<meta name="description" content="Auto-graded quiz on constraint satisfaction: CSP formulation, constraint graphs, backtracking, MRV and LCV, forward checking, min-conflicts and N-Queens.">
+<title>Lab 07 Quiz — K-Nearest Neighbours | Class Notes</title>
+<meta name="description" content="Auto-graded quiz on K-nearest neighbours: lazy, local, instance-based learning, voting and averaging, choosing K, feature scaling, the curse of dimensionality, prediction cost and memory trade-offs.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
@@ -49,11 +49,11 @@
     <ol>
       <li><a href="lab01-quiz.html"><span class="lm-n">01</span>Uninformed Search</a></li>
       <li><a href="lab02-quiz.html"><span class="lm-n">02</span>Informed Search</a></li>
-      <li><a href="lab03-quiz.html" aria-current="page"><span class="lm-n">03</span>Constraint Satisfaction</a></li>
+      <li><a href="lab03-quiz.html"><span class="lm-n">03</span>Constraint Satisfaction</a></li>
       <li><a href="lab04-quiz.html"><span class="lm-n">04</span>Genetic Algorithms</a></li>
       <li><a href="lab05-quiz.html"><span class="lm-n">05</span>Games</a></li>
       <li><a href="lab06-quiz.html"><span class="lm-n">06</span>Introduction to ML</a></li>
-      <li><a href="lab07-quiz.html"><span class="lm-n">07</span>K-Nearest Neighbours</a></li>
+      <li><a href="lab07-quiz.html" aria-current="page"><span class="lm-n">07</span>K-Nearest Neighbours</a></li>
     </ol>
     <p class="lm-note">A quiz follows each lab; more are on the way.</p>
     </div>
@@ -64,13 +64,13 @@
 <section class="hero art-hero art-quiz">
   <svg class="hero-art" viewBox="0 0 1200 300" preserveAspectRatio="xMidYMid slice" aria-hidden="true"></svg>
   <div class="wrap">
-    <p class="eyebrow">Lab 03 · Quiz</p>
-    <h1>Constraint Satisfaction Quiz</h1>
+    <p class="eyebrow">Lab 07 · Quiz</p>
+    <h1>K-Nearest Neighbours Quiz</h1>
     <div class="badges">
-      <span class="badge dfs">18 tasks</span>
+      <span class="badge dfs">21 tasks</span>
       <span class="badge bfs">100 points</span>
       <span class="badge ucs">Auto-graded</span>
-      <span class="badge ids">≈ 35 min</span>
+      <span class="badge ids">≈ 25 min</span>
     </div>
   </div>
 </section>
@@ -82,18 +82,16 @@
 
   <section class="block" id="howto">
     <h2 class="section-title">Before you start</h2>
-    <p class="section-lede">Quiz for <a href="lab03-csp.html">Lab 03: Constraint Satisfaction Problems</a>. Answer every task, then press <b>Check answers</b> at the bottom: each answer is marked, the explanations appear, and you get a score per skill.</p>
+    <p class="section-lede">Quiz for <a href="lab07-knn.html">Lab 07: K-Nearest Neighbours</a>. It focuses on <b>trade-offs, advantages, disadvantages and practical reasoning</b> rather than implementation details. Answer every task, then press <b>Check answers</b> at the bottom: each answer is marked, the explanations appear, and you get a score per skill.</p>
     <h3 class="section-title" style="font-size:1.15rem;">Assumptions unless stated otherwise</h3>
     <ul class="concept-list">
-      <li>Domains show the values that are <b>currently still possible</b>.</li>
-      <li>Backtracking tries variables and values in the <b>stated order</b>.</li>
-      <li>For map-colouring tasks, adjacent regions must have <b>different colours</b>.</li>
-      <li><b>N-Queens</b>: <code>queenPosition[col] = row</code>; on an \(n \times n\) board the positive diagonal index is <code>row + col</code>, the negative diagonal index is <code>n − 1 − row + col</code>, and there are \(2n - 1\) diagonals in each direction.</li>
+      <li>KNN classification uses a <b>majority vote</b>; KNN regression <b>averages</b> the neighbours’ target values.</li>
+      <li>Smaller distance means a point is considered more similar.</li>
+      <li>The entire training dataset is kept for prediction.</li>
     </ul>
     <h3 class="section-title" style="font-size:1.15rem; margin-top:1.6rem;">How answers are scored</h3>
     <ul class="concept-list">
-      <li><b>Sequences</b>: click the nodes of the tree in order (or type the letters into the highlighted box). A sequence scores only if it is exactly right.</li>
-      <li><b>Numbers</b>: type the value; a decimal point or comma both work.</li>
+            <li><b>Numbers</b>: type the value; 135000, 135,000 and 135 000 all work.</li>
       <li><b>Rows</b>: one choice per row; each correct row earns its share of the points.</li>
       <li><b>Select all that apply</b>: scores only when the selection is exactly right.</li>
       <li>Your answers are saved in this browser only, so you can leave and come back. Nothing is sent anywhere.</li>
@@ -119,13 +117,13 @@
   </div>
 </div>
 
-<footer>Class notes by Elitsa Yotkova and Kristina Kalemdzhieva · Lab 03 quiz</footer>
+<footer>Class notes by Elitsa Yotkova and Kristina Kalemdzhieva · Lab 07 quiz</footer>
 </main>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
-<script src="lab03-quiz.js"></script>
+<script src="lab07-quiz.js"></script>
 <script src="quiz.js"></script>
 </body>
 </html>

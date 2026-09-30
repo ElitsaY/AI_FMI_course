@@ -105,7 +105,9 @@ function grade(part, ans) {
 }
 function toNum(ans, part) {
   if (ans == null || ans === '') return null;
-  const v = parseFloat(String(ans).replace(',', '.').replace('%', '').replace(/[−–]/g, '-').replace(/\s+/g, ''));
+  let t = String(ans).replace('%', '').replace(/[−–]/g, '-').replace(/\s+/g, '');
+  t = /^-?\d{1,3}(,\d{3})+(\.\d+)?$/.test(t) ? t.replace(/,/g, '') : t.replace(',', '.');   // 135,000 = thousands; 0,37 = decimal comma
+  const v = parseFloat(t);
   if (isNaN(v)) return null;
   return part.pct && (v > 1 || /%/.test(ans)) ? v / 100 : v;
 }
