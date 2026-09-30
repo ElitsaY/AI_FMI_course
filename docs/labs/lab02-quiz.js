@@ -30,7 +30,7 @@ window.QUIZ = {
     },
     /* ---------- 2 ---------- */
     {
-      id: 't2', title: 'Greedy best-first search can be misled', type: 'Visual tracing', level: 'Easy–Medium', skill: 'local',
+      id: 't2', title: 'Trace greedy best-first search', type: 'Visual tracing', level: 'Easy–Medium', skill: 'local',
       intro: '<p>Heuristic values are shown next to the nodes; edge costs are on the edges.</p>',
       figure: { nodes: { S: [200, 40], A: [90, 150], B: [310, 150], C: [310, 260], G: [90, 340] }, edges: [['S', 'A', 2], ['S', 'B', 1], ['A', 'G', 4], ['B', 'C', 10], ['C', 'G', 10]],
         notes: { A: 'h=5', B: 'h=1', C: 'h=1', G: 'h=0' }, goals: ['G'], w: 400, h: 380, alt: 'Weighted graph with heuristic values' },
@@ -53,7 +53,7 @@ window.QUIZ = {
     },
     /* ---------- 4 ---------- */
     {
-      id: 't4', title: 'Beam search prunes the goal away', type: 'Visual reasoning', level: 'Medium', skill: 'local',
+      id: 't4', title: 'Beam search with width 2', type: 'Visual reasoning', level: 'Medium', skill: 'local',
       intro: M`<p>Beam Search uses beam width \(l = 2\). Heuristic values are shown next to the nodes.</p>`,
       figure: { tree: 'S(A(D),B(G),C(E))', notes: { A: 'h=2', B: 'h=4', C: 'h=1', D: 'h=2', G: 'h=0', E: 'h=1' }, goals: ['G'], dx: 110, alt: 'Search tree with heuristic values' },
       parts: [
@@ -65,7 +65,7 @@ window.QUIZ = {
     },
     /* ---------- 5 ---------- */
     {
-      id: 't5', title: 'Hill climbing and a local maximum', type: 'Optimization landscape', level: 'Medium', skill: 'local',
+      id: 't5', title: 'Where does hill climbing stop?', type: 'Optimization landscape', level: 'Medium', skill: 'local',
       intro: '<p>For this task, <b>higher score is better</b>; the scores are shown next to the nodes. Hill Climbing always moves to the best neighbouring state if that neighbour improves the current score.</p>',
       figure: { tree: 'S(A(C(E,F),D),B(G))', notes: { S: '5', A: '7', B: '6', C: '8', D: '6', E: '7', F: '7', G: '10' }, dx: 90, alt: 'Tree of states with scores' },
       parts: [
@@ -246,7 +246,7 @@ window.QUIZ = {
     },
     /* ---------- 18 ---------- */
     {
-      id: 't18', title: 'Reject the tempting heuristic', type: 'Conceptual challenge', level: 'Hard', skill: 'adm',
+      id: 't18', title: 'Evaluate a proposed heuristic', type: 'Conceptual challenge', level: 'Hard', skill: 'adm',
       intro: '<p>A student proposes this heuristic for route planning:</p><blockquote class="qz-quote">“Take the straight-line distance to the goal and multiply it by 2. This should make A* more aggressive and therefore better.”</blockquote><p>Suppose ordinary straight-line distance is known to be admissible.</p>',
       parts: [
         { kind: 'mc', pts: 2, q: 'What is the main problem with the proposed heuristic?',

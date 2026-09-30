@@ -128,7 +128,7 @@ window.QUIZ = {
     },
     /* ---------- 9 ---------- */
     {
-      id: 't9', title: 'Detect the dead end early', type: 'Forward checking vs. plain backtracking', level: 'Medium', skill: 'prop',
+      id: 't9', title: 'Forward checking after Y = 2', type: 'Forward checking vs. plain backtracking', level: 'Medium', skill: 'prop',
       intro: '<p>Variables X, Y, Z with domain {1, 2}; constraints X ≠ Y, Y ≠ Z, X ≠ Z. Assign <b>X = 1</b>: forward checking produces D(Y) = {2}, D(Z) = {2}. Now assign <b>Y = 2</b>.</p>',
       parts: [
         { kind: 'multi', pts: 4, q: 'What happens to D(Z)? Select the values left in it.', options: ['1', '2', 'None — the domain is empty'], none: 2, answer: [2], letters: false },
@@ -138,7 +138,7 @@ window.QUIZ = {
     },
     /* ---------- 10 ---------- */
     {
-      id: 't12', title: 'MRV and LCV are not guarantees', type: 'Conceptual', level: 'Medium', skill: 'heur',
+      id: 't12', title: 'Do MRV and LCV guarantee success?', type: 'Conceptual', level: 'Medium', skill: 'heur',
       intro: '<blockquote class="qz-quote">“If I use both MRV and LCV, backtracking will never make a bad choice.”</blockquote>',
       parts: [
         { kind: 'mc', pts: 5, q: 'Is the student’s statement correct?',

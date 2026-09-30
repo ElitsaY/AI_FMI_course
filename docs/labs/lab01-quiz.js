@@ -135,7 +135,7 @@ window.QUIZ = {
     },
     /* ---------- 10 ---------- */
     {
-      id: 't10', title: 'Infinite-depth trap', type: 'Algorithm-selection reasoning', level: 'Hard', skill: 'tradeoffs',
+      id: 't10', title: 'Search an infinite branch', type: 'Algorithm-selection reasoning', level: 'Hard', skill: 'tradeoffs',
       intro: '<p>The left branch continues <b>forever</b>. Children are explored left-to-right.</p>',
       figure: { tree: 'S(A(C(E(F(…)))),B(D(G)))', goals: ['G'], dx: 120, alt: 'Search tree with an infinite left branch' },
       parts: [
@@ -162,7 +162,7 @@ window.QUIZ = {
     },
     /* ---------- 12 ---------- */
     {
-      id: 't12', title: 'Challenge: reject the tempting algorithm', type: 'Conceptual · scenario', level: 'Hard', skill: 'tradeoffs',
+      id: 't12', title: 'Challenge: judge the student’s reasoning', type: 'Conceptual · scenario', level: 'Hard', skill: 'tradeoffs',
       intro: '<p>A robot must find a path from S to G. Candidate paths: <b>S → B → G</b> (cost 5, depth 2) and <b>S → A → C → D → G</b> (cost 4, depth 4).</p><blockquote class="qz-quote">“We should use BFS because G can be reached at depth 2, so BFS gives the optimal solution.”</blockquote>',
       figure: { nodes: { S: [210, 40], A: [90, 120], C: [90, 200], D: [90, 280], B: [330, 190], G: [210, 340] },
         edges: [['S', 'A', 1], ['A', 'C', 1], ['C', 'D', 1], ['D', 'G', 1], ['S', 'B', 4], ['B', 'G', 1]], goals: ['G'], w: 420, h: 380, alt: 'Weighted graph' },
