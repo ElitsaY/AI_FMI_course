@@ -114,10 +114,9 @@ window.QUIZ = {
       id: 't9', title: 'Is the heuristic admissible?', type: 'Heuristic analysis', level: 'Medium', skill: 'adm',
       intro: M`<p>Suppose the true remaining costs \(h^*(n)\) and heuristic values \(h(n)\) are:</p><table class="qz-pq"><thead><tr><th>Node</th><th>\(h(n)\)</th><th>\(h^*(n)\)</th></tr></thead><tbody><tr><td>S</td><td>7</td><td>8</td></tr><tr><td>A</td><td>6</td><td>6</td></tr><tr><td>B</td><td>5</td><td>4</td></tr><tr><td>C</td><td>1</td><td>2</td></tr><tr><td>G</td><td>0</td><td>0</td></tr></tbody></table>`,
       parts: [
-        { kind: 'mc', pts: 1, q: 'Is the heuristic admissible?', ...YN, answer: 1 },
-        { kind: 'multi', pts: 3, q: 'Which node(s) break admissibility?', options: ['S', 'A', 'B', 'C', 'G'], answer: [2], letters: false },
+        { kind: 'multi', pts: 4, q: 'Which nodes, if any, break admissibility?', options: ['S', 'A', 'B', 'C', 'G', 'None'], none: 5, answer: [2], letters: false },
       ],
-      explain: M`<p>For an admissible heuristic, \(h(n) \leq h^*(n)\) must hold for <b>every node</b>. But for B, \(h(B) = 5 > 4 = h^*(B)\): the heuristic overestimates the true cost, so it is not admissible.</p>`,
+      explain: M`<p>Only <b>B</b>. For an admissible heuristic, \(h(n) \leq h^*(n)\) must hold for <b>every node</b>. But for B, \(h(B) = 5 > 4 = h^*(B)\): the heuristic overestimates the true cost, so it is not admissible.</p>`,
     },
     /* ---------- 10 ---------- */
     {

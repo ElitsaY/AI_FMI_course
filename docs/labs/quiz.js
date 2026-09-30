@@ -3,6 +3,7 @@
    Part kinds: mc (one option), multi (all that apply, all-or-nothing), rows (one pill per row,
    points split per row), seq (node sequence built by clicking the task's figure or typing),
    num (typed number; tol = allowed error, pct = also accept a percentage).
+   A multi part may set none: <index of a 'None' option>, which deselects the others (and vice versa).
    Figures may carry notes: { A: 'h=5' } drawn beside the node (h, f or score values).
    Grading runs in the browser; answers are kept in localStorage for this viewer only. */
 (function () {
@@ -192,7 +193,11 @@ function initQuiz() {
     if (part.kind === 'mc' || part.kind === 'multi') {
       const { wrap, btns } = optionButtons(P, 'qz-opt', i => {
         if (part.kind === 'mc') answers[P.id] = answers[P.id] === i ? undefined : i;
-        else { const s = new Set(answers[P.id] || []); s.has(i) ? s.delete(i) : s.add(i); answers[P.id] = [...s]; }
+        else {   // part.none: index of a "None" option that excludes the others
+          const s = new Set(answers[P.id] || []); s.has(i) ? s.delete(i) : s.add(i);
+          if (part.none != null && s.has(i)) { if (i === part.none) { s.clear(); s.add(i); } else s.delete(part.none); }
+          answers[P.id] = [...s];
+        }
         changed();
       });
       wrap.setAttribute('role', part.kind === 'mc' ? 'radiogroup' : 'group');
@@ -412,6 +417,12 @@ function initQuiz() {
     root.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
 
+  // drop saved answers whose shape no longer fits the part (the quiz data was edited since they were saved)
+  all.forEach(P => {
+    const a = answers[P.id], k = P.part.kind;
+    const fits = a == null || (k === 'mc' ? typeof a === 'number' : k === 'multi' || k === 'seq' ? Array.isArray(a) : k === 'rows' ? typeof a === 'object' && !Array.isArray(a) : typeof a === 'string');
+    if (!fits) delete answers[P.id];
+  });
   all.forEach(P => P.ui.init());
   math(document.body);
   status();
