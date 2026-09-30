@@ -2132,3 +2132,15 @@ svg [fill="#b8394f"] { fill: var(--red-ink); } svg [stroke="#b8394f"] { stroke: 
 .qzv-plot .gh-q { fill: none; stroke: var(--dfs); stroke-width: 3; stroke-dasharray: 7 5; } .qzv-plot .gh-qd { fill: var(--dfs); }
 .qzv-legend .lg { display: inline-block; width: 18px; height: 3px; margin-right: 0.3rem; vertical-align: 3px; border-radius: 2px; }
 .qzv-legend .lg.p { background: var(--indigo); } .qzv-legend .lg.q { background: var(--dfs); }
+
+/* ---- Lab 14 quiz visuals: confusion matrices, number tables, grouped bars, line plots ---- */
+.qz-num-t td { text-align: right; font-variant-numeric: tabular-nums; }
+.qz-num-t tbody th, .qz-cm tbody th { text-transform: none; letter-spacing: 0; font-size: 0.85rem; color: var(--ink); }
+.qz-cm td { text-align: center; font-family: 'Poppins', sans-serif; font-weight: 800; font-variant-numeric: tabular-nums; }
+.qz-cm td.diag { background: color-mix(in srgb, var(--bfs) 16%, var(--surface)); } .qz-cm td.off { background: color-mix(in srgb, #d9546e 10%, var(--surface)); }
+.qzv-table + .qzv-table { margin-top: -0.4rem; }
+.qzv-bar.alt .track i { background: var(--dfs); }
+.qzv-plot .ln { fill: none; stroke-width: 3; stroke-linejoin: round; } .qzv-plot .ln.a { stroke: var(--indigo); } .qzv-plot .ln.b { stroke: var(--dfs); stroke-dasharray: 7 5; }
+.qzv-plot .ld.a { fill: var(--indigo); } .qzv-plot .ld.b { fill: var(--dfs); }
+.qzv-legend .lg.a { background: var(--indigo); } .qzv-legend .lg.b { background: var(--dfs); }
+@media (max-width: 520px) { .qz-num-t th, .qz-num-t td, .qz-cm th, .qz-cm td { padding: 0.35rem 0.4rem; font-size: 0.82rem; } .qz-num-t thead th, .qz-cm thead th { letter-spacing: 0; font-size: 0.7rem; } }

@@ -40,7 +40,7 @@ Each lab is followed by a **quiz**: auto-graded in the browser, with an explanat
 | 11 | [Neural Networks](https://elitsay.github.io/AI_FMI_course/docs/labs/lab11-neural-networks.html) | [Quiz](https://elitsay.github.io/AI_FMI_course/docs/labs/lab11-quiz.html) |
 | 12 | [Transformers and Generative Models](https://elitsay.github.io/AI_FMI_course/docs/labs/lab12-transformers.html) | [Quiz](https://elitsay.github.io/AI_FMI_course/docs/labs/lab12-quiz.html) |
 | 13 | [Post-training and Alignment](https://elitsay.github.io/AI_FMI_course/docs/labs/lab13-alignment.html) | [Quiz](https://elitsay.github.io/AI_FMI_course/docs/labs/lab13-quiz.html) |
-| 14 | [Evaluation, Metrics and Data Analysis](https://elitsay.github.io/AI_FMI_course/docs/labs/lab14-evaluation.html) | coming soon |
+| 14 | [Evaluation, Metrics and Data Analysis](https://elitsay.github.io/AI_FMI_course/docs/labs/lab14-evaluation.html) | [Quiz](https://elitsay.github.io/AI_FMI_course/docs/labs/lab14-quiz.html) |
 
 ## 💻 Jupyter Notebooks
 
