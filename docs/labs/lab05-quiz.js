@@ -56,8 +56,8 @@ window.QUIZ = {
       id: 't5', title: 'Minimax properties', type: 'Properties', level: 'Medium', skill: 'props',
       intro: M`<p>\(b\) = branching factor, \(m\) = maximum depth of the game tree.</p>`,
       parts: [
-        { kind: 'mc', pts: 3, q: 'Is minimax complete?', options: ['Yes, if the game tree is finite', 'Yes, always', 'No', 'Only with alpha–beta pruning'], answer: 0, inline: false },
-        { kind: 'mc', pts: 3, q: 'Is minimax optimal?', options: ['Yes, against any opponent', 'Yes, against an optimal opponent', 'No, never', 'Only with a depth cutoff'], answer: 1, inline: false },
+        { kind: 'mc', pts: 3, q: 'Is minimax complete?', options: ['Yes, if the game tree is finite', 'Yes, for any game tree', 'No, it can miss a winning move sequence', 'Only when alpha–beta is used'], answer: 0, inline: false },
+        { kind: 'mc', pts: 3, q: 'Is minimax optimal?', options: ['Yes, against any opponent, even a weak one', 'Yes, against an optimal opponent', 'No, it only finds a good move', 'Only when a depth cutoff is used'], answer: 1, inline: false },
         { kind: 'mc', pts: 2, q: 'Time complexity?', options: [M`\(O(bm)\)`, M`\(O(b^d)\)`, M`\(O(b^m)\)`, M`\(O(m)\)`], answer: 2 },
         { kind: 'mc', pts: 2, q: 'Space complexity?', options: [M`\(O(b^m)\)`, M`\(O(bm)\)`, M`\(O(b)\)`, M`\(O(m^b)\)`], answer: 1 },
       ],
@@ -91,7 +91,7 @@ window.QUIZ = {
       intro: '<blockquote class="qz-quote">“Alpha–beta pruning skips branches, so it may return a different move from minimax.”</blockquote>',
       parts: [
         { kind: 'mc', pts: 8, q: 'Is the student correct?',
-          options: ['Yes: skipped branches may contain the best move.', 'No: correct alpha–beta pruning returns the same minimax result; it only skips branches that cannot affect the final decision.', 'Yes, unless the moves are perfectly ordered.', 'No, because alpha–beta evaluates every leaf anyway.'], answer: 1, inline: false },
+          options: ['Yes: a pruned branch may contain a better move for MAX.', 'No: it returns the same result as minimax, only skipping irrelevant branches.', 'Yes, unless the moves happen to be perfectly ordered.', 'No, because alpha–beta still evaluates every leaf.'], answer: 1, inline: false },
       ],
       explain: '<p><b>No.</b> Correct alpha–beta pruning returns the <b>same minimax result</b>. It only skips branches that cannot affect the final decision.</p>',
     },
@@ -100,7 +100,7 @@ window.QUIZ = {
       id: 't9', title: 'Why move ordering matters', type: 'Conceptual', level: 'Medium', skill: 'practice',
       intro: '<p>Two alpha–beta implementations search the same game tree. Algorithm A examines <b>strong moves first</b>; algorithm B examines <b>weak moves first</b>.</p>',
       parts: [
-        { kind: 'mc', pts: 8, q: 'Which statement is correct?', options: ['Algorithm A can usually prune more branches.', 'Algorithm B always returns a better move.', 'Move ordering changes the minimax value.', 'Alpha–beta works only with perfect ordering.'], answer: 0, inline: false },
+        { kind: 'mc', pts: 8, q: 'Which statement is correct?', options: ['Algorithm A can usually prune more branches, because good bounds appear earlier.', 'Algorithm B always ends up returning a better move.', 'Move ordering changes the final minimax value.', 'Alpha–beta only works when moves are perfectly ordered.'], answer: 0, inline: false },
       ],
       explain: '<p>Good move ordering establishes useful alpha and beta bounds earlier. It can dramatically increase pruning, while leaving the final minimax answer unchanged (try the ordering buttons in the lab’s alpha–beta widget).</p>',
     },
@@ -109,7 +109,7 @@ window.QUIZ = {
       id: 't10', title: 'Depth-limited game search', type: 'Conceptual', level: 'Medium', skill: 'practice',
       intro: '<p>Suppose minimax stops at <b>depth = 5</b> before reaching terminal positions.</p>',
       parts: [
-        { kind: 'mc', pts: 9, q: 'How should the states at depth 5 be scored?', options: ['Random values', 'A heuristic evaluation function', 'BFS depth', 'The alpha value only'], answer: 1, inline: false },
+        { kind: 'mc', pts: 9, q: 'How should the states at depth 5 be scored?', options: ['Random values between −1 and 1', 'A heuristic evaluation function', 'The number of moves made so far', 'The current alpha value at that node'], answer: 1, inline: false },
       ],
       explain: '<p>If search reaches a true terminal state, use its actual utility. If search stops at a cutoff depth, use a <b>heuristic evaluation function</b> to estimate how good the state is.</p>',
     },

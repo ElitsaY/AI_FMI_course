@@ -53,7 +53,7 @@ window.QUIZ = {
       id: 't3', title: 'Selection pressure', type: 'Conceptual', level: 'Easy–Medium', skill: 'pressure',
       intro: '<p>A genetic algorithm is changed so that the best individuals are much more likely to reproduce than before.</p>',
       parts: [
-        { kind: 'mc', pts: 4, q: 'What is the likely effect?', options: ['Lower selection pressure and more random exploration', 'Higher selection pressure, faster convergence, but greater risk of losing diversity', 'No effect on convergence', 'Mutation is no longer necessary'], answer: 1, inline: false },
+        { kind: 'mc', pts: 4, q: 'What is the likely effect?', options: ['Lower selection pressure, so the search explores more randomly', 'Higher selection pressure: faster convergence, but less diversity in the population', 'No change in convergence, because crossover still mixes all genes', 'Mutation becomes unnecessary, because the best genes always survive'], answer: 1, inline: false },
         { kind: 'rows', pts: 6, q: 'With higher selection pressure, what happens to…', options: ['Increases', 'Decreases'],
           rows: [{ label: 'the speed of convergence', answer: 0 }, { label: 'population diversity', answer: 1 }, { label: 'the risk of premature convergence', answer: 0 }] },
       ],
@@ -85,7 +85,7 @@ window.QUIZ = {
       id: 't6', title: 'Selection with replacement', type: 'Conceptual', level: 'Easy–Medium', skill: 'roulette',
       intro: '<p>Suppose roulette-wheel selection uses <code>replace=True</code>.</p>',
       parts: [
-        { kind: 'mc', pts: 3, q: 'What does this mean?', options: ['Once selected, a chromosome can never be selected again.', 'The same chromosome may be selected multiple times as a parent.', 'Every chromosome must be selected exactly once.', 'Fitness values are replaced after every selection.'], answer: 1, inline: false },
+        { kind: 'mc', pts: 3, q: 'What does this mean?', options: ['Once selected, a chromosome is removed and cannot be selected again.', 'The same chromosome may be selected several times as a parent in one generation.', 'Every chromosome in the population must be selected exactly once.', 'The fitness values are recomputed and replaced after every selection.'], answer: 1, inline: false },
       ],
       explain: '<p>Sampling with replacement means a highly fit individual may become a parent multiple times.</p>',
     },
@@ -126,7 +126,7 @@ window.QUIZ = {
       id: 't10', title: 'Elitism', type: 'Conceptual', level: 'Medium', skill: 'select',
       intro: '<p>A GA uses elitism and preserves the best two chromosomes unchanged in the next generation.</p>',
       parts: [
-        { kind: 'mc', pts: 4, q: 'Which statement is correct?', options: ['The current best solutions cannot be lost through crossover or mutation.', 'Every chromosome survives unchanged.', 'Population diversity must increase.', 'The algorithm becomes equivalent to exhaustive search.'], answer: 0, inline: false },
+        { kind: 'mc', pts: 4, q: 'Which statement is correct?', options: ['The best two chromosomes cannot be lost through crossover or mutation in the next generation.', 'Every chromosome in the population survives unchanged to the next generation.', 'Population diversity is guaranteed to increase in every generation.', 'The algorithm becomes equivalent to an exhaustive search of all tours.'], answer: 0, inline: false },
       ],
       explain: '<p>Elitism protects some of the best individuals from being destroyed by random genetic operators. Advantage: preserves strong solutions. Risk: reduces diversity if overused.</p>',
     },
@@ -153,7 +153,7 @@ window.QUIZ = {
       id: 't13', title: 'Why naive crossover fails for TSP', type: 'Conceptual challenge', level: 'Medium–Hard', skill: 'cross',
       intro: '<p>TSP chromosomes are permutations. Parents <code>P1 = [A, B, C, D, E, F]</code> and <code>P2 = [D, E, F, A, B, C]</code>. A student performs ordinary one-point crossover after position 3: <code>[A, B, C] + [A, B, C]</code> = <code>[A, B, C, A, B, C]</code>.</p>',
       parts: [
-        { kind: 'mc', pts: 3, q: 'Why is this child invalid for TSP?', options: ['A TSP tour must contain every city exactly once, and this child repeats some cities and loses others.', 'The child is shorter than its parents.', 'The crossover point must always be after the first gene.', 'Its fitness is lower than both parents’ fitness.'], answer: 0, inline: false },
+        { kind: 'mc', pts: 3, q: 'Why is this child invalid for TSP?', options: ['Every city must appear exactly once in a tour.', 'A tour must start and end at the same city A.', 'The two halves must come from the same parent.', 'Its fitness is lower than both parents’ fitness.'], answer: 0, inline: false },
         { kind: 'multi', pts: 2, q: 'Which cities are missing from the child?', options: ['A', 'B', 'C', 'D', 'E', 'F'], answer: [3, 4, 5], letters: false },
       ],
       explain: '<p>A TSP chromosome must contain every city exactly once. This child repeats A, B, C and completely loses D, E, F. Permutation problems need crossover operators that preserve permutation validity.</p>',
@@ -192,7 +192,7 @@ window.QUIZ = {
       id: 't17', title: 'What happens with mutation rate 0?', type: 'Conceptual', level: 'Medium', skill: 'mut',
       intro: '<p>A TSP GA is run with <b>mutation rate = 0</b> for many generations.</p>',
       parts: [
-        { kind: 'mc', pts: 3, q: 'What problem becomes more likely?', options: ['The population gains unlimited diversity.', 'The population may lose diversity and converge prematurely.', 'Every generated child becomes invalid.', 'Selection pressure becomes exactly zero.'], answer: 1, inline: false },
+        { kind: 'mc', pts: 3, q: 'What problem becomes more likely?', options: ['The population keeps gaining diversity with no upper limit.', 'The population may lose diversity and converge too early.', 'Every child produced by crossover becomes an invalid tour.', 'Selection pressure drops to exactly zero for every tour.'], answer: 1, inline: false },
       ],
       explain: '<p>Mutation introduces random variation. Without mutation, the population may lose useful genetic diversity and get stuck early (try it in the lab’s TSP widget).</p>',
     },
@@ -227,11 +227,11 @@ window.QUIZ = {
       id: 't20', title: 'Challenge: diagnose the GA', type: 'Integrated reasoning', level: 'Hard', skill: 'integ',
       intro: '<p>A TSP genetic algorithm uses:</p><pre class="qz-code">Population size:   60\nChromosome:        permutation of 14 cities\nElites:            best 2 tours\nParent selection:  tournament selection, k = 3\nCrossover:         permutation-safe one-point order crossover\nMutation rate:     0.30\nMutation operator: reverse</pre>',
       parts: [
-        { kind: 'mc', pts: 0.8, q: '1. Why must the crossover preserve permutations?', options: ['A tour must visit every city exactly once, so the child may not duplicate or miss cities.', 'To make crossover faster.', 'Because the mutation operator is reverse.', 'To keep the population size at 60.'], answer: 0, inline: false },
-        { kind: 'mc', pts: 0.8, q: '2. What is the purpose of keeping the best 2 tours?', options: ['It increases mutation.', 'It keeps the population diverse.', 'Elitism: it protects strong solutions from being lost.', 'It guarantees the optimal tour is found.'], answer: 2, inline: false },
-        { kind: 'mc', pts: 0.8, q: '3. What does increasing the tournament size from 3 to 8 generally do?', options: ['Weaker selection pressure', 'Stronger selection pressure: the best individuals are more likely to dominate reproduction', 'No change', 'Turns tournament selection into roulette selection'], answer: 1, inline: false },
-        { kind: 'mc', pts: 0.8, q: '4. What role does mutation play?', options: ['It selects the parents.', 'It protects the best tours.', 'It repairs invalid tours.', 'It introduces random variation and helps preserve exploration and genetic diversity.'], answer: 3, inline: false },
-        { kind: 'mc', pts: 0.8, q: '5. What is a possible danger if both selection pressure and elitism become too strong?', options: ['The search becomes too random.', 'Diversity collapses and premature convergence around a suboptimal tour becomes more likely.', 'Children become invalid permutations.', 'The population size grows without bound.'], answer: 1, inline: false },
+        { kind: 'mc', pts: 0.8, q: '1. Why must the crossover preserve permutations?', options: ['A tour must visit each city exactly once.', 'It makes crossover run faster on long tours.', 'The reverse mutation only works on permutations.', 'It keeps the population size fixed at 60.'], answer: 0, inline: false },
+        { kind: 'mc', pts: 0.8, q: '2. What is the purpose of keeping the best 2 tours?', options: ['It raises the mutation rate for the elite tours.', 'It keeps the population diverse across generations.', 'Elitism: strong tours are never lost.', 'It guarantees that the optimal tour is found.'], answer: 2, inline: false },
+        { kind: 'mc', pts: 0.8, q: '3. What does increasing the tournament size from 3 to 8 generally do?', options: ['Weaker selection pressure, since more tours compete', 'Stronger selection pressure, so the fittest tours dominate reproduction', 'No change, since the winner is still one tour', 'It becomes roulette-wheel selection'], answer: 1, inline: false },
+        { kind: 'mc', pts: 0.8, q: '4. What role does mutation play?', options: ['It chooses which tours become parents.', 'It protects the best tours from being changed.', 'It repairs tours that crossover made invalid.', 'It adds random variation and keeps diversity.'], answer: 3, inline: false },
+        { kind: 'mc', pts: 0.8, q: '5. What is a possible danger if both selection pressure and elitism become too strong?', options: ['The search becomes far too random and never converges.', 'Diversity collapses; the GA converges too early.', 'Children start to become invalid permutations.', 'The population size starts growing without bound.'], answer: 1, inline: false },
       ],
       explain: '<ol class="concept-list"><li>A TSP tour must visit every city exactly once; the crossover must avoid duplicate and missing cities.</li><li>Keeping the best 2 tours is <b>elitism</b>: it protects strong solutions from being lost.</li><li>Larger \\(k\\) means <b>stronger selection pressure</b>.</li><li>Mutation introduces random variation and helps preserve exploration and genetic diversity.</li><li>Too much exploitation: diversity collapses → the population becomes very similar → premature convergence → stuck around a suboptimal solution.</li></ol>',
     },

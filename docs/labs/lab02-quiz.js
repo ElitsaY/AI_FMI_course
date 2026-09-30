@@ -70,7 +70,7 @@ window.QUIZ = {
       figure: { tree: 'S(A(C(E,F),D),B(G))', notes: { S: '5', A: '7', B: '6', C: '8', D: '6', E: '7', F: '7', G: '10' }, dx: 90, alt: 'Tree of states with scores' },
       parts: [
         { kind: 'seq', pts: 3, q: 'What path does Hill Climbing take from S? End with the state where it stops.', label: 'Path', answer: ['S', 'A', 'C'] },
-        { kind: 'mc', pts: 1, q: 'The state where Hill Climbing stops is…', options: ['the global maximum', 'a local maximum, not the global one', 'a plateau', 'the goal G'], answer: 1, inline: false },
+        { kind: 'mc', pts: 1, q: 'The state where Hill Climbing stops is…', options: ['the global maximum', 'a local maximum', 'a plateau of equal scores', 'the starting state'], answer: 1, inline: false },
       ],
       explain: '<p>Path: S (5) → A (7) → C (8). At C, both neighbours have score 7, which is worse than 8, so Hill Climbing stops at C. However, G (10) is better: C is a <b>local maximum</b>, not the global maximum.</p><p>Hill Climbing keeps only one current candidate and does not backtrack.</p>',
     },
@@ -80,7 +80,7 @@ window.QUIZ = {
       intro: '<p>Suppose Hill Climbing repeatedly reaches different local maxima depending on its starting state.</p>',
       parts: [
         { kind: 'mc', pts: 3, q: 'What is the purpose of <b>random-restart hill climbing</b>?',
-          options: ['To make the heuristic admissible', 'To explore the same path repeatedly', 'To start from different states and reduce the chance of remaining stuck at a poor local optimum', 'To turn Hill Climbing into BFS'], answer: 2, inline: false },
+          options: ['To make the heuristic admissible, so that hill climbing becomes optimal', 'To follow the same promising path several times and average the results', 'To start from different states, so a poor local optimum is less likely', 'To add a frontier, so the search can backtrack like BFS'], answer: 2, inline: false },
       ],
       explain: '<p>A single hill-climbing run can get trapped. Random restarts give the algorithm opportunities to climb from different regions of the search space.</p>',
     },
@@ -91,7 +91,7 @@ window.QUIZ = {
       parts: [
         { kind: 'num', pts: 3, q: 'Approximately what is the probability of accepting the worse move? Give it to two decimal places (a percentage also works).', prefix: M`\(P \approx\)`, answer: 0.368, tol: 0.006, pct: true, show: M`\(e^{-1} \approx 0.368\) (36.8%)` },
         { kind: 'mc', pts: 2, q: 'What happens if the temperature becomes very small?',
-          options: ['Worse moves are accepted more and more often.', 'Worse moves become increasingly unlikely to be accepted, and simulated annealing behaves like hill climbing.', 'The search turns into a random walk.', 'The acceptance probability no longer depends on Δ.'], answer: 1, inline: false },
+          options: ['Worse moves are accepted more and more often, so the search explores widely.', 'Worse moves are rarely accepted; it acts like hill climbing.', 'The search turns into a random walk, because every move is accepted.', 'The acceptance probability stops depending on Δ and stays at one half.'], answer: 1, inline: false },
       ],
       explain: M`<p>\(P = e^{-1} \approx 0.368\), about a 36.8% chance. As \(T \rightarrow 0\), worse moves become increasingly unlikely to be accepted, and simulated annealing behaves more like ordinary hill climbing.</p><p>Accepting occasional bad moves allows simulated annealing to escape local optima.</p>`,
     },

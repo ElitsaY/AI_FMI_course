@@ -75,7 +75,7 @@ window.QUIZ = {
       id: 't4', title: 'Is this assignment a solution?', type: 'CSP validation', level: 'Easy–Medium', skill: 'form',
       intro: '<p>Variables A, B, C, D with domain {1, 2, 3}. Constraints: <code>A ≠ B</code>, <code>B ≠ C</code>, <code>C ≠ D</code>, <code>A &lt; D</code>.</p><p>Candidate assignment: A = 1, B = 2, C = 1, D = 3.</p>',
       parts: [
-        { kind: 'mc', pts: 4, q: 'Which constraint, if any, is violated?', options: ['A ≠ B', 'B ≠ C', 'C ≠ D', 'A < D', 'None — it is a valid solution'], answer: 4 },
+        { kind: 'mc', pts: 4, q: 'Which constraint, if any, is violated?', options: ['A ≠ B', 'B ≠ C', 'C ≠ D', 'A < D', 'None'], answer: 4 },
       ],
       explain: '<p>A ≠ B → 1 ≠ 2 ✓; B ≠ C → 2 ≠ 1 ✓; C ≠ D → 1 ≠ 3 ✓; A &lt; D → 1 &lt; 3 ✓. <b>Yes, the assignment is a valid solution.</b></p>',
     },
@@ -86,9 +86,9 @@ window.QUIZ = {
       figure: { nodes: { A: [150, 40], B: [60, 160], C: [240, 160] }, edges: [['A', 'B'], ['B', 'C'], ['A', 'C']], w: 300, h: 200, alt: 'Triangle constraint graph' },
       parts: [
         { kind: 'mc', pts: 5, q: 'With A = Red and B = Green, no value works for C. What does backtracking do next?',
-          options: ['Tries C = Blue.', 'Returns to B; B has no other legal value, so it returns to A and tries A = Green.', 'Reports failure immediately.', 'Changes A and C at the same time.'], answer: 1, inline: false },
+          options: ['It tries C = Blue next, since C has not run out of colours yet.', 'It returns to B; B has no values left, so it goes back to A and tries A = Green.', 'It reports that the CSP has no solution, since C has no legal value.', 'It changes A and C at the same time and checks the constraints again.'], answer: 1, inline: false },
         { kind: 'num', pts: 2, q: 'How many different values does backtracking assign to A before it stops?', answer: 2 },
-        { kind: 'mc', pts: 5, q: 'What is the final result?', options: ['A = Red, B = Green, C = Red', 'A = Green, B = Red, C = Green', 'No solution: the CSP cannot be solved with two colours', 'The search never terminates'], answer: 2, inline: false },
+        { kind: 'mc', pts: 5, q: 'What is the final result?', options: ['A = Red, B = Green, C = Red', 'A = Green, B = Red, C = Green', 'No solution with two colours', 'The search never terminates'], answer: 2, inline: false },
       ],
       explain: '<p>A = Red; B = Red ✗ (conflicts with A), B = Green ✓; C = Red ✗ (A), C = Green ✗ (B). No value works for C → back to B, which has no unused valid value → back to A.</p><p>A = Green; B = Red ✓; C = Red ✗ (B), C = Green ✗ (A). Back to B: B = Green ✗ (A). Again nothing works, and A has no values left. The CSP has <b>no solution</b> with only two colours: a triangle needs three.</p>',
     },
@@ -142,7 +142,7 @@ window.QUIZ = {
       intro: '<blockquote class="qz-quote">“If I use both MRV and LCV, backtracking will never make a bad choice.”</blockquote>',
       parts: [
         { kind: 'mc', pts: 5, q: 'Is the student’s statement correct?',
-          options: ['Yes: MRV and LCV together guarantee that no backtracking is needed.', 'No: they are heuristics that often reduce search, but backtracking may still be necessary.', 'No: MRV and LCV cannot be combined.', 'Yes, but only if the constraint graph is a tree.'], answer: 1, inline: false },
+          options: ['Yes: together they guarantee that the first branch always leads to a solution.', 'No: they are heuristics; backtracking may still be needed.', 'No: MRV and LCV cannot be used in the same backtracking search.', 'Yes, but only when the constraint graph is a tree without cycles.'], answer: 1, inline: false },
       ],
       explain: '<p><b>No.</b> MRV and LCV are <b>heuristics</b>. They often reduce search, but they do not guarantee that the chosen branch will lead directly to a solution; backtracking may still be necessary.</p>',
     },
@@ -162,7 +162,7 @@ window.QUIZ = {
       id: 't14', title: 'Understand min-conflicts', type: 'Algorithm reasoning', level: 'Medium', skill: 'mc',
       parts: [
         { kind: 'mc', pts: 4, q: 'Which description best matches min-conflicts?',
-          options: ['Begin with no assignments and construct a solution using BFS.', 'Begin with a complete assignment, repeatedly choose a conflicted variable, and move it to a value causing the fewest conflicts.', 'Always assign the variable with the smallest domain and never change it.', 'Enumerate every possible assignment before checking any constraints.'], answer: 1, inline: false },
+          options: ['Start with no assignments and build a solution level by level, as BFS does.', 'Repair a complete assignment by moving conflicted variables to low-conflict values.', 'Always assign the variable with the smallest domain first and never revise it later.', 'Enumerate every complete assignment first and only then check all the constraints.'], answer: 1, inline: false },
       ],
       explain: '<p>Min-conflicts is a local search: it starts from a <b>complete</b> (usually conflicting) assignment and repairs it one conflicted variable at a time.</p>',
     },

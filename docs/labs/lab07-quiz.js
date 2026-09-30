@@ -57,7 +57,7 @@ window.QUIZ = {
     {
       id: 't5', title: 'K = 1', type: 'Choosing K', level: 'Medium', skill: 'k',
       parts: [
-        { kind: 'mc', pts: 4, q: 'Suppose K = 1. Which description is most accurate?', options: ['The decision boundary is usually very smooth and ignores local structure.', 'The model follows the training data closely and can be very sensitive to noise.', 'Prediction no longer depends on distance.', 'The model becomes a global learner.'], answer: 1, inline: false },
+        { kind: 'mc', pts: 4, q: 'Suppose K = 1. Which description is most accurate?', options: ['The decision boundary is very smooth and ignores most local structure.', 'The model follows the training data closely and is sensitive to noise.', 'Predictions no longer depend on distance, only on the class counts.', 'The model becomes a global learner that uses the whole training set equally.'], answer: 1, inline: false },
       ],
       explain: '<p>Small K captures very local structure, but it is sensitive to noise and outliers and can <b>overfit</b>.</p>',
     },
@@ -66,7 +66,7 @@ window.QUIZ = {
       id: 't6', title: 'Increasing K a lot', type: 'Choosing K', level: 'Medium', skill: 'k',
       parts: [
         { kind: 'mc', pts: 4, q: 'Suppose K is increased substantially. What usually happens?',
-          options: ['Accuracy always improves, because more neighbours are consulted.', 'The model overfits more.', 'Predictions become less sensitive to individual noisy examples, but if K is too large local structure is averaged away and the model may underfit.', 'Prediction no longer depends on distance.'], answer: 2, inline: false },
+          options: ['Accuracy always improves, because more neighbours are consulted.', 'The model overfits more, because it memorizes more points.', 'Less sensitive to noise, but too large a K averages away local structure and can underfit.', 'Predictions stop depending on distance, only on the class counts.'], answer: 2, inline: false },
       ],
       explain: '<p>Large K: + more robust to noise, + smoother predictions; − may ignore meaningful local patterns, − can <b>underfit</b>.</p>',
     },
@@ -91,7 +91,7 @@ window.QUIZ = {
       intro: '<p>A KNN model uses two features: <b>age</b> (18 to 80) and <b>income</b> (20,000 to 200,000), with Euclidean distance on the raw values.</p><table class="qz-pq"><thead><tr><th>Person</th><th>Age</th><th>Income</th></tr></thead><tbody><tr><td>Query Q</td><td>30</td><td>50,000</td></tr><tr><td>P1</td><td>70</td><td>50,500</td></tr><tr><td>P2</td><td>31</td><td>53,000</td></tr></tbody></table>',
       parts: [
         { kind: 'mc', pts: 3, q: 'Without scaling, which point is nearer to Q?', options: ['P1', 'P2', 'Both are equally near'], answer: 0, letters: false },
-        { kind: 'mc', pts: 3, q: 'What problem does this show?', options: ['Age dominates the distance because it changes more.', 'Income dominates the distance simply because its numerical scale is much larger.', 'KNN cannot use two features.', 'Euclidean distance ignores large values.'], answer: 1, inline: false },
+        { kind: 'mc', pts: 3, q: 'What problem does this show?', options: ['Age dominates the distance because it varies more between people.', 'Income dominates the distance because its scale is much larger.', 'Euclidean distance cannot combine two features measured differently.', 'KNN ignores features whose values are larger than 1,000.'], answer: 1, inline: false },
       ],
       explain: M`<p>\(d(Q, P1) = \sqrt{40^2 + 500^2} \approx 502\) and \(d(Q, P2) = \sqrt{1^2 + 3000^2} \approx 3000\), so the 70-year-old P1 counts as “nearer” than the 31-year-old P2. <b>Income</b> dominates the distance simply because its scale is much larger: KNN is distance-based, so feature scale matters.</p>`,
     },
@@ -101,7 +101,7 @@ window.QUIZ = {
       intro: '<p>You have 10 million training examples, and a production system must answer each prediction with very low latency.</p>',
       parts: [
         { kind: 'mc', pts: 4, q: 'Is basic KNN an attractive choice?',
-          options: ['Yes: it has almost no training cost, so it is fast overall.', 'Usually no: every new query is compared with the stored training data to find its neighbours, so prediction is expensive.', 'Yes: more data always makes KNN faster.', 'No: KNN cannot handle more than a million examples at all.'], answer: 1, inline: false },
+          options: ['Yes: training is almost free, so the whole system is fast.', 'Usually no: each prediction must search the stored data.', 'Yes: more training data always makes KNN predictions faster.', 'No: KNN cannot store more than a million examples at all.'], answer: 1, inline: false },
       ],
       explain: '<p><b>Usually no.</b> KNN is a lazy learner: very cheap “training” but expensive prediction, a major disadvantage for large datasets and latency-sensitive systems.</p>',
     },
@@ -119,7 +119,7 @@ window.QUIZ = {
       id: 't11', title: 'The dataset grows 400×', type: 'Memory', level: 'Medium', skill: 'cost',
       intro: '<p>A dataset grows from 50,000 examples to 20,000,000 examples.</p>',
       parts: [
-        { kind: 'mc', pts: 4, q: 'Why can this become a problem for KNN even before considering prediction speed?', options: ['KNN must retrain from scratch on every new example.', 'The number of features grows with the number of examples.', 'K must grow with the dataset.', 'KNN stores the training instances because they are needed at prediction time, so more examples need more memory.'], answer: 3, inline: false },
+        { kind: 'mc', pts: 4, q: 'Why can this become a problem for KNN even before considering prediction speed?', options: ['KNN must retrain its whole model from scratch whenever an example is added.', 'The number of features grows with the number of examples.', 'K must be increased in proportion to the dataset size.', 'KNN stores all examples, so memory grows with the data.'], answer: 3, inline: false },
       ],
       explain: '<p>KNN stores the training instances because they are needed during prediction, so a larger training set means <b>more memory</b>. It does not compress the dataset into a small fixed set of learned parameters.</p>',
     },
@@ -128,7 +128,7 @@ window.QUIZ = {
       id: 't12', title: 'New data arrives every hour', type: 'Trade-off', level: 'Medium', skill: 'cost',
       intro: '<p>A recommendation system receives new user examples continuously.</p>',
       parts: [
-        { kind: 'mc', pts: 4, q: 'What is one advantage of KNN in this setting?', options: ['New instances can be added to the stored data without rebuilding a complex model from scratch.', 'Predictions get faster as more data arrives.', 'Memory use stays constant.', 'It no longer needs a distance metric.'], answer: 0, inline: false },
+        { kind: 'mc', pts: 4, q: 'What is one advantage of KNN in this setting?', options: ['New examples are simply added, without retraining.', 'Predictions get faster as more and more examples are stored.', 'Memory use stays constant however much data arrives.', 'It no longer needs a distance metric for new users.'], answer: 0, inline: false },
       ],
       explain: '<p>Advantage: new examples are easy to incorporate. Disadvantage: the stored dataset keeps growing, making memory use and prediction cost worse.</p>',
     },
@@ -137,7 +137,7 @@ window.QUIZ = {
       id: 't13', title: '3 features vs. 2,000 features', type: 'Dimensionality', level: 'Medium', skill: 'dist',
       intro: '<p>Dataset A has 3 useful features. Dataset B has 2,000 features.</p>',
       parts: [
-        { kind: 'mc', pts: 4, q: 'Why can KNN struggle badly on dataset B?', options: ['KNN cannot store more than 1,000 features.', 'With many dimensions, points tend to be far apart and distances become less useful for telling similar from dissimilar examples.', 'More features always cause underfitting.', 'Majority voting does not work in high dimensions.'], answer: 1, inline: false },
+        { kind: 'mc', pts: 4, q: 'Why can KNN struggle badly on dataset B?', options: ['KNN cannot store examples that have more than 1,000 features.', 'Distances become less meaningful when points are far apart in many dimensions.', 'More features always make KNN underfit, whatever K is chosen.', 'Majority voting stops working once there are many dimensions.'], answer: 1, inline: false },
       ],
       explain: '<p>In high-dimensional spaces points tend to become far apart, and distances become less useful for distinguishing truly similar from dissimilar examples — the <b>curse of dimensionality</b>. The idea of a meaningful “nearest neighbour” becomes weaker.</p>',
     },
@@ -146,7 +146,7 @@ window.QUIZ = {
       id: 't14', title: 'Is K = 1 always best?', type: 'Choosing K', level: 'Medium', skill: 'k',
       intro: '<blockquote class="qz-quote">“K = 1 is always best because it uses the closest possible example.”</blockquote>',
       parts: [
-        { kind: 'mc', pts: 4, q: 'What is wrong with this reasoning?', options: ['Nothing: the closest example is always the most reliable.', 'K = 1 is too slow to compute.', 'K must always be even.', 'The closest example may be noisy, mislabelled or an outlier, and with K = 1 it alone decides; K should be chosen with validation data, e.g. cross-validation.'], answer: 3, inline: false },
+        { kind: 'mc', pts: 4, q: 'What is wrong with this reasoning?', options: ['Nothing: the closest example is always the most reliable one.', 'K = 1 is too slow, since it must sort all the distances.', 'K must be even, so that both classes can get the same number of votes.', 'The nearest point may be noisy; K should be chosen by validation.'], answer: 3, inline: false },
       ],
       explain: '<p>With K = 1 a single noisy, mislabelled or outlying example completely determines the prediction. A somewhat larger K reduces this sensitivity; the best K should be chosen using validation data, for example through <b>cross-validation</b>.</p>',
     },
@@ -155,7 +155,7 @@ window.QUIZ = {
       id: 't15', title: 'Odd K for two classes', type: 'Choosing K', level: 'Easy', skill: 'k',
       intro: '<p>A binary classification problem has classes A and B.</p>',
       parts: [
-        { kind: 'mc', pts: 3, q: 'Why are odd values of K often convenient?', options: ['Odd K is faster to compute.', 'Odd K reduces overfitting.', 'With two classes, an odd K cannot split the vote evenly, so ties are avoided.', 'Odd K works without feature scaling.'], answer: 2, inline: false },
+        { kind: 'mc', pts: 3, q: 'Why are odd values of K often convenient?', options: ['An odd K is faster to compute than an even one.', 'An odd K always reduces overfitting compared with an even K.', 'An odd K cannot tie a two-class vote.', 'An odd K makes feature scaling unnecessary.'], answer: 2, inline: false },
       ],
       explain: '<p>With K = 4 the vote can tie 2 A – 2 B; K = 5 cannot split evenly between two classes.</p>',
     },
@@ -180,7 +180,7 @@ window.QUIZ = {
       intro: '<p>A KNN classifier has K = 1, training error almost 0%, and high validation error.</p>',
       parts: [
         { kind: 'mc', pts: 3, q: 'What is the most plausible diagnosis?', options: ['Underfitting', 'Overfitting', 'Curse of dimensionality', 'Too little memory'], answer: 1 },
-        { kind: 'mc', pts: 2, q: 'What is a sensible response?', options: ['Decrease K to 0.', 'Remove the validation set.', 'Try a larger K, chosen with validation or cross-validation.', 'Use training error to pick K.'], answer: 2, inline: false },
+        { kind: 'mc', pts: 2, q: 'What is a sensible response?', options: ['Decrease K further, so the model is even more local.', 'Remove the validation set, since it disagrees with training.', 'Try a larger K, chosen with cross-validation rather than training error.', 'Pick the K that gives the lowest training error.'], answer: 2, inline: false },
       ],
       explain: '<p><b>Overfitting</b>: the model follows individual training examples too closely. Try increasing K and select it using validation or cross-validation.</p>',
     },
@@ -190,7 +190,7 @@ window.QUIZ = {
       intro: '<p>A classifier uses a very large K. Its decision boundary is extremely smooth, and it misses meaningful local class regions.</p>',
       parts: [
         { kind: 'mc', pts: 3, q: 'What is happening?', options: ['Overfitting', 'Feature scaling', 'Underfitting', 'Data leakage'], answer: 2 },
-        { kind: 'mc', pts: 2, q: 'What is a sensible response?', options: ['Try a smaller K, chosen using validation performance.', 'Increase K further.', 'Add more irrelevant features.', 'Stop scaling the features.'], answer: 0, inline: false },
+        { kind: 'mc', pts: 2, q: 'What is a sensible response?', options: ['Try a smaller K, chosen by validation performance.', 'Increase K even further, to smooth the boundary more.', 'Add more features, even if they are irrelevant.', 'Stop scaling the features before computing distances.'], answer: 0, inline: false },
       ],
       explain: '<p><b>Underfitting</b>: the neighbourhood is so large that local information is averaged away. Try a smaller K, chosen using validation performance.</p>',
     },

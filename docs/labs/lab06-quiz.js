@@ -17,7 +17,7 @@ window.QUIZ = {
     {
       id: 't1', title: 'AI or machine learning?', type: 'Concept', level: 'Easy', skill: 'found',
       parts: [
-        { kind: 'mc', pts: 3, q: 'Which statement is correct?', options: ['Every AI system must use machine learning.', 'Machine learning is a branch of AI that learns patterns from data.', 'AI and machine learning mean exactly the same thing.', 'Machine learning cannot make predictions on unseen data.'], answer: 1, inline: false },
+        { kind: 'mc', pts: 3, q: 'Which statement is correct?', options: ['Every AI system must use machine learning.', 'ML is a branch of AI that learns from data.', 'AI and machine learning mean exactly the same thing.', 'Machine learning cannot make predictions on unseen data.'], answer: 1, inline: false },
       ],
       explain: '<p>Machine learning is a <b>branch of AI</b>. Not every AI system uses machine learning: a rule-based system may be AI without learning from data.</p>',
     },
@@ -46,7 +46,7 @@ window.QUIZ = {
       intro: '<p>A model predicts <code>0 = failed</code>, <code>1 = passed</code>.</p>',
       parts: [
         { kind: 'mc', pts: 5, q: 'Is this regression because the outputs are numbers?',
-          options: ['Yes: the model outputs numbers, so it is regression.', 'No: 0 and 1 are codes for two categories, so it is classification.', 'Yes, as long as the loss function is numeric.', 'No: it is unsupervised learning.'], answer: 1, inline: false },
+          options: ['Yes: the model outputs numbers, so it is regression.', 'No: 0 and 1 are categories, so it is classification.', 'Yes, as long as the model is trained with a numeric loss.', 'No: without real-valued outputs it becomes unsupervised learning.'], answer: 1, inline: false },
       ],
       explain: '<p><b>No — this is classification.</b> The values 0 and 1 represent the categories <i>failed</i> and <i>passed</i>. The important question is not “is the output written as a number?” but “does the output represent a continuous quantity or a discrete class?”</p>',
     },
@@ -83,7 +83,7 @@ window.QUIZ = {
       id: 't6', title: 'A suspicious accuracy report', type: 'Data splits', level: 'Easy–Medium', skill: 'data',
       intro: '<p>A student trains a model using 10,000 examples. They then report the model’s accuracy using those exact same 10,000 examples.</p>',
       parts: [
-        { kind: 'mc', pts: 5, q: 'What is the problem?', options: ['10,000 examples are too few to train on.', 'Accuracy is never a valid metric.', 'They measure performance on the training data, not on unseen data; a separate test set is needed to measure generalization.', 'They should have used unsupervised learning.'], answer: 2, inline: false },
+        { kind: 'mc', pts: 5, q: 'What is the problem?', options: ['10,000 examples are too few to train a reliable model.', 'Accuracy is not a valid metric for classification.', 'It was measured on the training data itself.', 'The model should have been trained with unsupervised learning instead.'], answer: 2, inline: false },
       ],
       explain: '<p>They are measuring performance on the <b>training data</b>, not on unseen data. A separate <b>test set</b> should be used to measure how well the trained model generalizes.</p>',
     },
@@ -183,7 +183,7 @@ window.QUIZ = {
       id: 't15', title: 'Loss function', type: 'Training', level: 'Easy', skill: 'train',
       intro: '<p>A model predicts \\(\\hat{y}\\); the correct target is \\(y\\).</p>',
       parts: [
-        { kind: 'mc', pts: 4, q: 'What is the purpose of a loss / cost / objective function?', options: ['Measure how wrong the model’s predictions are.', 'Count the number of input features.', 'Split data into training and test sets.', 'Decide whether the task is supervised.'], answer: 0, inline: false },
+        { kind: 'mc', pts: 4, q: 'What is the purpose of a loss / cost / objective function?', options: ['Measure how wrong the model’s predictions are.', 'Count how many input features the model is using.', 'Split the data into training and test sets.', 'Decide whether the task is supervised or not.'], answer: 0, inline: false },
       ],
       explain: '<p>The loss function gives training a quantity to <b>minimize</b>: large loss → predictions are poor; small loss → predictions are closer to the desired outputs.</p>',
     },
