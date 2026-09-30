@@ -1998,3 +1998,35 @@ svg [fill="#b8394f"] { fill: var(--red-ink); } svg [stroke="#b8394f"] { stroke: 
 .qzv-plot .hull, .qzv-mini .hull { fill: color-mix(in srgb, var(--ids) 12%, var(--surface)); stroke: var(--ids); stroke-width: 1.8; }
 .qzv-mini.ml-plot { width: 190px; max-width: 100%; }
 .qzv-mini .km-frame { fill: none; stroke: var(--line); stroke-width: 1.5; }
+/* ---- Lab 11 quiz visuals: neurons and networks, activation / loss curves, flows, layer blocks ---- */
+.qzv-plot .nn-n { fill: var(--surface); stroke: var(--ink-soft); stroke-width: 2; }
+.qzv-plot .nn-n.in { fill: color-mix(in srgb, var(--ink-soft) 10%, var(--surface)); }
+.qzv-plot .nn-n.hid { fill: color-mix(in srgb, var(--ids) 16%, var(--surface)); stroke: var(--ids); }
+.qzv-plot .nn-n.out { fill: color-mix(in srgb, var(--ucs) 26%, var(--surface)); stroke: var(--ucs); stroke-width: 2.5; }
+.qzv-plot .nn-t { font-family: 'Poppins', sans-serif; font-size: 16px; font-weight: 800; fill: var(--ink); }
+.qzv-plot .nn-e { stroke: var(--ink-soft); stroke-width: 1.5; }
+.qzv-plot .nn-e.fwd { stroke: var(--indigo); stroke-width: 2.5; } .qzv-plot .nn-e.bwd { stroke: var(--dfs); stroke-width: 2.5; stroke-dasharray: 6 4; }
+.qzv-plot .ah { fill: var(--ink-soft); } .qzv-plot .ah.f { fill: var(--indigo); } .qzv-plot .ah.b { fill: var(--dfs); }
+.qzv-plot .nn-t.fl { font-size: 15px; }
+.qzv-plot .ew { font-size: 15px; font-weight: 700; fill: var(--ink); paint-order: stroke; stroke: var(--surface); stroke-width: 5px; stroke-linejoin: round; }
+.qzv-plot .pl.f { fill: var(--indigo); font-size: 15px; letter-spacing: 0.05em; } .qzv-plot .pl.b { fill: var(--dfs); font-size: 15px; letter-spacing: 0.05em; }
+.qzv-plot .box { fill: color-mix(in srgb, var(--ids) 12%, var(--surface)); stroke: var(--ids); stroke-width: 1.8; }
+.qzv-plot .box.loss { fill: color-mix(in srgb, #d9546e 12%, var(--surface)); stroke: #d9546e; }
+.qzv-plot .crv { fill: none; stroke: var(--dfs); stroke-width: 3; stroke-linejoin: round; }
+.qzv-plot .crv.d { stroke: var(--ink-soft); stroke-width: 2; stroke-dasharray: 6 5; }
+.qzv-plot .tk.sm { font-size: 12px; }
+.qzv-plot .sep { stroke: var(--ink); stroke-width: 2.5; }
+.qzv-plot .half { fill: color-mix(in srgb, var(--indigo) 9%, transparent); }
+.qzv-plot .probe { fill: var(--ucs); stroke: var(--ink); stroke-width: 2; }
+.qzv-plot .pix { fill: var(--ink); } .qzv-plot .pix0 { fill: color-mix(in srgb, var(--ink) 6%, var(--surface)); }
+.qzv-plot .brace { fill: none; stroke: var(--ink-soft); stroke-width: 1.5; }
+.qzv-stat { min-width: 6.5rem; }
+.qzv-stat > span:last-child { font-family: 'Poppins', sans-serif; font-size: 1.15rem; font-weight: 800; color: var(--indigo); }
+.qzv-layers { display: flex; align-items: center; gap: 0.3rem; }
+.qzv-layers > span { display: grid; place-items: center; min-width: 2.2rem; padding: 0 0.3rem; border: 1.5px solid var(--ids); border-radius: 10px; background: color-mix(in srgb, var(--ids) 16%, var(--surface)); font-weight: 800; font-size: 0.85rem; }
+.qzv-layers > span.in { border-color: var(--ink-soft); background: color-mix(in srgb, var(--ink-soft) 10%, var(--surface)); }
+.qzv-layers > span.out { border-color: var(--ucs); background: color-mix(in srgb, var(--ucs) 26%, var(--surface)); }
+.qzv-layers > i { font-style: normal; color: var(--ink-soft); font-weight: 700; }
+@media (max-width: 520px) { .qzv-layers { gap: 0.15rem; } .qzv-layers > span { min-width: 1.8rem; padding: 0 0.15rem; font-size: 0.78rem; } }
+.qzv-digits { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.4rem; }
+.qzv-digits span { display: grid; place-items: center; width: 2.3rem; height: 2.6rem; border: 1px solid var(--line); border-radius: var(--radius-sm); background: color-mix(in srgb, var(--ink) 4%, var(--surface)); font-family: 'Poppins', sans-serif; font-size: 1.3rem; font-weight: 600; font-style: italic; }

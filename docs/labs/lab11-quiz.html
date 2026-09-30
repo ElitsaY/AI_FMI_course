@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lab 10 Quiz — K-Means and Clustering | Class Notes</title>
-<meta name="description" content="Auto-graded quiz on K-means and clustering: assignment and update steps, the cost J, convergence and local optima, random restarts and K-means++, the elbow and the silhouette, shape assumptions, outliers and variants, hierarchical clustering and evaluation metrics.">
+<title>Lab 11 Quiz — Neural Networks | Class Notes</title>
+<meta name="description" content="Auto-graded quiz on neural networks: neurons, weights and biases, activation functions, perceptrons and XOR, hidden layers, MLP architecture and parameter counts, the forward pass, gradient descent and the learning rate, back-propagation, epochs and mini-batches.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
@@ -56,8 +56,8 @@
       <li><a href="lab07-quiz.html"><span class="lm-n">07</span>K-Nearest Neighbours</a></li>
       <li><a href="lab08-quiz.html"><span class="lm-n">08</span>Naive Bayes Classifier</a></li>
       <li><a href="lab09-quiz.html"><span class="lm-n">09</span>Decision Trees</a></li>
-      <li><a href="lab10-quiz.html" aria-current="page"><span class="lm-n">10</span>K-Means and Clustering</a></li>
-      <li><a href="lab11-quiz.html"><span class="lm-n">11</span>Neural Networks</a></li>
+      <li><a href="lab10-quiz.html"><span class="lm-n">10</span>K-Means and Clustering</a></li>
+      <li><a href="lab11-quiz.html" aria-current="page"><span class="lm-n">11</span>Neural Networks</a></li>
     </ol>
     <p class="lm-note">A quiz follows each lab; more are on the way.</p>
     </div>
@@ -68,10 +68,10 @@
 <section class="hero art-hero art-quiz">
   <svg class="hero-art" viewBox="0 0 1200 300" preserveAspectRatio="xMidYMid slice" aria-hidden="true"></svg>
   <div class="wrap">
-    <p class="eyebrow">Lab 10 · Quiz</p>
-    <h1>K-Means and Clustering Quiz</h1>
+    <p class="eyebrow">Lab 11 · Quiz</p>
+    <h1>Neural Networks Quiz</h1>
     <div class="badges">
-      <span class="badge dfs">24 tasks</span>
+      <span class="badge dfs">25 tasks</span>
       <span class="badge bfs">100 points</span>
       <span class="badge ucs">Auto-graded</span>
       <span class="badge ids">≈ 40 min</span>
@@ -86,16 +86,17 @@
 
   <section class="block" id="howto">
     <h2 class="section-title">Before you start</h2>
-    <p class="section-lede">Quiz for <a href="lab10-kmeans.html">Lab 10: K-Means and Clustering</a>. Answer every task, then press <b>Check answers</b> at the bottom: each answer is marked, the explanations appear, and you get a score per skill.</p>
+    <p class="section-lede">Quiz for <a href="lab11-neural-networks.html">Lab 11: Neural Networks</a>. Answer every task, then press <b>Check answers</b> at the bottom: each answer is marked, the explanations appear, and you get a score per skill.</p>
     <h3 class="section-title" style="font-size:1.15rem;">Assumptions unless stated otherwise</h3>
     <ul class="concept-list">
-      <li><b>Euclidean distance</b> is used, and a smaller within-cluster cost \(J\) is better.</li>
-      <li>K-means makes <b>hard</b> assignments: each point belongs to exactly one cluster.</li>
-      <li>The initial centroids may affect the final solution.</li>
+      <li>A neuron computes a <b>weighted sum plus bias</b>, then applies an activation: \(a = g\big(\sum_j w_j x_j + b\big)\).</li>
+      <li>Feed-forward networks have <b>no cycles</b>; hidden layers lie between the input and output layers.</li>
+      <li>Gradient descent moves the parameters in the direction that <b>reduces the cost</b>; lower training loss means a better fit to the training set.</li>
     </ul>
     <h3 class="section-title" style="font-size:1.15rem; margin-top:1.6rem;">How answers are scored</h3>
     <ul class="concept-list">
-      <li><b>Numbers</b>: type the value as a decimal, e.g. 0.55; a probability may also be a fraction (1/4) or a percentage (25%).</li>
+      <li><b>Numbers</b>: type the value as a decimal, e.g. 0.73; large numbers may use separators (314,000).</li>
+      <li><b>Select all that apply</b>: scores only when the selection is exactly right.</li>
       <li><b>Rows</b>: one choice per row; each correct row earns its share of the points.</li>
       <li>Your answers are saved in this browser only, so you can leave and come back. Nothing is sent anywhere.</li>
     </ul>
@@ -120,13 +121,13 @@
   </div>
 </div>
 
-<footer>Class notes by Elitsa Yotkova and Kristina Kalemdzhieva · Lab 10 quiz</footer>
+<footer>Class notes by Elitsa Yotkova and Kristina Kalemdzhieva · Lab 11 quiz</footer>
 </main>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
-<script src="lab10-quiz.js"></script>
+<script src="lab11-quiz.js"></script>
 <script src="quiz.js"></script>
 </body>
 </html>
