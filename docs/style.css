@@ -1772,10 +1772,11 @@ svg [fill="#b8394f"] { fill: var(--red-ink); } svg [stroke="#b8394f"] { stroke: 
 .wip-tag { margin-right: 0.4rem; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: color-mix(in srgb, var(--ucs) 55%, var(--ink)); }
 
 /* ---- Quizzes: labNN-quiz.html + labs/quiz.js (lab menu link, home button, lab CTA, quiz widgets) ---- */
-.lab-menu li { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
-.lm-h { display: flex; justify-content: space-between; padding-right: 0.3rem; }
-.lab-menu a.lm-quiz { display: block; margin: 0 0.2rem 0 0.25rem; padding: 0.08rem 0.55rem; border: 1px solid var(--line); border-radius: 999px; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-soft); }
-.lab-menu a.lm-quiz[aria-current="page"] { background: var(--indigo); border-color: var(--indigo); color: #fff; box-shadow: none; }
+.lm-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; margin: 0 0 0.9rem; padding: 3px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+.lm-tab { padding: 0.4rem 0.3rem; border: none; border-radius: 7px; background: none; color: var(--ink-soft); font: inherit; font-size: 0.78rem; font-weight: 800; cursor: pointer; }
+.lm-tab:hover { color: var(--ink); }
+.lm-tab[aria-selected="true"] { background: var(--indigo); color: #fff; }
+.lm-note { margin: 0.8rem 0.6rem 0; font-size: 0.78rem; color: var(--ink-soft); }
 .lab-go, .lab-quiz, .lab-table th:nth-child(n+3) { width: 1%; white-space: nowrap; text-align: center; }
 .lab-table .lab-topic { white-space: normal; width: 27%; }
 .quiz-btn { background: var(--surface); color: color-mix(in srgb, var(--teal) 70%, var(--ink)); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--teal) 70%, var(--surface)); }

@@ -21,10 +21,14 @@
 </header>
 
 <div class="lab-layout">
-  <aside class="lab-menu" id="lab-menu" aria-label="Labs">
-    <p class="lm-h"><span>Labs</span><span>Quiz</span></p>
+  <aside class="lab-menu" id="lab-menu" aria-label="Contents">
+    <div class="lm-tabs" role="tablist" aria-label="Menus">
+      <button class="lm-tab" type="button" role="tab" id="lm-t-notes" aria-controls="lm-notes" aria-selected="true">Class notes</button>
+      <button class="lm-tab" type="button" role="tab" id="lm-t-quiz" aria-controls="lm-quiz" aria-selected="false">Quizzes</button>
+    </div>
+    <div class="lm-panel" id="lm-notes" role="tabpanel" aria-labelledby="lm-t-notes">
     <ol>
-      <li><a href="lab01-uninformed-search.html"><span class="lm-n">01</span>Uninformed Search</a><a class="lm-quiz" href="lab01-quiz.html">Quiz</a></li>
+      <li><a href="lab01-uninformed-search.html"><span class="lm-n">01</span>Uninformed Search</a></li>
       <li><a href="lab02-informed-search.html"><span class="lm-n">02</span>Informed Search</a></li>
       <li><a href="lab03-csp.html"><span class="lm-n">03</span>Constraint Satisfaction</a></li>
       <li><a href="lab04-genetic-algorithms.html"><span class="lm-n">04</span>Genetic Algorithms</a></li>
@@ -40,8 +44,15 @@
       <li><a href="lab13-alignment.html"><span class="lm-n">13</span>Post-training and Alignment</a></li>
       <li><a href="lab14-evaluation.html"><span class="lm-n">14</span>Evaluation, Metrics and Data Analysis</a></li>
     </ol>
+    </div>
+    <div class="lm-panel" id="lm-quiz" role="tabpanel" aria-labelledby="lm-t-quiz" hidden>
+    <ol>
+      <li><a href="lab01-quiz.html"><span class="lm-n">01</span>Uninformed Search</a></li>
+    </ol>
+    <p class="lm-note">A quiz follows each lab; more are on the way.</p>
+    </div>
   </aside>
-  <script>(function(){var b=document.body,t=document.querySelector(".side-toggle"),m=document.getElementById("lab-menu"),c=m.querySelector("[aria-current]");if(c&&m.scrollHeight>m.clientHeight)m.scrollTop=c.offsetTop-m.clientHeight/2;function s(o){b.classList.toggle("menu-open",o);t.setAttribute("aria-expanded",o)}t.addEventListener("click",function(e){e.stopPropagation();s(!b.classList.contains("menu-open"))});document.addEventListener("click",function(e){if(b.classList.contains("menu-open")&&!m.contains(e.target))s(false)});document.addEventListener("keydown",function(e){if(e.key==="Escape")s(false)})})();</script>
+  <script>(function(){var b=document.body,t=document.querySelector(".side-toggle"),m=document.getElementById("lab-menu"),c=m.querySelector("[aria-current]");if(c&&m.scrollHeight>m.clientHeight)m.scrollTop=c.offsetTop-m.clientHeight/2;var ts=m.querySelectorAll(".lm-tab");ts.forEach(function(x){x.addEventListener("click",function(){ts.forEach(function(y){var o=y===x;y.setAttribute("aria-selected",o);document.getElementById(y.getAttribute("aria-controls")).hidden=!o})})});function s(o){b.classList.toggle("menu-open",o);t.setAttribute("aria-expanded",o)}t.addEventListener("click",function(e){e.stopPropagation();s(!b.classList.contains("menu-open"))});document.addEventListener("click",function(e){if(b.classList.contains("menu-open")&&!m.contains(e.target))s(false)});document.addEventListener("keydown",function(e){if(e.key==="Escape")s(false)})})();</script>
 <main class="lab-main">
 
 <section class="hero art-hero art-dt">
