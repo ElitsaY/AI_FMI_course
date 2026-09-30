@@ -125,18 +125,41 @@ window.QUIZ = {
       figure: { nodes: { S: [200, 40], A: [80, 160], B: [320, 160], G: [200, 280] }, edges: [['S', 'A', 2], ['S', 'B', 3], ['A', 'G', 5], ['B', 'G', 2]],
         notes: { S: 'h=5', A: 'h=4', B: 'h=1', G: 'h=0' }, goals: ['G'], w: 400, h: 320, alt: 'Weighted graph with heuristic values' },
       parts: [
-        { kind: 'mc', pts: 2, q: 'Is the heuristic admissible?', ...YN, answer: 0 },
-        { kind: 'mc', pts: 2, q: 'Is it consistent?', ...YN, answer: 1 },
-        { kind: 'mc', pts: 3, q: M`Which edge, if any, violates the consistency condition \(h(n) \leq c(n, n') + h(n')\)?`, options: ['S → A', 'S → B', 'A → G', 'B → G', 'None'], answer: 1 },
+        { kind: 'mc', pts: 1, q: 'Is the heuristic admissible?', ...YN, answer: 0 },
+        { kind: 'mc', pts: 3, id: 'edge', q: M`Which edge, if any, violates the consistency condition \(h(n) \leq c(n, n') + h(n')\)?`, options: ['S → A', 'S → B', 'A → G', 'B → G', 'None'], answer: 1 },
       ],
       explain: M`<p><b>Admissible: yes</b> — \(h(S) = 5 \leq 5\), \(h(A) = 4 \leq 5\), \(h(B) = 1 \leq 2\), \(h(G) = 0 \leq 0\).</p><p><b>Consistent: no</b> — on the edge S → B we need \(5 \leq 3 + 1\), but \(5 > 4\). The other edges pass: S → A: \(5 \leq 2 + 4\), A → G: \(4 \leq 5 + 0\), B → G: \(1 \leq 2 + 0\).</p><p>Consistency is a stronger requirement: a consistent heuristic is admissible, but an admissible heuristic does not have to be consistent.</p>`,
+    },
+    /* ---------- 10b: three cases ---------- */
+    {
+      id: 't10b', title: 'Admissible, consistent, both or neither?', type: 'Case scenarios', level: 'Hard', skill: 'adm',
+      intro: M`<p>For each case, decide whether the heuristic is <b>admissible</b> (\(h(n) \leq h^*(n)\) for every node) and whether it is <b>consistent</b> (\(h(n) \leq c(n, n') + h(n')\) for every edge). Edge costs are on the edges; heuristic values are next to the nodes; G is the goal.</p>`,
+      parts: [
+        { kind: 'rows', pts: 2, id: 'a', q: '<b>Case A</b>', options: ['Yes', 'No'],
+          figure: { nodes: { S: [200, 35], A: [90, 115], B: [310, 115], C: [200, 195], G: [310, 275] }, edges: [['S', 'A', 2], ['S', 'B', 4], ['A', 'C', 3], ['B', 'C', 1], ['C', 'G', 2], ['B', 'G', 5]],
+            notes: { S: 'h=6', A: 'h=4', B: 'h=3', C: 'h=2', G: 'h=0' }, goals: ['G'], w: 400, h: 310, alt: 'Case A graph' },
+          rows: [{ label: 'Is h admissible?', answer: 0 }, { label: 'Is h consistent?', answer: 0 }] },
+        { kind: 'rows', pts: 2, id: 'b', q: '<b>Case B</b>', options: ['Yes', 'No'],
+          figure: { nodes: { S: [200, 35], A: [90, 125], B: [310, 125], G: [200, 235] }, edges: [['S', 'A', 1], ['S', 'B', 4], ['A', 'B', 2], ['A', 'G', 6], ['B', 'G', 2]],
+            notes: { S: 'h=4', A: 'h=5', B: 'h=1', G: 'h=0' }, goals: ['G'], w: 400, h: 270, alt: 'Case B graph' },
+          rows: [{ label: 'Is h admissible?', answer: 1 }, { label: 'Is h consistent?', answer: 1 }] },
+        { kind: 'rows', pts: 2, id: 'c', q: '<b>Case C</b>', options: ['Yes', 'No'],
+          figure: { nodes: { S: [200, 35], A: [90, 115], B: [90, 205], C: [310, 125], G: [200, 285] }, edges: [['S', 'A', 1], ['A', 'B', 1], ['B', 'G', 3], ['S', 'C', 2], ['C', 'G', 4]],
+            notes: { S: 'h=4', A: 'h=4', B: 'h=1', C: 'h=3', G: 'h=0' }, goals: ['G'], w: 400, h: 320, alt: 'Case C graph' },
+          rows: [{ label: 'Is h admissible?', answer: 0 }, { label: 'Is h consistent?', answer: 1 }] },
+      ],
+      explain: M`<ul class="concept-list">
+        <li><b>Case A — admissible and consistent.</b> True costs: \(h^*(S) = 7\), \(h^*(A) = 5\), \(h^*(B) = 3\) (via C), \(h^*(C) = 2\), so no node overestimates. Every edge passes, e.g. B → C: \(3 \leq 1 + 2\) and S → B: \(6 \leq 4 + 3\).</li>
+        <li><b>Case B — neither.</b> The direct edge A → G costs 6, but A → B → G costs only \(2 + 2 = 4\), so \(h^*(A) = 4 < 5 = h(A)\): not admissible. On the edge A → B, \(5 > 2 + 1\): not consistent.</li>
+        <li><b>Case C — admissible but not consistent.</b> True costs: \(h^*(S) = 5\), \(h^*(A) = 4\), \(h^*(B) = 3\), \(h^*(C) = 4\), and no node overestimates. But on the edge A → B, \(h(A) = 4 > 1 + 1 = c(A, B) + h(B)\): the estimate drops by 3 over an edge that costs 1.</li>
+      </ul><p>A heuristic can be admissible without being consistent (Case C), but a consistent heuristic with \(h(G) = 0\) is always admissible, so “consistent but not admissible” never happens.</p>`,
     },
     /* ---------- 11 ---------- */
     {
       id: 't11', title: 'A* tree search vs. graph search', type: 'Conceptual', level: 'Hard', skill: 'adm',
       intro: '<p>Mark each statement as <b>True</b> or <b>False</b>.</p>',
       parts: [
-        { kind: 'rows', pts: 8, q: 'Statements', options: ['True', 'False'],
+        { kind: 'rows', pts: 6, q: 'Statements', options: ['True', 'False'],
           rows: [
             { label: '1. An admissible heuristic is sufficient for A* tree search to be optimal.', answer: 0 },
             { label: '2. For the standard A* graph-search guarantee, consistency is required.', answer: 0 },
@@ -226,7 +249,7 @@ window.QUIZ = {
       id: 't18', title: 'Reject the tempting heuristic', type: 'Conceptual challenge', level: 'Hard', skill: 'adm',
       intro: '<p>A student proposes this heuristic for route planning:</p><blockquote class="qz-quote">“Take the straight-line distance to the goal and multiply it by 2. This should make A* more aggressive and therefore better.”</blockquote><p>Suppose ordinary straight-line distance is known to be admissible.</p>',
       parts: [
-        { kind: 'mc', pts: 3, q: 'What is the main problem with the proposed heuristic?',
+        { kind: 'mc', pts: 2, q: 'What is the main problem with the proposed heuristic?',
           options: ['Multiplication always makes a heuristic consistent', 'It may overestimate the true remaining cost and therefore lose admissibility', M`A* requires \(h(n) = 0\) for every node`, 'Larger heuristic values always guarantee fewer expansions without affecting optimality'], answer: 1, inline: false },
       ],
       explain: M`<p>Multiplying an admissible heuristic by a factor greater than 1 can make \(h(n) > h^*(n)\) for some states, which destroys the admissibility guarantee. A more aggressive heuristic is not automatically a better heuristic if optimality matters.</p>`,

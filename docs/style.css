@@ -1804,6 +1804,7 @@ svg [fill="#b8394f"] { fill: var(--red-ink); } svg [stroke="#b8394f"] { stroke: 
 .qz-quote { margin: 0.6rem 0 0; padding: 0.6rem 1rem; border-left: 4px solid var(--ucs); background: color-mix(in srgb, var(--ucs) 10%, var(--surface)); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; font-style: italic; }
 .qz-fig { margin: 0 0 1.1rem; padding: 0.8rem; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow-sm); }
 .qz-fig svg { display: block; width: 100%; height: auto; margin: 0 auto; }
+.qz-fig-part { margin: 0 0 0.8rem; padding: 0.5rem; box-shadow: none; background: color-mix(in srgb, var(--ink) 2%, var(--surface)); }
 .qz-fig-hint { margin: 0.4rem 0 0; text-align: center; font-size: 0.8rem; color: var(--ink-soft); }
 .qz-fig-now { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.55rem; padding: 0.4rem 0.4rem 0.4rem 0.7rem; border-radius: var(--radius-sm); background: color-mix(in srgb, var(--indigo) 7%, var(--surface)); font-size: 0.88rem; }
 .qz-now-lbl { flex-shrink: 0; font-size: 0.7rem; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: var(--indigo); }

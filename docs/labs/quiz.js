@@ -5,6 +5,7 @@
    num (typed number; tol = allowed error, pct = also accept a percentage).
    A multi part may set none: <index of a 'None' option>, which deselects the others (and vice versa).
    Figures may carry notes: { A: 'h=5' } drawn beside the node (h, f or score values).
+   A part may have its own (non-clickable) figure, and an id to keep its saved answer when parts are removed.
    Grading runs in the browser; answers are kept in localStorage for this viewer only. */
 (function () {
 'use strict';
@@ -159,7 +160,7 @@ function initQuiz() {
       sec.appendChild(box);
     }
     task.parts.forEach((part, pi) => {
-      const id = task.id + '.' + (pi + 1);
+      const id = task.id + '.' + (part.id || pi + 1);   // part.id keeps saved answers stable when parts are removed
       const P = { task: T, part, id };
       P.ui = buildPart(P);
       all.push(P); T.parts.push(P);
@@ -187,6 +188,7 @@ function initQuiz() {
     const { part } = P, box = el('div', 'qz-part');
     box.appendChild(el('p', 'qz-q', `${part.q} <span class="qz-pts">${fmt(part.pts)} pt${part.pts === 1 ? '' : 's'}</span>` + (part.kind === 'multi' ? ' <span class="qz-hint">Select all that apply.</span>' : '')));
     if (part.html) box.appendChild(el('div', 'qz-q-extra', part.html));
+    if (part.figure) { const f = el('div', 'qz-fig qz-fig-part'); f.appendChild(drawFigure(part.figure).svg); box.appendChild(f); }
     const fb = el('p', 'qz-fb'); fb.hidden = true;
     let refresh = () => {}, mark = () => {};
 
