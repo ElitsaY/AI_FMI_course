@@ -98,7 +98,7 @@ window.QUIZ = {
     /* ---------- 8 ---------- */
     {
       id: 't8', title: 'Trace A*', type: 'A* tracing', level: 'Medium–Hard', skill: 'astar',
-      intro: '<p>Heuristic values are shown beside the nodes. Relevant path costs are: S → A → C → G = 10, S → A → D → G = 10, S → B → D → G = 8, S → B → E → G = 9.</p>',
+      intro: '<p>Heuristic values are shown beside the nodes. Relevant path costs are:</p><ul class="concept-list"><li>S → A → C → G = 10</li><li>S → A → D → G = 10</li><li>S → B → D → G = 8</li><li>S → B → E → G = 9</li></ul>',
       figure: { nodes: { S: [220, 40], A: [110, 140], B: [330, 140], C: [40, 250], D: [220, 250], E: [400, 250], G: [220, 360] },
         edges: [['S', 'A', 2], ['S', 'B', 4], ['A', 'C', 2], ['A', 'D', 5], ['B', 'D', 1], ['B', 'E', 3], ['C', 'G', 6], ['D', 'G', 3], ['E', 'G', 2]],
         notes: { S: 'h=7', A: 'h=7', B: 'h=3', C: 'h=4', D: 'h=2', E: 'h=2', G: 'h=0' }, goals: ['G'], w: 470, h: 400, alt: 'Weighted graph with heuristic values' },
