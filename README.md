@@ -27,7 +27,7 @@ Each lab is followed by a **quiz**: auto-graded in the browser, with an explanat
 | :--- | :--- | :--- |
 | 01 | [Uninformed Search](https://elitsay.github.io/AI_FMI_course/docs/labs/lab01-uninformed-search.html) | [Quiz](https://elitsay.github.io/AI_FMI_course/docs/labs/lab01-quiz.html) |
 | 02 | [Informed Search](https://elitsay.github.io/AI_FMI_course/docs/labs/lab02-informed-search.html) | [Quiz](https://elitsay.github.io/AI_FMI_course/docs/labs/lab02-quiz.html) |
-| 03 | [Constraint Satisfaction](https://elitsay.github.io/AI_FMI_course/docs/labs/lab03-csp.html) | coming soon |
+| 03 | [Constraint Satisfaction](https://elitsay.github.io/AI_FMI_course/docs/labs/lab03-csp.html) | [Quiz](https://elitsay.github.io/AI_FMI_course/docs/labs/lab03-quiz.html) |
 | 04 | [Genetic Algorithms](https://elitsay.github.io/AI_FMI_course/docs/labs/lab04-genetic-algorithms.html) | coming soon |
 | 05 | [Games](https://elitsay.github.io/AI_FMI_course/docs/labs/lab05-games.html) | coming soon |
 | 06 | [Introduction to ML](https://elitsay.github.io/AI_FMI_course/docs/labs/lab06-intro-ml.html) | coming soon |

@@ -1877,6 +1877,12 @@ svg [fill="#b8394f"] { fill: var(--red-ink); } svg [stroke="#b8394f"] { stroke: 
 .qz-explain { margin: 0.2rem 0 0; padding: 0.9rem 1.1rem; border-left: 4px solid var(--indigo); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; background: color-mix(in srgb, var(--indigo) 6%, var(--surface)); font-size: 0.93rem; }
 .qz-explain p { margin: 0 0 0.5rem; } .qz-explain p:last-child, .qz-explain .concept-list { margin-bottom: 0; }
 .qz-explain-h, .qz-res-sub { margin: 0 0 0.4rem; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; color: var(--indigo); }
+.qz-task code, .qz-explain code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.88em; padding: 0.05rem 0.3rem; border-radius: 5px; background: color-mix(in srgb, var(--ink) 6%, var(--surface)); }
+.qz-code { margin: 0 0 0.8rem; padding: 0.8rem 1rem; overflow-x: auto; white-space: pre-wrap; border: 1px solid var(--line); border-radius: var(--radius-sm); background: color-mix(in srgb, var(--ink) 4%, var(--surface)); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.8rem; line-height: 1.55; color: var(--ink); }
+.qz-nq { margin: 0.4rem 0 0.8rem; border: none; }
+.qz-nq .nq-cell { width: 2.1rem; height: 2.1rem; font-size: 1.35rem; }
+.qz-nq .nq-cell:not(.qz-nq-idx) { box-shadow: inset 0 0 0 0.5px var(--line); }
+.qz-nq-idx { display: flex; align-items: center; justify-content: center; width: 2.1rem; height: 2.1rem; font-size: 0.72rem; font-weight: 800; color: var(--ink-soft); }
 .qz-frontier { display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem; margin: 0 0 0.8rem; }
 .qz-frontier small, .qz-fr-note { color: var(--ink-soft); font-size: 0.82rem; font-weight: 600; }
 .qz-fr-note { margin: -0.3rem 0 0.8rem; }
