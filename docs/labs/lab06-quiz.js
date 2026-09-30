@@ -17,7 +17,7 @@ window.QUIZ = {
     {
       id: 't1', title: 'AI or machine learning?', type: 'Concept', level: 'Easy', skill: 'found',
       parts: [
-        { kind: 'mc', pts: 5, q: 'Which statement is correct?', options: ['Every AI system must use machine learning.', 'Machine learning is a branch of AI that learns patterns from data.', 'AI and machine learning mean exactly the same thing.', 'Machine learning cannot make predictions on unseen data.'], answer: 1, inline: false },
+        { kind: 'mc', pts: 3, q: 'Which statement is correct?', options: ['Every AI system must use machine learning.', 'Machine learning is a branch of AI that learns patterns from data.', 'AI and machine learning mean exactly the same thing.', 'Machine learning cannot make predictions on unseen data.'], answer: 1, inline: false },
       ],
       explain: '<p>Machine learning is a <b>branch of AI</b>. Not every AI system uses machine learning: a rule-based system may be AI without learning from data.</p>',
     },
@@ -45,7 +45,7 @@ window.QUIZ = {
       id: 't3', title: 'Spot the trick', type: 'Trap', level: 'Medium', skill: 'found',
       intro: '<p>A model predicts <code>0 = failed</code>, <code>1 = passed</code>.</p>',
       parts: [
-        { kind: 'mc', pts: 6, q: 'Is this regression because the outputs are numbers?',
+        { kind: 'mc', pts: 5, q: 'Is this regression because the outputs are numbers?',
           options: ['Yes: the model outputs numbers, so it is regression.', 'No: 0 and 1 are codes for two categories, so it is classification.', 'Yes, as long as the loss function is numeric.', 'No: it is unsupervised learning.'], answer: 1, inline: false },
       ],
       explain: '<p><b>No — this is classification.</b> The values 0 and 1 represent the categories <i>failed</i> and <i>passed</i>. The important question is not “is the output written as a number?” but “does the output represent a continuous quantity or a discrete class?”</p>',
@@ -54,13 +54,19 @@ window.QUIZ = {
     {
       id: 't4', title: 'Supervised or unsupervised?', type: 'Learning paradigm', level: 'Easy', skill: 'found',
       parts: [
-        { kind: 'rows', pts: 5, q: 'Identify the learning paradigm.', options: ['Supervised', 'Unsupervised'],
+        { kind: 'rows', pts: 8, q: 'Identify the learning paradigm.', options: ['Supervised', 'Unsupervised'],
           rows: [
             { label: '<b>A.</b> The training examples contain house features → known house price.', answer: 0 },
             { label: '<b>B.</b> A dataset contains customer behaviour but no predefined customer groups; the goal is to discover natural groups in the data.', answer: 1 },
+            { label: '<b>C.</b> Train a spam filter on emails that are each marked spam or not spam.', answer: 0 },
+            { label: '<b>D.</b> Group news articles into topics when no article has a topic label.', answer: 1 },
+            { label: '<b>E.</b> Train a model on chest X-rays that a doctor has labelled healthy or pneumonia.', answer: 0 },
+            { label: '<b>F.</b> Find groups of similar songs from their audio features alone; no genres are given.', answer: 1 },
+            { label: '<b>G.</b> Use past loans, each recorded as repaid or not repaid, to predict whether new applicants will repay.', answer: 0 },
+            { label: '<b>H.</b> Organise a photo collection into groups of similar images; the photos have no captions or labels.', answer: 1 },
           ] },
       ],
-      explain: '<p>A: <b>supervised</b> — the correct target is provided. B: <b>unsupervised</b> — there are no provided labels. Supervised = inputs + known target; unsupervised = inputs only, no known target.</p>',
+      explain: '<p><b>Supervised</b> (the correct target is provided): A house price, C spam label, E doctor’s diagnosis, G repaid / not repaid. <b>Unsupervised</b> (no labels, find structure): B customer groups, D news topics, F similar songs, H similar photos.</p><p>Supervised = inputs + known target; unsupervised = inputs only, no known target. The question to ask is whether each training example comes with the answer the model should learn to give.</p>',
     },
     /* ---------- 5 ---------- */
     {
