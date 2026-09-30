@@ -129,10 +129,8 @@ function initQuiz() {
     tasks.push(T);
     const total = task.parts.reduce((s, p) => s + p.pts, 0);
     const sec = el('section', 'block qz-task'); sec.id = 'task-' + (ti + 1);
-    const lvl = (task.level || '').toLowerCase().split(/[–-]/)[0].trim();
-    sec.innerHTML = `<div class="qz-head"><span class="qz-no">${ti + 1}</span><div><h2 class="section-title">${task.title}</h2>
-      <div class="qz-meta"><span class="qz-tag">${task.type}</span><span class="qz-tag ${lvl}">${task.level}</span><span class="qz-tag">${fmt(total)} pts</span><span class="qz-tag qz-score" hidden></span></div></div></div>`;
-    T.scoreTag = sec.querySelector('.qz-score'); T.total = total;
+    sec.innerHTML = `<div class="qz-head"><span class="qz-no">${ti + 1}</span><div><h2 class="section-title">${task.title}</h2></div></div>`;
+    T.total = total;
     if (task.intro) sec.appendChild(el('div', 'qz-intro', task.intro));
     if (task.figure) {
       T.fig = drawFigure(task.figure);
@@ -308,7 +306,7 @@ function initQuiz() {
   const bar = document.querySelector('.qz-bar'), prog = bar.querySelector('.qz-prog'), fill = bar.querySelector('.qz-track i');
   const checkBtn = bar.querySelector('[data-act="check"]'), resetBtn = bar.querySelector('[data-act="reset"]'), seeBtn = bar.querySelector('[data-act="results"]');
   const results = document.getElementById('qz-results');
-  let confirmCheck = false;
+  let confirmCheck = false, confirmReset = null;   // two-click confirmations (window.confirm is blocked in some embedded browsers)
 
   function changed() { confirmCheck = false; all.forEach(P => P.ui.refresh()); status(); save(); }
   function status() {
@@ -333,8 +331,6 @@ function initQuiz() {
     tasks.forEach(T => {
       const got = T.parts.reduce((s, P) => s + grade(P.part, answers[P.id]).got, 0);
       T.got = got;
-      T.scoreTag.hidden = false; T.scoreTag.textContent = `${fmt(got)} / ${fmt(T.total)}`;
-      T.scoreTag.className = 'qz-tag qz-score ' + (got === T.total ? 'ok' : got > 0 ? 'part' : 'bad');
       if (T.explain) T.explain.hidden = false;
       T.parts.forEach(P => { if (P.seqBox) P.seqBox.classList.remove('active'); });
       if (T.fig) Object.values(T.fig.byLabel).forEach(g => g.classList.remove('in'));
@@ -359,7 +355,7 @@ function initQuiz() {
   function clearMarks() {
     root.querySelectorAll('.correct, .wrong, .missed').forEach(b => b.classList.remove('correct', 'wrong', 'missed'));
     root.querySelectorAll('.qz-fb').forEach(f => { f.hidden = true; });
-    tasks.forEach(T => { T.scoreTag.hidden = true; if (T.explain) T.explain.hidden = true; if (T.seqIds.length) setActive(T, T.seqIds[0]); });
+    tasks.forEach(T => { if (T.explain) T.explain.hidden = true; if (T.seqIds.length) setActive(T, T.seqIds[0]); });
     results.hidden = true;
   }
 
@@ -371,7 +367,12 @@ function initQuiz() {
   });
   seeBtn.addEventListener('click', () => results.scrollIntoView({ behavior: 'smooth', block: 'start' }));
   resetBtn.addEventListener('click', () => {
-    if (!window.confirm('Clear all your answers and start the quiz again?')) return;
+    if (!confirmReset) {
+      resetBtn.textContent = 'Clear all answers?'; resetBtn.classList.add('warn');
+      confirmReset = setTimeout(() => { confirmReset = null; resetBtn.textContent = 'Try again'; resetBtn.classList.remove('warn'); }, 4000);
+      return;
+    }
+    clearTimeout(confirmReset); confirmReset = null; resetBtn.textContent = 'Try again'; resetBtn.classList.remove('warn');
     answers = {}; graded = false; confirmCheck = false; clearMarks(); changed();
     root.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });

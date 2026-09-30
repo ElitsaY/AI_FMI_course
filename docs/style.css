@@ -1790,15 +1790,9 @@ svg [fill="#b8394f"] { fill: var(--red-ink); } svg [stroke="#b8394f"] { stroke: 
 .qz-task { scroll-margin-top: 80px; }
 .qz-head { display: flex; align-items: flex-start; gap: 0.8rem; margin-bottom: 0.8rem; }
 .qz-head > div { min-width: 0; }
-.qz-head h2.section-title { font-size: 1.45rem; margin: 0.15rem 0 0.4rem; }
+.qz-head { align-items: center; }
+.qz-head h2.section-title { font-size: 1.45rem; margin: 0; }
 .qz-no { flex-shrink: 0; display: inline-grid; place-items: center; width: 2.2rem; height: 2.2rem; border-radius: 50%; background: color-mix(in srgb, var(--indigo) 16%, var(--surface)); color: var(--ink); font-family: 'Poppins', sans-serif; font-weight: 800; }
-.qz-meta { display: flex; flex-wrap: wrap; gap: 0.35rem; }
-.qz-tag { padding: 0.12rem 0.55rem; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--ink-soft); font-size: 0.7rem; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; }
-.qz-tag.easy { border-color: var(--bfs); background: color-mix(in srgb, var(--bfs) 10%, var(--surface)); color: var(--ink); }
-.qz-tag.medium { border-color: var(--ucs); background: color-mix(in srgb, var(--ucs) 14%, var(--surface)); color: var(--ink); }
-.qz-tag.hard { border-color: var(--dfs); background: color-mix(in srgb, var(--dfs) 14%, var(--surface)); color: var(--ink); }
-.qz-tag.qz-score { color: var(--ink); } .qz-tag.qz-score.ok { border-color: var(--bfs); background: color-mix(in srgb, var(--bfs) 22%, var(--surface)); }
-.qz-tag.qz-score.part { border-color: var(--ucs); background: color-mix(in srgb, var(--ucs) 24%, var(--surface)); } .qz-tag.qz-score.bad { border-color: #d9546e; background: color-mix(in srgb, #d9546e 16%, var(--surface)); }
 .qz-intro { margin: 0 0 1rem; } .qz-intro p { margin: 0 0 0.6rem; } .qz-intro .concept-list { margin: 0 0 0.6rem; }
 .qz-quote { margin: 0.6rem 0 0; padding: 0.6rem 1rem; border-left: 4px solid var(--ucs); background: color-mix(in srgb, var(--ucs) 10%, var(--surface)); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; font-style: italic; }
 .qz-fig { margin: 0 0 1.1rem; padding: 0.8rem; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow-sm); }
@@ -1877,6 +1871,7 @@ svg [fill="#b8394f"] { fill: var(--red-ink); } svg [stroke="#b8394f"] { stroke: 
 .qz-btn { flex-shrink: 0; padding: 0.55rem 1.1rem; border: 1.5px solid var(--indigo); border-radius: 999px; background: var(--indigo); color: #fff; font: inherit; font-size: 0.88rem; font-weight: 800; white-space: nowrap; cursor: pointer; }
 .qz-btn:hover { background: var(--indigo-dark); border-color: var(--indigo-dark); }
 .qz-btn.ghost { background: var(--surface); color: var(--indigo); } .qz-btn.ghost:hover { background: color-mix(in srgb, var(--indigo) 10%, var(--surface)); }
+.qz-btn.ghost.warn { border-color: #d9546e; background: color-mix(in srgb, #d9546e 12%, var(--surface)); color: var(--red-ink); }
 .qz-btn[hidden] { display: none; }
 .qz-results { scroll-margin-top: 70px; }
 .qz-total { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.6rem; }
