@@ -232,7 +232,7 @@ window.QUIZ = {
     /* ---------- 21 ---------- */
     {
       id: 't21', title: 'Depth 3 vs. depth 20', type: 'Trade-off', level: 'Hard', skill: 'overfit',
-      intro: '<table class="qz-pq"><thead><tr><th>Model</th><th>Max depth</th><th>Training</th><th>Validation</th></tr></thead><tbody><tr><td>A</td><td>3</td><td>83%</td><td>81%</td></tr><tr><td>B</td><td>20</td><td>100%</td><td>70%</td></tr></tbody></table>',
+      intro: '<table class="qz-pq"><thead><tr><th></th><th>Model A</th><th>Model B</th></tr></thead><tbody><tr><td>Max depth</td><td>3</td><td>20</td></tr><tr><td>Training accuracy</td><td>83%</td><td>100%</td></tr><tr><td>Validation accuracy</td><td>81%</td><td>70%</td></tr></tbody></table>',
       parts: [
         { kind: 'mc', pts: 4, q: 'Which tree shows stronger evidence of overfitting?', options: ['Model A', 'Model B'], answer: 1, letters: false },
         { kind: 'mc', pts: 4, q: 'Which model would you rather deploy?', options: ['Model A', 'Model B'], answer: 0, letters: false },

@@ -1901,7 +1901,7 @@ svg [fill="#b8394f"] { fill: var(--red-ink); } svg [stroke="#b8394f"] { stroke: 
 .qz-frontier small, .qz-fr-note { color: var(--ink-soft); font-size: 0.82rem; font-weight: 600; }
 .qz-fr-note { margin: -0.3rem 0 0.8rem; }
 .qz-frontier .chip.out, .qz-pq tr.out td { background: color-mix(in srgb, var(--ucs) 26%, var(--surface)); border-color: var(--ucs); }
-.qz-pq { border-collapse: collapse; margin: 0 0 0.8rem; font-size: 0.88rem; font-variant-numeric: tabular-nums; }
+.qz-pq { display: block; max-width: 100%; width: max-content; overflow-x: auto; border-collapse: collapse; margin: 0 0 0.8rem; font-size: 0.88rem; font-variant-numeric: tabular-nums; }
 .qz-pq th, .qz-pq td { padding: 0.25rem 0.9rem; border: 1px solid var(--line); text-align: left; }
 .qz-pq th { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-soft); }
 .qz-bar { position: sticky; bottom: 0; z-index: 20; margin-top: 1.5rem; border-top: 1px solid var(--line); background: color-mix(in srgb, var(--bg) 90%, transparent); backdrop-filter: blur(10px); }
@@ -1944,6 +1944,7 @@ svg [fill="#b8394f"] { fill: var(--red-ink); } svg [stroke="#b8394f"] { stroke: 
   .qz-bar .qz-btn[data-act="results"] { display: none; }
   .qz-strip-ticks span:first-child, .qz-strip-ticks span:last-child { display: none; }
   .qz-code.qz-diagram { font-size: 0.7rem; padding: 0.7rem 0.8rem; }
+  .qz-pq { font-size: 0.8rem; } .qz-pq th, .qz-pq td { padding: 0.25rem 0.5rem; }
   .qz-boards { gap: 1rem; } .qz-boards .puzzle-board { grid-template-columns: repeat(3, 40px); grid-template-rows: repeat(3, 40px); }
 }
 @media (max-width: 520px) { body.home .site-nav { gap: 0.6rem; padding-left: 1rem; padding-right: 1rem; } body.home .site-nav nav { gap: 0.75rem; font-size: 0.85rem; } body.home .site-nav .brand { font-size: 1rem; } }
