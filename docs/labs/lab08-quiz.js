@@ -17,16 +17,6 @@ window.QUIZ = {
   tasks: [
     /* ---------- 1 ---------- */
     {
-      id: 't1', title: 'Identify the Bayesian terms', type: 'Matching', level: 'Easy', skill: 'terms',
-      intro: M`<p>Bayes’ theorem: \[P(A \mid B) = \frac{P(B \mid A)\,P(A)}{P(B)}\]</p>`,
-      parts: [
-        { kind: 'rows', pts: 4, q: 'Match each term.', options: ['Posterior', 'Likelihood', 'Prior', 'Evidence'],
-          rows: [{ label: M`\(P(A)\)`, answer: 2 }, { label: M`\(P(B \mid A)\)`, answer: 1 }, { label: M`\(P(A \mid B)\)`, answer: 0 }, { label: M`\(P(B)\)`, answer: 3 }] },
-      ],
-      explain: M`<p>\(P(A \mid B)\) → posterior; \(P(B \mid A)\) → likelihood; \(P(A)\) → prior; \(P(B)\) → evidence.</p><ul class="concept-list"><li><b>Prior</b>: belief before seeing the current evidence.</li><li><b>Likelihood</b>: how likely the evidence is under a class.</li><li><b>Posterior</b>: updated probability after seeing the evidence.</li><li><b>Evidence</b>: probability of the observed data.</li></ul>`,
-    },
-    /* ---------- 2 ---------- */
-    {
       id: 't2', title: 'Class priors', type: 'Calculation', level: 'Easy', skill: 'terms',
       intro: '<p>A training dataset contains 100 emails: 40 spam and 60 ham.</p>',
       parts: [
@@ -35,17 +25,17 @@ window.QUIZ = {
       ],
       explain: M`<p>\(P(\text{Spam}) = 40/100 = 0.4\) and \(P(\text{Ham}) = 60/100 = 0.6\).</p>`,
     },
-    /* ---------- 3 ---------- */
+    /* ---------- 2 ---------- */
     {
       id: 't3', title: 'Read a posterior', type: 'Interpretation', level: 'Easy', skill: 'terms',
       intro: M`<p>Suppose \(P(\text{Spam} \mid \text{free}, \text{money}) = 0.91\).</p>`,
       parts: [
-        { kind: 'mc', pts: 4, q: 'What does this probability represent?',
+        { kind: 'mc', pts: 6, q: 'What does this probability represent?',
           options: ['The probability of seeing “free” and “money” in a spam email', 'The share of spam emails in the training data, before any words are seen', 'The probability of seeing “free” and “money” in any email at all', 'The probability that the email is spam, given it has “free” and “money”'], answer: 3, inline: false },
       ],
       explain: '<p>It is the probability that the email belongs to the <b>Spam</b> class given the observed features “free” and “money”: prior knowledge + observed evidence → posterior. (The other options describe the likelihood, the prior and the evidence.)</p>',
     },
-    /* ---------- 4 ---------- */
+    /* ---------- 3 ---------- */
     {
       id: 't4', title: 'Compute a Naive Bayes score', type: 'Calculation', level: 'Medium', skill: 'compute',
       intro: '<table class="qz-pq"><thead><tr><th></th><th>Spam</th><th>Ham</th></tr></thead><tbody><tr><td>Prior P(C)</td><td>0.4</td><td>0.6</td></tr><tr><td>P(free | C)</td><td>0.30</td><td>0.05</td></tr><tr><td>P(money | C)</td><td>0.25</td><td>0.10</td></tr></tbody></table><p>A new email contains <b>free</b> and <b>money</b>.</p>',
@@ -56,17 +46,17 @@ window.QUIZ = {
       ],
       explain: M`<p>Spam: \(0.4 \times 0.30 \times 0.25 = 0.03\). Ham: \(0.6 \times 0.05 \times 0.10 = 0.003\). Since \(0.03 > 0.003\), the email is classified as <b>Spam</b>.</p>`,
     },
-    /* ---------- 5 ---------- */
+    /* ---------- 4 ---------- */
     {
       id: 't5', title: M`The denominator \(P(x)\)`, type: 'Concept', level: 'Medium', skill: 'terms',
       intro: M`<p>The posterior is \(P(C_i \mid x) = \dfrac{P(x \mid C_i)\,P(C_i)}{P(x)}\).</p>`,
       parts: [
-        { kind: 'mc', pts: 4, q: M`Why can Naive Bayes ignore \(P(x)\) when choosing the winning class?`,
+        { kind: 'mc', pts: 6, q: M`Why can Naive Bayes ignore \(P(x)\) when choosing the winning class?`,
           options: ['P(x) is the same for every class, so it cannot change the winner.', 'P(x) is always equal to 1, so dividing by it changes nothing.', 'P(x) is too small to estimate, so it is simply set to zero.', 'P(x) only matters for regression, not for classification.'], answer: 0, inline: false },
       ],
       explain: M`<p>\(P(x)\) is the same denominator for every candidate class, so it does not affect which class has the largest score. It is enough to compare \(P(C_i)\,P(x \mid C_i)\).</p>`,
     },
-    /* ---------- 6 ---------- */
+    /* ---------- 5 ---------- */
     {
       id: 't6', title: 'The “naive” assumption', type: 'Concept', level: 'Medium', skill: 'indep',
       parts: [
@@ -75,7 +65,7 @@ window.QUIZ = {
       ],
       explain: M`<p>The features are <b>conditionally independent given the class</b>. This lets \(P(x_1, x_2, \dots, x_n \mid C)\) be replaced by \(P(x_1 \mid C)\,P(x_2 \mid C) \cdots P(x_n \mid C)\).</p>`,
     },
-    /* ---------- 7 ---------- */
+    /* ---------- 6 ---------- */
     {
       id: 't7', title: '“free” and “money” in spam', type: 'Concept', level: 'Medium', skill: 'indep',
       intro: '<p>In spam detection, consider the features <i>contains “free”</i> and <i>contains “money”</i>.</p>',
@@ -85,7 +75,7 @@ window.QUIZ = {
       ],
       explain: '<p>The features may be correlated: spam emails containing “free” may also be more likely to contain “money”. Naive Bayes ignores that dependency once the class is known.</p>',
     },
-    /* ---------- 8 ---------- */
+    /* ---------- 7 ---------- */
     {
       id: 't8', title: '10 binary features', type: 'Calculation', level: 'Medium', skill: 'indep',
       intro: '<p>Suppose there are 10 binary features.</p>',
@@ -96,7 +86,7 @@ window.QUIZ = {
       ],
       explain: M`<p>\(2^{10} = 1024\) combinations. The independence assumption avoids estimating every joint combination and instead estimates feature probabilities separately for each class: a strong simplifying assumption buys much simpler computation.</p>`,
     },
-    /* ---------- 9 ---------- */
+    /* ---------- 8 ---------- */
     {
       id: 't9', title: 'A word never seen in spam', type: 'Zero frequency', level: 'Medium', skill: 'zero',
       intro: '<p>“discount” never occurred in a spam email in the training set, so P(discount | Spam) = 0. A new email contains <b>discount</b>, <b>free</b> and <b>money</b>.</p>',
@@ -106,7 +96,7 @@ window.QUIZ = {
       ],
       explain: '<p>The Spam score contains a factor of zero, so the <b>entire product is 0</b>, regardless of how strongly the other features support Spam. This is the <b>zero-frequency problem</b>.</p>',
     },
-    /* ---------- 10 ---------- */
+    /* ---------- 9 ---------- */
     {
       id: 't10', title: 'Laplace smoothing', type: 'Calculation', level: 'Medium', skill: 'zero',
       intro: M`<p>Count(discount, Spam) = 0, Count(Spam words) = 40, vocabulary size \(V = 1000\), \(\alpha = 1\). Use \[P(x \mid C) = \frac{\text{Count}(x, C) + \alpha}{\text{Count}(C) + \alpha V}\]</p>`,
@@ -116,7 +106,7 @@ window.QUIZ = {
       ],
       explain: M`<p>\(\dfrac{0 + 1}{40 + 1 \cdot 1000} = \dfrac{1}{1040} \approx 0.00096\): a <b>small</b> probability instead of zero.</p>`,
     },
-    /* ---------- 11 ---------- */
+    /* ---------- 10 ---------- */
     {
       id: 't11', title: 'Hundreds of words', type: 'Practice', level: 'Medium', skill: 'compute',
       intro: '<p>An email contains hundreds of words, and Naive Bayes multiplies many probabilities smaller than 1.</p>',
@@ -128,7 +118,7 @@ window.QUIZ = {
       ],
       explain: '<p>The product can become so tiny that the computer cannot represent it accurately: <b>numerical underflow</b>. Implementations use <b>log prior + sum of log likelihoods</b> instead of multiplying many tiny values.</p>',
     },
-    /* ---------- 12 ---------- */
+    /* ---------- 11 ---------- */
     {
       id: 't12', title: 'Advantages of Naive Bayes', type: 'Pros', level: 'Medium', skill: 'pros',
       parts: [
@@ -137,7 +127,7 @@ window.QUIZ = {
       ],
       explain: '<p>Fast training, fast prediction, strength with high-dimensional data and working with limited training data are genuine advantages: Naive Bayes mainly learns compact statistics (class priors and feature likelihoods). It does <i>not</i> capture feature interactions well, and its probability estimates can be inaccurate.</p>',
     },
-    /* ---------- 13 ---------- */
+    /* ---------- 12 ---------- */
     {
       id: 't13', title: 'Disadvantages of Naive Bayes', type: 'Cons', level: 'Medium', skill: 'pros',
       parts: [
@@ -146,7 +136,7 @@ window.QUIZ = {
       ],
       explain: '<p>The unrealistic independence assumption, inaccurate probability estimates, weak handling of feature interactions and the need for smoothing are genuine disadvantages. Training is fast, and Naive Bayes handles any number of classes.</p>',
     },
-    /* ---------- 14 ---------- */
+    /* ---------- 13 ---------- */
     {
       id: 't14', title: 'Strongly interacting features', type: 'Fit', level: 'Hard', skill: 'indep',
       intro: '<p>A problem contains strongly interacting features: feature A is useful only when feature B is high, and feature C changes meaning depending on feature D.</p>',
@@ -156,7 +146,7 @@ window.QUIZ = {
       ],
       explain: '<p>Naive Bayes does not naturally model rich dependencies between features; its simplifying assumption may throw away important interaction information. Efficiency gained ↔ interaction structure lost.</p>',
     },
-    /* ---------- 15 ---------- */
+    /* ---------- 14 ---------- */
     {
       id: 't15', title: 'Continuous features', type: 'Concept', level: 'Medium', skill: 'gauss',
       intro: '<p>The features are continuous: temperature, height, percentage of capital letters.</p>',
@@ -167,7 +157,7 @@ window.QUIZ = {
       ],
       explain: '<p>Continuous features can take many possible values, so exact-frequency counting is not useful. Gaussian Naive Bayes models each continuous feature within each class with a Gaussian distribution, summarized by its <b>mean</b> and <b>variance</b>.</p>',
     },
-    /* ---------- 16 ---------- */
+    /* ---------- 15 ---------- */
     {
       id: 't16', title: 'A spam classifier with 30,000 word features', type: 'Fit', level: 'Medium', skill: 'pros',
       intro: '<p>You are building a spam classifier with 30,000 word features, limited training data and strict prediction-latency requirements.</p>',
@@ -177,28 +167,28 @@ window.QUIZ = {
       ],
       explain: '<p><b>Yes.</b> Naive Bayes is strong with high-dimensional feature spaces, trains and predicts fast, is commonly effective for text classification, and can work with limited data.</p>',
     },
-    /* ---------- 17 ---------- */
+    /* ---------- 16 ---------- */
     {
       id: 't17', title: 'KNN or Naive Bayes? 100,000 documents', type: 'Method choice', level: 'Medium', skill: 'knn',
       intro: '<p>You have 100,000 documents, 20,000 word features, and predictions must be fast.</p>',
       parts: [{ kind: 'mc', pts: 4, q: 'Which method is usually the more natural choice?', options: KN, answer: 1, letters: false }],
       explain: '<p><b>Naive Bayes</b> works well in high dimensions, creates a compact model and predicts quickly. Basic KNN suffers here: distances become less meaningful in high dimensions, prediction compares against many stored examples, and the training data must remain in memory.</p>',
     },
-    /* ---------- 18 ---------- */
+    /* ---------- 17 ---------- */
     {
       id: 't18', title: 'KNN or Naive Bayes? A small, irregular dataset', type: 'Method choice', level: 'Medium', skill: 'knn',
       intro: '<p>The dataset is small, the features are well scaled, there are only 2 useful dimensions, and the class boundary is highly irregular and local.</p>',
       parts: [{ kind: 'mc', pts: 4, q: 'Which method may be the better fit?', options: KN, answer: 0, letters: false }],
       explain: '<p><b>KNN</b> follows local structure naturally, makes few distributional assumptions and can represent irregular decision boundaries. Naive Bayes imposes a stronger probabilistic structure and the conditional-independence assumption.</p>',
     },
-    /* ---------- 19 ---------- */
+    /* ---------- 18 ---------- */
     {
       id: 't19', title: 'KNN or Naive Bayes? 5 million examples', type: 'Method choice', level: 'Medium', skill: 'knn',
       intro: '<p>The training set has 5 million examples, prediction latency must be low, and memory is limited.</p>',
       parts: [{ kind: 'mc', pts: 4, q: 'Which is more attractive for a basic implementation?', options: KN, answer: 1, letters: false }],
       explain: '<p><b>Naive Bayes</b> is model-based and stores learned statistics: low training cost, cheap prediction, compact model. KNN is instance-based and stores the training examples: cheap training, expensive prediction, high memory use.</p>',
     },
-    /* ---------- 20 ---------- */
+    /* ---------- 19 ---------- */
     {
       id: 't20', title: 'KNN vs. Naive Bayes overall', type: 'Trade-offs', level: 'Hard', skill: 'knn',
       parts: [
