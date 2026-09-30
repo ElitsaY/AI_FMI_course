@@ -2117,3 +2117,18 @@ svg [fill="#b8394f"] { fill: var(--red-ink); } svg [stroke="#b8394f"] { stroke: 
 .qzv-bar.neg .track i { background: #d9546e; }
 .qzv .tf-arr small { font-size: 0.8rem; font-weight: 600; color: var(--ink-soft); }
 .qzv-plot .vec { stroke-width: 2.2; }
+
+/* ---- Lab 13 quiz visuals: response cards, lanes, Goodhart plot (reuse the lab's .al-card / .al-flow2 / .al-map / .ps-sol / .vf-card) ---- */
+.qzv .al-pair.al-three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 760px) { .qzv .al-pair.al-three { grid-template-columns: 1fr; } }
+.al-stack { display: grid; gap: 0.6rem; }
+.al-stack .al-card:first-child { border-style: dashed; }
+.qzv .al-flow2 { margin: 0; }
+.qzv .al-lbl { display: block; margin: 0.2rem 0 0.3rem; font-size: 0.74rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-soft); }
+.qzv .ps-sols, .qzv .vf-grid { margin: 0; }
+.qzv .vf-card pre { margin: 0; white-space: pre-wrap; }
+.qzv-table .qz-pq { margin: 0 auto; }
+.qzv-plot .gh-p { fill: none; stroke: var(--indigo); stroke-width: 3; } .qzv-plot .gh-pd { fill: var(--indigo); }
+.qzv-plot .gh-q { fill: none; stroke: var(--dfs); stroke-width: 3; stroke-dasharray: 7 5; } .qzv-plot .gh-qd { fill: var(--dfs); }
+.qzv-legend .lg { display: inline-block; width: 18px; height: 3px; margin-right: 0.3rem; vertical-align: 3px; border-radius: 2px; }
+.qzv-legend .lg.p { background: var(--indigo); } .qzv-legend .lg.q { background: var(--dfs); }
