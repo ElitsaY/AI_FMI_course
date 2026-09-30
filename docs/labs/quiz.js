@@ -3,6 +3,7 @@
    Part kinds: mc (one option), multi (all that apply, all-or-nothing), rows (one pill per row,
    points split per row), seq (node sequence built by clicking the task's figure or typing),
    num (typed number; tol = allowed error, pct = also accept a percentage).
+   A seq part may use tokens: [...] (buttons to click instead of figure nodes) and sep: '' / ',' (chip separator).
    A multi part may set none: <index of a 'None' option>, which deselects the others (and vice versa).
    Figures may carry notes: { A: 'h=5' } drawn beside the node (h, f or score values).
    A part may have its own (non-clickable) figure, and an id to keep its saved answer when parts are removed.
@@ -265,7 +266,12 @@ function initQuiz() {
       undo.type = clear.type = 'button';
       btns.append(undo, clear); s.appendChild(btns);
       box.appendChild(s);
-      const labels = () => Object.keys(T.fig ? T.fig.byLabel : {});
+      if (part.tokens) {   // build the sequence from buttons instead of figure nodes
+        const tw = el('div', 'qz-tokens');
+        part.tokens.forEach(t => { const b = el('button', 'qz-pill qz-tok', t); b.type = 'button'; b.addEventListener('click', () => push(T, P.id, t)); tw.appendChild(b); });
+        box.appendChild(tw);
+      }
+      const labels = () => part.tokens || Object.keys(T.fig ? T.fig.byLabel : {});
       s.addEventListener('click', () => setActive(T, P.id));
       s.addEventListener('focus', () => setActive(T, P.id));
       undo.addEventListener('click', e => { e.stopPropagation(); setActive(T, P.id); pop(P); });
@@ -279,8 +285,9 @@ function initQuiz() {
       P.seqBox = s;
       refresh = (bad) => {
         const a = answers[P.id] || [];
-        chips.innerHTML = a.length ? a.map((l, i) => `${i ? '<span class="qz-arr">→</span>' : ''}<span class="chip${bad != null && i >= bad ? ' bad' : ''}${bad != null && i < bad ? ' good' : ''}">${l}</span>`).join('')
-          : `<span class="qz-seq-empty">${part.placeholder || 'Click the nodes in order…'}</span>`;
+        const sep = part.sep != null ? part.sep : '→';
+        chips.innerHTML = a.length ? a.map((l, i) => `${i && sep ? `<span class="qz-arr">${sep}</span>` : ''}<span class="chip${bad != null && i >= bad ? ' bad' : ''}${bad != null && i < bad ? ' good' : ''}">${l}</span>`).join('')
+          : `<span class="qz-seq-empty">${part.placeholder || (part.tokens ? 'Click the buttons below in order…' : 'Click the nodes in order…')}</span>`;
         if (T.active === P.id) badges(T);
       };
       mark = () => {
@@ -310,7 +317,8 @@ function initQuiz() {
   function said(t) { t = String(t); return ` — correct: <b>${t}</b>` + (/[.!?]$/.test(t) ? '' : '.'); }
   function correctText(part, ans) {
     if (part.kind === 'seq') {
-      let t = ` — correct: <b>${part.answer.join(' → ')}</b>.`;
+      const sep = part.sep != null ? part.sep : '→';
+      let t = ` — correct: <b>${sep === '→' ? part.answer.join(' → ') : '[' + part.answer.join(', ') + ']'}</b>.`;
       const a = ans || [];
       if (a.length) { let k = 0; while (k < a.length && a[k] === part.answer[k]) k++; t += k < a.length ? ` Your answer first differs at step ${k + 1}.` : ` Your answer stops after step ${a.length}.`; }
       return t;

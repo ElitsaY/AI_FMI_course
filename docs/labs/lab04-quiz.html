@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lab 02 Quiz — Informed Search | Class Notes</title>
-<meta name="description" content="Auto-graded quiz on informed search: g, h and f, greedy, beam search, hill climbing, simulated annealing, A*, admissible and consistent heuristics, IDA*, and choosing an algorithm.">
+<title>Lab 04 Quiz — Genetic Algorithms | Class Notes</title>
+<meta name="description" content="Auto-graded quiz on genetic algorithms: genes, chromosomes and fitness, selection pressure, roulette wheel, SUS, tournament, rank, elitism and truncation, crossover, mutation and the TSP.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
@@ -48,9 +48,9 @@
     <div class="lm-panel" id="lm-quiz" role="tabpanel" aria-labelledby="lm-t-quiz">
     <ol>
       <li><a href="lab01-quiz.html"><span class="lm-n">01</span>Uninformed Search</a></li>
-      <li><a href="lab02-quiz.html" aria-current="page"><span class="lm-n">02</span>Informed Search</a></li>
+      <li><a href="lab02-quiz.html"><span class="lm-n">02</span>Informed Search</a></li>
       <li><a href="lab03-quiz.html"><span class="lm-n">03</span>Constraint Satisfaction</a></li>
-      <li><a href="lab04-quiz.html"><span class="lm-n">04</span>Genetic Algorithms</a></li>
+      <li><a href="lab04-quiz.html" aria-current="page"><span class="lm-n">04</span>Genetic Algorithms</a></li>
     </ol>
     <p class="lm-note">A quiz follows each lab; more are on the way.</p>
     </div>
@@ -61,13 +61,13 @@
 <section class="hero art-hero art-quiz">
   <svg class="hero-art" viewBox="0 0 1200 300" preserveAspectRatio="xMidYMid slice" aria-hidden="true"></svg>
   <div class="wrap">
-    <p class="eyebrow">Lab 02 · Quiz</p>
-    <h1>Informed Search Quiz</h1>
+    <p class="eyebrow">Lab 04 · Quiz</p>
+    <h1>Genetic Algorithms Quiz</h1>
     <div class="badges">
-      <span class="badge dfs">19 tasks</span>
+      <span class="badge dfs">20 tasks</span>
       <span class="badge bfs">100 points</span>
       <span class="badge ucs">Auto-graded</span>
-      <span class="badge ids">≈ 40 min</span>
+      <span class="badge ids">≈ 35 min</span>
     </div>
   </div>
 </section>
@@ -79,18 +79,18 @@
 
   <section class="block" id="howto">
     <h2 class="section-title">Before you start</h2>
-    <p class="section-lede">Quiz for <a href="lab02-informed-search.html">Lab 02: Informed Search</a>. Answer every task, then press <b>Check answers</b> at the bottom: each answer is marked, the explanations appear, and you get a score per skill.</p>
+    <p class="section-lede">Quiz for <a href="lab04-genetic-algorithms.html">Lab 04: Genetic Algorithms</a>. Answer every task, then press <b>Check answers</b> at the bottom: each answer is marked, the explanations appear, and you get a score per skill.</p>
     <h3 class="section-title" style="font-size:1.15rem;">Assumptions unless stated otherwise</h3>
     <ul class="concept-list">
-      <li>Children are considered <b>left-to-right</b>.</li>
-      <li>Lower heuristic values \(h(n)\) mean a node is estimated to be closer to the goal.</li>
-      <li><b>A*</b>: \(g(n)\) is the path cost from the start to \(n\), \(h(n)\) the estimated remaining cost from \(n\) to a goal, and \(f(n) = g(n) + h(n)\).</li>
-      <li>Goal heuristic values are \(h(G) = 0\).</li>
-      <li>Complexity expressions follow the conventions used in the <a href="lab02-informed-search.html#summary">course notes</a>.</li>
+      <li><b>Higher fitness is better.</b></li>
+      <li>Selection may select the same chromosome multiple times when sampling <b>with replacement</b>.</li>
+      <li>For roulette-wheel questions, cumulative probability intervals run from 0 up to 1.</li>
+      <li>For <b>permutation</b> chromosomes, every item must occur exactly once.</li>
+      <li>Mutation rate is a probability: an expected number of mutations is not a guaranteed exact number.</li>
     </ul>
     <h3 class="section-title" style="font-size:1.15rem; margin-top:1.6rem;">How answers are scored</h3>
     <ul class="concept-list">
-      <li><b>Sequences</b>: click the nodes of the tree in order (or type the letters into the highlighted box). A sequence scores only if it is exactly right.</li>
+      <li><b>Sequences</b>: click the buttons in order to build the answer (Undo removes the last one). A sequence scores only if it is exactly right.</li>
       <li><b>Numbers</b>: type the value; a decimal point or comma both work.</li>
       <li><b>Rows</b>: one choice per row; each correct row earns its share of the points.</li>
       <li><b>Select all that apply</b>: scores only when the selection is exactly right.</li>
@@ -117,13 +117,13 @@
   </div>
 </div>
 
-<footer>Class notes by Elitsa Yotkova and Kristina Kalemdzhieva · Lab 02 quiz</footer>
+<footer>Class notes by Elitsa Yotkova and Kristina Kalemdzhieva · Lab 04 quiz</footer>
 </main>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
-<script src="lab02-quiz.js"></script>
+<script src="lab04-quiz.js"></script>
 <script src="quiz.js"></script>
 </body>
 </html>
