@@ -30,7 +30,7 @@ Each lab is followed by a **quiz**: auto-graded in the browser, with an explanat
 | 03 | [Constraint Satisfaction](https://elitsay.github.io/AI_FMI_course/docs/labs/lab03-csp.html) | [Quiz](https://elitsay.github.io/AI_FMI_course/docs/labs/lab03-quiz.html) |
 | 04 | [Genetic Algorithms](https://elitsay.github.io/AI_FMI_course/docs/labs/lab04-genetic-algorithms.html) | [Quiz](https://elitsay.github.io/AI_FMI_course/docs/labs/lab04-quiz.html) |
 | 05 | [Games](https://elitsay.github.io/AI_FMI_course/docs/labs/lab05-games.html) | [Quiz](https://elitsay.github.io/AI_FMI_course/docs/labs/lab05-quiz.html) |
-| 06 | [Introduction to ML](https://elitsay.github.io/AI_FMI_course/docs/labs/lab06-intro-ml.html) | coming soon |
+| 06 | [Introduction to ML](https://elitsay.github.io/AI_FMI_course/docs/labs/lab06-intro-ml.html) | [Quiz](https://elitsay.github.io/AI_FMI_course/docs/labs/lab06-quiz.html) |
 | 6.5 | [Linear & Logistic Regression](https://elitsay.github.io/AI_FMI_course/docs/labs/lab065-linear-logistic.html) | coming soon |
 | 07 | [K-Nearest Neighbours](https://elitsay.github.io/AI_FMI_course/docs/labs/lab07-knn.html) | coming soon |
 | 08 | [Naive Bayes Classifier](https://elitsay.github.io/AI_FMI_course/docs/labs/lab08-naive-bayes.html) | coming soon |
