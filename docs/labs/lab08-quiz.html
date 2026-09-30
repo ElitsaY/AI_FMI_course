@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lab 01 Quiz — Uninformed Search | Class Notes</title>
-<meta name="description" content="Auto-graded quiz on uninformed search: b, d and m, complexity, tracing BFS, DFS, DLS, IDS and UCS, and choosing the right algorithm.">
+<title>Lab 08 Quiz — Naive Bayes | Class Notes</title>
+<meta name="description" content="Auto-graded quiz on Naive Bayes: prior, likelihood and posterior, computing class scores, the conditional-independence assumption, Laplace smoothing, Gaussian Naive Bayes and Naive Bayes vs KNN.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
@@ -47,14 +47,14 @@
     </div>
     <div class="lm-panel" id="lm-quiz" role="tabpanel" aria-labelledby="lm-t-quiz">
     <ol>
-      <li><a href="lab01-quiz.html" aria-current="page"><span class="lm-n">01</span>Uninformed Search</a></li>
+      <li><a href="lab01-quiz.html"><span class="lm-n">01</span>Uninformed Search</a></li>
       <li><a href="lab02-quiz.html"><span class="lm-n">02</span>Informed Search</a></li>
       <li><a href="lab03-quiz.html"><span class="lm-n">03</span>Constraint Satisfaction</a></li>
       <li><a href="lab04-quiz.html"><span class="lm-n">04</span>Genetic Algorithms</a></li>
       <li><a href="lab05-quiz.html"><span class="lm-n">05</span>Games</a></li>
       <li><a href="lab06-quiz.html"><span class="lm-n">06</span>Introduction to ML</a></li>
       <li><a href="lab07-quiz.html"><span class="lm-n">07</span>K-Nearest Neighbours</a></li>
-      <li><a href="lab08-quiz.html"><span class="lm-n">08</span>Naive Bayes Classifier</a></li>
+      <li><a href="lab08-quiz.html" aria-current="page"><span class="lm-n">08</span>Naive Bayes Classifier</a></li>
     </ol>
     <p class="lm-note">A quiz follows each lab; more are on the way.</p>
     </div>
@@ -65,13 +65,13 @@
 <section class="hero art-hero art-quiz">
   <svg class="hero-art" viewBox="0 0 1200 300" preserveAspectRatio="xMidYMid slice" aria-hidden="true"></svg>
   <div class="wrap">
-    <p class="eyebrow">Lab 01 · Quiz</p>
-    <h1>Uninformed Search Quiz</h1>
+    <p class="eyebrow">Lab 08 · Quiz</p>
+    <h1>Naive Bayes Quiz</h1>
     <div class="badges">
-      <span class="badge dfs">14 tasks</span>
+      <span class="badge dfs">20 tasks</span>
       <span class="badge bfs">100 points</span>
       <span class="badge ucs">Auto-graded</span>
-      <span class="badge ids">≈ 30 min</span>
+      <span class="badge ids">≈ 25 min</span>
     </div>
   </div>
 </section>
@@ -83,17 +83,17 @@
 
   <section class="block" id="howto">
     <h2 class="section-title">Before you start</h2>
-    <p class="section-lede">Quiz for <a href="lab01-uninformed-search.html">Lab 01: Uninformed Search</a>. Answer every task, then press <b>Check answers</b> at the bottom: each answer is marked, the explanations appear, and you get a score per skill.</p>
+    <p class="section-lede">Quiz for <a href="lab08-naive-bayes.html">Lab 08: Naive Bayes Classifier</a>. The last tasks compare Naive Bayes with <a href="lab07-knn.html">KNN</a>. Answer every task, then press <b>Check answers</b> at the bottom: each answer is marked, the explanations appear, and you get a score per skill.</p>
     <h3 class="section-title" style="font-size:1.15rem;">Assumptions unless stated otherwise</h3>
     <ul class="concept-list">
-      <li>Children are expanded <b>left-to-right</b>.</li>
-      <li>The root is at <b>depth 0</b>.</li>
-      <li>The goal test happens when a node is <b>removed from the frontier</b> for expansion.</li>
-      <li><b>Notation</b>: \(b\) maximum branching factor, \(d\) depth of the shallowest goal, \(m\) maximum depth of the search tree, \(l\) depth limit.</li>
+      <li>A higher class score means the class is preferred.</li>
+      <li>Naive Bayes is used for <b>classification</b>.</li>
+      <li>When comparing classes, the common evidence denominator can be ignored.</li>
+      <li>Features are assumed <b>conditionally independent given the class</b>.</li>
     </ul>
     <h3 class="section-title" style="font-size:1.15rem; margin-top:1.6rem;">How answers are scored</h3>
     <ul class="concept-list">
-      <li><b>Sequences</b>: click the nodes of the tree in order (or type the letters into the highlighted box). A sequence scores only if it is exactly right.</li>
+            <li><b>Numbers</b>: type the value as a decimal (0.4) or a fraction (2/5); a percentage also works for probabilities.</li>
       <li><b>Rows</b>: one choice per row; each correct row earns its share of the points.</li>
       <li><b>Select all that apply</b>: scores only when the selection is exactly right.</li>
       <li>Your answers are saved in this browser only, so you can leave and come back. Nothing is sent anywhere.</li>
@@ -119,13 +119,13 @@
   </div>
 </div>
 
-<footer>Class notes by Elitsa Yotkova and Kristina Kalemdzhieva · Lab 01 quiz</footer>
+<footer>Class notes by Elitsa Yotkova and Kristina Kalemdzhieva · Lab 08 quiz</footer>
 </main>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
-<script src="lab01-quiz.js"></script>
+<script src="lab08-quiz.js"></script>
 <script src="quiz.js"></script>
 </body>
 </html>

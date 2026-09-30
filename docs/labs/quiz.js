@@ -107,7 +107,8 @@ function toNum(ans, part) {
   if (ans == null || ans === '') return null;
   let t = String(ans).replace('%', '').replace(/[−–]/g, '-').replace(/\s+/g, '');
   t = /^-?\d{1,3}(,\d{3})+(\.\d+)?$/.test(t) ? t.replace(/,/g, '') : t.replace(',', '.');   // 135,000 = thousands; 0,37 = decimal comma
-  const v = parseFloat(t);
+  const frac = t.match(/^(-?\d+(?:\.\d+)?)\/(\d+(?:\.\d+)?)$/);   // 1/1040
+  const v = frac ? +frac[1] / +frac[2] : parseFloat(t);
   if (isNaN(v)) return null;
   return part.pct && (v > 1 || /%/.test(ans)) ? v / 100 : v;
 }

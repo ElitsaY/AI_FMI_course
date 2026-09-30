@@ -33,7 +33,7 @@ Each lab is followed by a **quiz**: auto-graded in the browser, with an explanat
 | 06 | [Introduction to ML](https://elitsay.github.io/AI_FMI_course/docs/labs/lab06-intro-ml.html) | [Quiz](https://elitsay.github.io/AI_FMI_course/docs/labs/lab06-quiz.html) |
 | 6.5 | [Linear & Logistic Regression](https://elitsay.github.io/AI_FMI_course/docs/labs/lab065-linear-logistic.html) | coming soon |
 | 07 | [K-Nearest Neighbours](https://elitsay.github.io/AI_FMI_course/docs/labs/lab07-knn.html) | [Quiz](https://elitsay.github.io/AI_FMI_course/docs/labs/lab07-quiz.html) |
-| 08 | [Naive Bayes Classifier](https://elitsay.github.io/AI_FMI_course/docs/labs/lab08-naive-bayes.html) | coming soon |
+| 08 | [Naive Bayes Classifier](https://elitsay.github.io/AI_FMI_course/docs/labs/lab08-naive-bayes.html) | [Quiz](https://elitsay.github.io/AI_FMI_course/docs/labs/lab08-quiz.html) |
 | 09 | [Decision Trees](https://elitsay.github.io/AI_FMI_course/docs/labs/lab09-decision-trees.html) | coming soon |
 | 10 | [K-Means and Clustering](https://elitsay.github.io/AI_FMI_course/docs/labs/lab10-kmeans.html) | coming soon |
 | 11 | [Neural Networks](https://elitsay.github.io/AI_FMI_course/docs/labs/lab11-neural-networks.html) | coming soon |
