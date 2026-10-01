@@ -26,15 +26,15 @@ const LORA = viz(`<svg class="ml-plot qzv-plot" viewBox="0 0 440 200" role="img"
   + `<rect class="lo-b" x="235" y="20" width="22" height="160" rx="5"/>` + lbl(246, 194, 'B', 'middle', 'tk')
   + lbl(275, 100, '×', 'middle', 'lo-t')
   + `<rect class="lo-a" x="295" y="89" width="130" height="22" rx="5"/>` + lbl(360, 128, 'A', 'middle', 'tk') + lbl(360, 60, 'small, trained', 'middle', 'tk') + '</svg>');
-// a router sending each token to some experts
+// a router sending each token to some of the subnetworks (the experts)
 const MOE = viz(`<svg class="ml-plot qzv-plot" viewBox="0 0 440 220" role="img">`
   + `<rect class="box" x="20" y="90" width="80" height="40" rx="10"/>` + lbl(60, 110, 'token', 'middle', 'nn-t fl')
   + `<rect class="box hl" x="140" y="90" width="90" height="40" rx="10"/>` + lbl(185, 110, 'router', 'middle', 'nn-t fl')
   + `<line class="nn-e" x1="100" y1="110" x2="136" y2="110" marker-end="url(#qa0)"/>`
   + [0, 1, 2, 3].map(i => { const y = 16 + i * 50, on = i === 1 || i === 2;
-    return `<line class="nn-e${on ? ' fwd' : ' off'}" x1="230" y1="110" x2="306" y2="${y + 18}"/><rect class="box${on ? '' : ' dim'}" x="310" y="${y}" width="110" height="36" rx="10"/>` + lbl(365, y + 18, 'expert ' + (i + 1), 'middle', 'nn-t fl' + (on ? '' : ' dim')); }).join('')
+    return `<line class="nn-e${on ? ' fwd' : ' off'}" x1="230" y1="110" x2="306" y2="${y + 18}"/><rect class="box${on ? '' : ' dim'}" x="310" y="${y}" width="110" height="36" rx="10"/>` + lbl(365, y + 18, 'block ' + (i + 1), 'middle', 'nn-t fl' + (on ? '' : ' dim')); }).join('')
   + '<defs><marker id="qa0" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ah" d="M0,0 L10,5 L0,10 z"/></marker></defs></svg>'
-  + '<p class="qzv-legend">for this token, experts 2 and 3 are active</p>');
+  + '<p class="qzv-legend">for this token, blocks 2 and 3 are active</p>');
 
 window.QUIZ = {
   id: 'lab00',
@@ -174,12 +174,6 @@ window.QUIZ = {
       explain: '<p><b>RAG</b> retrieves the relevant current documents at question time and puts them into the model’s context; updating the document store is enough, no retraining needed.</p>',
     },
     {
-      id: 'q17', title: 'A RAG pipeline', type: 'RAG', level: 'Medium', skill: 'use',
-      intro: flowV('user question', 'embed the query', '<b>retrieve relevant documents</b>', 'question + retrieved context', 'LLM', 'answer'),
-      parts: [{ kind: 'mc', pts: 3, q: 'What is the main purpose of the retrieval step?', options: ['Supply relevant external information first', 'Update the model’s weights for each question', 'Translate the question into token IDs', 'Check the answer after it is generated'], answer: 0, inline: false }],
-      explain: '<p>Retrieval supplies relevant <b>external information before generation</b>, which improves freshness, domain grounding and source-specific answers.</p>',
-    },
-    {
       id: 'q20', title: 'Documents, style or instructions?', type: 'Choosing a technique', level: 'Medium', skill: 'use',
       parts: [{ kind: 'rows', pts: 3, q: 'Which approach fits each goal most naturally?', options: ['RAG', 'Fine-tuning', 'Prompting'],
         rows: [
@@ -197,6 +191,12 @@ window.QUIZ = {
         { kind: 'multi', pts: 1.5, q: 'Which of these use up the context window?', options: ['System instructions', 'Conversation history', 'Retrieved documents', 'The model’s own output', 'The training corpus', 'The model’s weights'], answer: [0, 1, 2, 3], letters: false },
       ],
       explain: '<p>The context window is roughly the maximum amount of tokenized information the model can process at once: system instructions, the conversation so far, retrieved documents, the user’s input and the model’s own output all share it. The training data and the weights are not part of it.</p>',
+    },
+    {
+      id: 'q17', title: 'Before the model answers', type: 'RAG', level: 'Medium', skill: 'use',
+      intro: flowV('user question', 'embed the query', '<b>retrieve relevant documents</b>', 'question + retrieved context', 'LLM', 'answer'),
+      parts: [{ kind: 'mc', pts: 3, q: 'What is the main purpose of the retrieval step?', options: ['Supply relevant external information first', 'Update the model’s weights for each question', 'Translate the question into token IDs', 'Check the answer after it is generated'], answer: 0, inline: false }],
+      explain: '<p>Retrieval supplies relevant <b>external information before generation</b>, which improves freshness, domain grounding and source-specific answers.</p>',
     },
     {
       id: 'q24', title: '3817 × 942', type: 'Tool use', level: 'Easy', skill: 'use',
@@ -253,10 +253,10 @@ window.QUIZ = {
       explain: '<p><b>Grounding</b> the model in the relevant source material (and requiring answers to come from it, ideally with citations) reduces unsupported generation. A higher temperature makes outputs more random.</p>',
     },
     {
-      id: 'q27', title: 'A router and four experts', type: 'Architecture', level: 'Medium', skill: 'risk',
-      intro: '<p>A model contains many expert subnetworks; only some are activated for each token.</p>' + MOE,
+      id: 'q27', title: 'Only some blocks run', type: 'Architecture', level: 'Medium', skill: 'risk',
+      intro: '<p>A model contains many parallel subnetworks; a router activates only some of them for each token.</p>' + MOE,
       parts: [{ kind: 'mc', pts: 3, q: 'What architecture is this?', options: ['K-nearest neighbours', 'Decision tree', 'Mixture of Experts', 'Logistic regression'], answer: 2 }],
-      explain: '<p><b>Mixture of Experts</b> (MoE): a router sends each token to a few experts, so the model has a large total capacity while only part of it runs for each token.</p>',
+      explain: '<p><b>Mixture of Experts</b> (MoE): the parallel blocks are called <b>experts</b>, and a router sends each token to only a few of them (here blocks 2 and 3), so the model has a large total capacity while only part of it runs for each token.</p>',
     },
     {
       id: 'q28', title: '16-bit → 8-bit → 4-bit', type: 'Efficiency', level: 'Medium', skill: 'risk',
