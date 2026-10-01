@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lab 02 Quiz — Informed Search | Class Notes</title>
-<meta name="description" content="Auto-graded quiz on informed search: g, h and f, greedy, beam search, hill climbing, simulated annealing, A*, admissible and consistent heuristics, IDA*, and choosing an algorithm.">
+<title>Lab 00 Quiz — Modern AI Concepts | Class Notes</title>
+<meta name="description" content="A self-check before the course: common AI abbreviations, embeddings and semantic search, pretraining, fine-tuning and post-training, prompting, RAG, tool use and agents, hallucinations, mixture of experts, quantization and distillation.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
@@ -48,9 +48,9 @@
     </div>
     <div class="lm-panel" id="lm-quiz" role="tabpanel" aria-labelledby="lm-t-quiz">
     <ol>
-      <li><a href="lab00-quiz.html"><span class="lm-n">00</span>Introduction</a></li>
+      <li><a href="lab00-quiz.html" aria-current="page"><span class="lm-n">00</span>Introduction</a></li>
       <li><a href="lab01-quiz.html"><span class="lm-n">01</span>Uninformed Search</a></li>
-      <li><a href="lab02-quiz.html" aria-current="page"><span class="lm-n">02</span>Informed Search</a></li>
+      <li><a href="lab02-quiz.html"><span class="lm-n">02</span>Informed Search</a></li>
       <li><a href="lab03-quiz.html"><span class="lm-n">03</span>Constraint Satisfaction</a></li>
       <li><a href="lab04-quiz.html"><span class="lm-n">04</span>Genetic Algorithms</a></li>
       <li><a href="lab05-quiz.html"><span class="lm-n">05</span>Games</a></li>
@@ -74,13 +74,13 @@
 <section class="hero art-hero art-quiz">
   <svg class="hero-art" viewBox="0 0 1200 300" preserveAspectRatio="xMidYMid slice" aria-hidden="true"></svg>
   <div class="wrap">
-    <p class="eyebrow">Lab 02 · Quiz</p>
-    <h1>Informed Search Quiz</h1>
+    <p class="eyebrow">Lab 00 · Quiz</p>
+    <h1>Modern AI Concepts Quiz</h1>
     <div class="badges">
-      <span class="badge dfs">19 tasks</span>
+      <span class="badge dfs">35 tasks</span>
       <span class="badge bfs">100 points</span>
       <span class="badge ucs">Auto-graded</span>
-      <span class="badge ids">≈ 40 min</span>
+      <span class="badge ids">≈ 25 min</span>
     </div>
   </div>
 </section>
@@ -92,21 +92,19 @@
 
   <section class="block" id="howto">
     <h2 class="section-title">Before you start</h2>
-    <p class="section-lede">Quiz for <a href="lab02-informed-search.html">Lab 02: Informed Search</a>. Answer every task, then press <b>Check answers</b> at the bottom: each answer is marked, the explanations appear, and you get a score per skill.</p>
-    <h3 class="section-title" style="font-size:1.15rem;">Assumptions unless stated otherwise</h3>
+    <p class="section-lede">A self-check of your AI vocabulary <b>before the course</b>, to go with <a href="lab00-introduction.html">Lab 00: Introduction</a>. You are not expected to know everything: each explanation links to the lab that covers the topic. Answer every task, then press <b>Check answers</b> at the bottom: each answer is marked, the explanations appear, and you get a score per skill.</p>
+    <h3 class="section-title" style="font-size:1.15rem;">What it covers</h3>
     <ul class="concept-list">
-      <li>Children are considered <b>left-to-right</b>.</li>
-      <li>Lower heuristic values \(h(n)\) mean a node is estimated to be closer to the goal.</li>
-      <li><b>A*</b>: \(g(n)\) is the path cost from the start to \(n\), \(h(n)\) the estimated remaining cost from \(n\) to a goal, and \(f(n) = g(n) + h(n)\).</li>
-      <li>Goal heuristic values are \(h(G) = 0\).</li>
-      <li>Complexity expressions follow the conventions used in the <a href="lab02-informed-search.html#summary">course notes</a>.</li>
+      <li>Recognising common abbreviations (GPT, LLM, RAG, SFT, RLHF, DPO) and what the terms mean.</li>
+      <li>The stages of a modern AI system: pretraining, post-training and inference, and when to prompt, retrieve, fine-tune or call a tool.</li>
+      <li>No mathematics: the questions check a rough but correct mental model of each idea.</li>
     </ul>
     <h3 class="section-title" style="font-size:1.15rem; margin-top:1.6rem;">How answers are scored</h3>
     <ul class="concept-list">
-      <li><b>Sequences</b>: click the nodes of the tree in order (or type the letters into the highlighted box). A sequence scores only if it is exactly right.</li>
-      <li><b>Numbers</b>: type the value; a decimal point or comma both work.</li>
-      <li><b>Rows</b>: one choice per row; each correct row earns its share of the points.</li>
+      <li><b>Numbers</b>: type the value as a decimal, e.g. 3.5.</li>
+      <li><b>Orderings</b>: click the buttons in order (⌫ Undo removes the last one); only an exact match scores.</li>
       <li><b>Select all that apply</b>: scores only when the selection is exactly right.</li>
+      <li><b>Rows</b>: one choice per row; each correct row earns its share of the points.</li>
       <li>Your answers are saved in this browser only, so you can leave and come back. Nothing is sent anywhere.</li>
     </ul>
   </section>
@@ -130,13 +128,14 @@
   </div>
 </div>
 
-<footer>Class notes by Elitsa Yotkova and Kristina Kalemdzhieva · Lab 02 quiz</footer>
+<footer>Class notes by Elitsa Yotkova and Kristina Kalemdzhieva · Lab 00 quiz</footer>
 </main>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
-<script src="lab02-quiz.js"></script>
+<script src="lab00-quiz.js"></script>
 <script src="quiz.js"></script>
+<script src="code-cards.js"></script>
 </body>
 </html>
