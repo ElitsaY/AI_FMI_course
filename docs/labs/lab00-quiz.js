@@ -234,10 +234,8 @@ window.QUIZ = {
           { label: 'Searches the current university regulations', answer: 1 },
           { label: 'Uses a calculator for numerical tasks', answer: 3 },
           { label: 'Understands natural-language questions', answer: 0 },
-          { label: 'Refuses unsupported answers when information is missing', answer: 4 },
-          { label: 'Answers in the university’s preferred style', answer: 2 },
         ] }],
-      explain: '<p>LLM → language understanding and generation; RAG (with embeddings for semantic search) → current regulations, with citations; fine-tuning / SFT → preferred style; tool use → calculator; grounding rules and evaluation → refuse unsupported answers. Modern AI products are usually <b>systems</b>, not one standalone model.</p>',
+      explain: '<p>LLM → language understanding and generation; RAG (with embeddings for semantic search) → the current regulations, with citations; tool use → the calculator. A real assistant would add more: fine-tuning for the university’s style, grounding rules to refuse unsupported answers. Modern AI products are usually <b>systems</b>, not one standalone model.</p>',
     },
     /* ---------- reliability, alignment, efficiency ---------- */
     {
