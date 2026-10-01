@@ -2144,3 +2144,7 @@ svg [fill="#b8394f"] { fill: var(--red-ink); } svg [stroke="#b8394f"] { stroke: 
 .qzv-plot .ld.a { fill: var(--indigo); } .qzv-plot .ld.b { fill: var(--dfs); }
 .qzv-legend .lg.a { background: var(--indigo); } .qzv-legend .lg.b { background: var(--dfs); }
 @media (max-width: 520px) { .qz-num-t th, .qz-num-t td, .qz-cm th, .qz-cm td { padding: 0.35rem 0.4rem; font-size: 0.82rem; } .qz-num-t thead th, .qz-cm thead th { letter-spacing: 0; font-size: 0.7rem; } }
+
+/* ---- Lab 6.5 quiz visuals: scatter cards with fitted lines ---- */
+.qzv-plot .fitl { stroke: #d9546e; stroke-width: 2.5; }
+.qzv-sc.qzv-mini { width: 210px; }
