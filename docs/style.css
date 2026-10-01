@@ -2149,9 +2149,7 @@ svg [fill="#b8394f"] { fill: var(--red-ink); } svg [stroke="#b8394f"] { stroke: 
 .qzv-plot .fitl { stroke: #d9546e; stroke-width: 2.5; }
 .qzv-sc.qzv-mini { width: 210px; }
 
-/* ---- Lab 00 quiz visuals: abbreviation tiles, LoRA, mixture of experts, context window ---- */
-.qz-acro { display: flex; justify-content: center; gap: 0.4rem; }
-.qz-acro span { display: grid; place-items: center; width: 2.8rem; height: 3.1rem; border-radius: var(--radius-sm); border: 1.5px solid color-mix(in srgb, var(--ids) 55%, var(--line)); background: color-mix(in srgb, var(--ids) 16%, var(--surface)); font-family: 'Poppins', sans-serif; font-size: 1.6rem; font-weight: 800; color: var(--ink); }
+/* ---- Lab 00 quiz visuals: LoRA, mixture of experts, context window ---- */
 .qzv-plot .lo-w { fill: color-mix(in srgb, var(--ink-soft) 12%, var(--surface)); stroke: var(--ink-soft); stroke-width: 1.8; }
 .qzv-plot .lo-a, .qzv-plot .lo-b { fill: color-mix(in srgb, var(--ucs) 30%, var(--surface)); stroke: var(--ucs); stroke-width: 1.8; }
 .qzv-plot .lo-t { font-family: 'Poppins', sans-serif; font-size: 28px; font-weight: 800; fill: var(--ink); }

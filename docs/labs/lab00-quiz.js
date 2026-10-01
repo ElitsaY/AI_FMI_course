@@ -15,8 +15,6 @@ const lane = (...parts) => '<div class="al-lane">' + parts.map(p => p === '→' 
 const lanes = (...ls) => viz('<div class="al-flow2">' + ls.join('') + '</div>');
 const flowV = (...items) => viz('<div class="tf-flow">' + items.map(t => `<div class="tf-fl">${t}</div>`).join('<div class="tf-arr">↓</div>') + '</div>');
 const chips = items => viz('<div class="tk-chips">' + items.map(t => `<span class="tk-chip">${t}</span>`).join('') + '</div>');
-// an abbreviation as letter tiles
-const acro = t => viz(`<div class="qz-acro">${t.split('').map(c => `<span>${c}</span>`).join('')}</div>`);
 // four words in a 2-D embedding space
 const EMB = viz(`<svg class="ml-plot qzv-plot" viewBox="0 0 420 220" role="img"><rect class="km-frame" x="10" y="10" width="400" height="200" rx="10"/>`
   + [['cat', 80, 60, 0], ['dog', 150, 75, 0], ['car', 280, 160, 1], ['truck', 350, 145, 1]].map(([w, x, y, k]) => `<circle class="kp k${k}" cx="${x}" cy="${y}" r="9"/>` + lbl(x + 15, y, w)).join('')
@@ -50,34 +48,39 @@ window.QUIZ = {
   tasks: [
     /* ---------- abbreviations ---------- */
     {
-      id: 'q01', title: 'GPT', type: 'Abbreviation', level: 'Easy', skill: 'terms', intro: acro('GPT'),
+      id: 'q01', title: 'GPT', type: 'Abbreviation', level: 'Easy', skill: 'terms',
       parts: [{ kind: 'mc', pts: 2, q: 'What does <b>GPT</b> stand for?', options: ['General Predictive Training', 'General Purpose Predictive Transformer', 'Generative Pre-trained Transformer', 'Generative Processing Technique'], answer: 2, inline: false }],
       explain: `<p><b>Generative Pre-trained Transformer</b>: a model that <i>generates</i> text, is <i>pre-trained</i> on large amounts of text, and uses the <i>Transformer</i> architecture (${a(L12, 'Lab 12')}).</p>`,
     },
     {
-      id: 'q02', title: 'LLM', type: 'Abbreviation', level: 'Easy', skill: 'terms', intro: acro('LLM'),
+      id: 'q02', title: 'LLM', type: 'Abbreviation', level: 'Easy', skill: 'terms',
       parts: [{ kind: 'mc', pts: 2, q: 'What does <b>LLM</b> stand for?', options: ['Learned Linguistic Matrix', 'Large Language Model', 'Latent Language Machine', 'Large Learning Method'], answer: 1, inline: false }],
       explain: '<p><b>Large Language Model</b>: a very large neural network trained on text to predict the next token.</p>',
     },
     {
-      id: 'q03', title: 'RLHF', type: 'Abbreviation', level: 'Easy', skill: 'terms', intro: acro('RLHF'),
+      id: 'q03', title: 'RLHF', type: 'Abbreviation', level: 'Easy', skill: 'terms',
       parts: [{ kind: 'mc', pts: 2, q: 'What does <b>RLHF</b> stand for?', options: ['Representation Learning from Hidden Features', 'Recursive Learning with Human Functions', 'Reward Learning for Hybrid Features', 'Reinforcement Learning from Human Feedback'], answer: 3, inline: false }],
       explain: `<p><b>Reinforcement Learning from Human Feedback</b>: humans compare responses, a reward model learns their preferences, and the language model is optimised against it (${a(L13 + '#rlhf', 'Lab 13')}).</p>`,
     },
     {
-      id: 'q04', title: 'RAG', type: 'Abbreviation', level: 'Easy', skill: 'terms', intro: acro('RAG'),
+      id: 'q04', title: 'RAG', type: 'Abbreviation', level: 'Easy', skill: 'terms',
       parts: [{ kind: 'mc', pts: 2, q: 'What does <b>RAG</b> stand for?', options: ['Retrieval-Augmented Generation', 'Recurrent Attention-Guided Generator', 'Reinforced Agent Generation', 'Retrieval-Aware Gradient'], answer: 0, inline: false }],
       explain: '<p><b>Retrieval-Augmented Generation</b>: retrieve relevant documents first, then generate the answer with them in the model’s context.</p>',
     },
     {
-      id: 'q05', title: 'SFT', type: 'Abbreviation', level: 'Easy', skill: 'terms', intro: acro('SFT'),
+      id: 'q05', title: 'SFT', type: 'Abbreviation', level: 'Easy', skill: 'terms',
       parts: [{ kind: 'mc', pts: 2, q: 'What does <b>SFT</b> usually mean in modern LLM training?', options: ['Semantic Feature Training', 'Stochastic Foundation Training', 'Supervised Fine-Tuning', 'Structured Feedback Transfer'], answer: 2, inline: false }],
       explain: `<p><b>Supervised Fine-Tuning</b>: train a pretrained model to imitate curated example responses (${a(L13 + '#sft', 'Lab 13')}).</p>`,
     },
     {
-      id: 'q06', title: 'DPO', type: 'Abbreviation', level: 'Easy', skill: 'terms', intro: acro('DPO'),
+      id: 'q06', title: 'DPO', type: 'Abbreviation', level: 'Easy', skill: 'terms',
       parts: [{ kind: 'mc', pts: 2, q: 'What does <b>DPO</b> stand for?', options: ['Dynamic Prompt Optimization', 'Direct Preference Optimization', 'Distributed Parameter Optimization', 'Deep Preference Output'], answer: 1, inline: false }],
       explain: `<p><b>Direct Preference Optimization</b>: learn from chosen / rejected response pairs directly, without a separate reward model (${a(L13 + '#dpo', 'Lab 13')}).</p>`,
+    },
+    {
+      id: 'q36', title: 'LoRA', type: 'Abbreviation', level: 'Easy', skill: 'terms',
+      parts: [{ kind: 'mc', pts: 2, q: 'What is <b>LoRA</b>?', options: ['Long-Range Attention for long documents', 'Logit-Ranked Alignment from preferences', 'Low-Rank Adaptation for fine-tuning', 'Layered Retrieval Agent for search'], answer: 2, inline: false }],
+      explain: '<p><b>LoRA = Low-Rank Adaptation</b>, a parameter-efficient fine-tuning (PEFT) method: the model’s original weights stay frozen, and only a small low-rank update is trained and added to them. Adapting a large model then needs far less memory and compute (see the “Billions of parameters” question below).</p>',
     },
     /* ---------- embeddings ---------- */
     {
@@ -216,9 +219,9 @@ window.QUIZ = {
     {
       id: 'q34', title: 'Six concepts, six purposes', type: 'Concept map', level: 'Medium', skill: 'use',
       parts: [
-        { kind: 'rows', pts: 2.5, q: 'What is the main purpose of each concept?', options: ['Represent meaning as vectors', 'Inject retrieved knowledge', 'Change persistent behaviour'],
+        { kind: 'rows', pts: 2, q: 'What is the main purpose of each concept?', options: ['Represent meaning as vectors', 'Inject retrieved knowledge', 'Change persistent behaviour'],
           rows: [{ label: 'RAG', answer: 1 }, { label: 'Embeddings', answer: 0 }, { label: 'Fine-tuning', answer: 2 }] },
-        { kind: 'rows', pts: 2.5, q: 'And of these?', options: ['Shape behaviour by preferences', 'Cut memory and compute cost', 'Delegate to external systems'],
+        { kind: 'rows', pts: 2, q: 'And of these?', options: ['Shape behaviour by preferences', 'Cut memory and compute cost', 'Delegate to external systems'],
           rows: [{ label: 'Tool use', answer: 2 }, { label: 'RLHF / DPO', answer: 0 }, { label: 'Quantization', answer: 1 }] },
       ],
       explain: '<p><b>Embeddings</b>: semantic information as vectors. <b>RAG</b>: inject retrieved external knowledge. <b>Fine-tuning</b>: modify persistent behaviour. <b>RLHF / DPO</b>: shape behaviour using preferences. <b>Quantization</b>: reduce inference memory and compute. <b>Tool use</b>: delegate operations to external systems.</p>',
@@ -226,7 +229,7 @@ window.QUIZ = {
     {
       id: 'q35', title: 'A university assistant', type: 'System design', level: 'Hard', skill: 'use',
       intro: '<p>A university wants an AI assistant. Which component covers each requirement?</p>',
-      parts: [{ kind: 'rows', pts: 5, q: 'Requirement → component', options: ['LLM', 'RAG', 'Fine-tuning (SFT)', 'Tool use', 'Grounding rules'],
+      parts: [{ kind: 'rows', pts: 4, q: 'Requirement → component', options: ['LLM', 'RAG', 'Fine-tuning (SFT)', 'Tool use', 'Grounding rules'],
         rows: [
           { label: 'Searches the current university regulations', answer: 1 },
           { label: 'Uses a calculator for numerical tasks', answer: 3 },
