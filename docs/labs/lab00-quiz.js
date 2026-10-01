@@ -262,10 +262,9 @@ window.QUIZ = {
       id: 'q28', title: '16-bit → 8-bit → 4-bit', type: 'Efficiency', level: 'Medium', skill: 'risk',
       intro: '<p>A model’s weights are stored with lower numerical precision:</p>' + viz(bars([['16-bit', 16, 16, '16 bits'], ['8-bit', 8, 16, '8 bits', 'val'], ['4-bit', 4, 16, '4 bits', 'alt']]), 'qzv-wide'),
       parts: [
-        { kind: 'mc', pts: 1.5, q: 'What technique is this?', options: ['Retrieval', 'RLHF', 'Tokenization', 'Quantization'], answer: 3 },
-        { kind: 'num', pts: 1.5, q: 'A 7-billion-parameter model needs about 14 GB at 16 bits per weight. About how many GB at 4 bits?', answer: 3.5, tol: 0.01, suffix: 'GB' },
+        { kind: 'mc', pts: 3, q: 'What technique is this?', options: ['Retrieval', 'RLHF', 'Tokenization', 'Quantization'], answer: 3 },
       ],
-      explain: '<p><b>Quantization</b>: fewer bits per weight cut memory and compute, sometimes with a small loss of quality. 4 bits is a quarter of 16, so 14 GB → <b>3.5 GB</b> (7 × 10⁹ weights × 0.5 bytes).</p>',
+      explain: '<p><b>Quantization</b>: fewer bits per weight cut memory and compute, sometimes with a small loss of quality. At 4 bits a model needs about a quarter of the memory it needs at 16 bits.</p>',
     },
     {
       id: 'q29', title: 'Teacher and student', type: 'Efficiency', level: 'Easy', skill: 'risk',
