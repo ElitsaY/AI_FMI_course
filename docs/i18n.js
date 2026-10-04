@@ -81,7 +81,7 @@
     "Task 9": "задача 9",
     ": Dr.": ": д-р",
     "Dimitar Dimitrov": "Димитър Димитров",
-    ", Elitsa Yotkova and Prof.": ", Елица Йоткова и проф.",
+    "and Prof.": "и проф.",
     "Ivan Koychev": "Иван Койчев",
     ", together with": ", заедно с",
     "Giovanni Da San Martino": "Джовани Да Сан Мартино",
