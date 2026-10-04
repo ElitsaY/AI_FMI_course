@@ -2163,6 +2163,36 @@ svg [fill="#b8394f"] { fill: var(--red-ink); } svg [stroke="#b8394f"] { stroke: 
 .qzv-plot .fitl { stroke: #d9546e; stroke-width: 2.5; }
 .qzv-sc.qzv-mini { width: 210px; }
 
+/* SemEval (home page) */
+.se-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: 0.6rem; margin-top: 0.8rem; }
+.se-task { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.2rem 0.6rem; padding: 0.6rem 0.8rem; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-sm); color: var(--ink); font-size: 0.88rem; font-weight: 600; line-height: 1.35; min-width: 0; }
+.se-task:hover { text-decoration: none; border-color: var(--bfs); }
+.se-task > span:nth-child(2) { flex: 1; min-width: 0; }
+.se-n { flex: none; font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 0.75rem; min-width: 1.6rem; text-align: center; padding: 0.1rem 0.35rem; border-radius: 6px; background: color-mix(in srgb, var(--bfs) 14%, var(--surface)); color: color-mix(in srgb, var(--bfs) 70%, var(--ink)); }
+.se-tag { flex-basis: 100%; padding-left: 2.2rem; font-style: normal; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; color: color-mix(in srgb, var(--bfs) 70%, var(--ink)); }
+.se-task.ours { border: 2px solid var(--bfs); background: color-mix(in srgb, var(--bfs) 10%, var(--surface)); }
+.se-task.ours .se-n { background: var(--bfs); color: #fff; }
+.se-t9 { margin-top: 0.8rem; padding: 1.1rem 1.3rem; border: 1px solid var(--line); border-left: 5px solid var(--bfs); border-radius: var(--radius); background: color-mix(in srgb, var(--bfs) 6%, var(--surface)); box-shadow: var(--shadow-sm); }
+.se-t9 > p { margin: 0 0 0.7rem; }
+.se-ex { display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap; margin: 0.4rem 0 0.6rem; }
+.se-par { display: grid; gap: 0.35rem; width: 11rem; padding: 0.6rem 0.8rem; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-sm); }
+.se-k { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-soft); }
+.se-l { height: 6px; border-radius: 3px; background: color-mix(in srgb, var(--ink) 18%, var(--surface)); } .se-l.s { width: 60%; }
+.se-arrow { font-size: 1.3rem; color: var(--ink-soft); }
+.se-frames { display: flex; flex-wrap: wrap; gap: 0.4rem; flex: 1; min-width: 12rem; }
+.se-frames span { font-size: 0.8rem; font-weight: 700; padding: 0.25rem 0.7rem; border-radius: 999px; background: color-mix(in srgb, var(--bfs) 18%, var(--surface)); border: 1px solid color-mix(in srgb, var(--bfs) 50%, var(--line)); color: color-mix(in srgb, var(--bfs) 55%, var(--ink)); }
+.se-btns { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 0.9rem; } .se-btns .learn-btn { white-space: normal; }
+.learn-btn.ghost { background: var(--surface); color: var(--ink); border: 1px solid var(--line); } .learn-btn.ghost:hover { background: var(--surface); color: var(--ink); border-color: var(--teal); }
+/* conferences */
+.cf-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; margin-top: 1rem; }
+.cf-group { min-width: 0; padding: 1rem 1.1rem; border: 1px solid var(--line); border-top: 4px solid var(--ids); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow-sm); }
+.cf-group.nlp { border-top-color: var(--ucs); }
+.cf-k { margin: 0 0 0.6rem; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-soft); }
+.cf-item { display: grid; grid-template-columns: 5.4rem minmax(0, 1fr); gap: 0.7rem; align-items: baseline; padding: 0.55rem 0; border-top: 1px solid var(--line); }
+.cf-item b { font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 1.1rem; color: color-mix(in srgb, var(--ids) 70%, var(--ink)); }
+.cf-group.nlp .cf-item b { color: color-mix(in srgb, var(--ucs) 60%, var(--ink)); }
+.cf-item span { font-size: 0.9rem; color: var(--ink-soft); }
+@media (max-width: 760px) { .cf-grid { grid-template-columns: 1fr; } }
 /* ---- Lab 00 quiz visuals: LoRA, mixture of experts, context window ---- */
 .qzv-plot .lo-w { fill: color-mix(in srgb, var(--ink-soft) 12%, var(--surface)); stroke: var(--ink-soft); stroke-width: 1.8; }
 .qzv-plot .lo-a, .qzv-plot .lo-b { fill: color-mix(in srgb, var(--ucs) 30%, var(--surface)); stroke: var(--ucs); stroke-width: 1.8; }
