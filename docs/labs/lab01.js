@@ -128,9 +128,9 @@ function initExplorer() {
       </dl>`;
   });
 
-  document.querySelectorAll('#tree .toggle-btn').forEach(btn => {
+  document.querySelectorAll('#pg-tree .toggle-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      document.querySelectorAll('#tree .toggle-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('#pg-tree .toggle-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       bdm = btn.dataset.view === 'bdm';
       draw();
