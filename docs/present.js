@@ -1,12 +1,14 @@
 /* ===== presentation mode: shows the page's <template id="slides"> as a slide deck.
    The screen button in the header (or P) switches it on and off and is remembered, like the theme.
    ← → / Space / PageUp PageDown move, Home End jump, F full screen, Esc leaves. #slide-N links to a slide.
-   A placeholder <div data-embed="#id"> borrows that live widget from the notes while presenting. ===== */
+   A placeholder <div data-embed="#id"> borrows that live widget from the notes while presenting
+   (also a part of a widget another slide borrows). A slide taller than the screen is scaled down to fit
+   (CSS zoom, not below MIN_ZOOM), and refitted when a widget's output changes. ===== */
 (function () {
   var KEY = 'class-notes-present', root = document.documentElement;
   var tpl = document.getElementById('slides');
   if (!tpl) return;
-  var deck, slides, cur = 0, homes = [], ui = {};
+  var deck, slides, cur = 0, homes = [], ui = {}, MIN_ZOOM = 0.7, fitH = 0, ro;
   var ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M12 16v4M8 20h8"/></svg>';
   var FULL = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>';
 
@@ -46,7 +48,7 @@
   function borrow() {
     deck.querySelectorAll('[data-embed]').forEach(function (ph) {
       var w = document.querySelector(ph.getAttribute('data-embed'));
-      if (!w || deck.contains(w)) return;
+      if (!w || ph.contains(w)) return;
       var mark = document.createComment('slide widget');
       w.parentNode.insertBefore(mark, w);
       homes.push([w, mark]);
@@ -66,6 +68,29 @@
     ui.prog.style.width = (100 * (cur + 1) / slides.length) + '%';
     ui.prev.disabled = cur === 0; ui.next.disabled = cur === slides.length - 1;
     history.replaceState(null, '', '#slide-' + (cur + 1));
+    fit();
+  }
+
+  // scale the current slide down until it fits the screen; ResizeObserver refits when its content changes
+  function fit() {
+    var s = slides[cur], inner = s.querySelector('.slide-in');
+    if (!inner || !presenting()) return;
+    var cs = getComputedStyle(s), avail = s.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+    inner.style.zoom = inner.style.maxWidth = '';
+    var r = inner.getBoundingClientRect(), w = r.width, h = r.height, z = 1;
+    for (var k = 0; k < 3 && h > avail + 1 && z > MIN_ZOOM; k++) {
+      z = Math.max(MIN_ZOOM, z * avail / h);
+      inner.style.zoom = z; inner.style.maxWidth = (w / z) + 'px';   // keep the full width while zoomed
+      h = inner.getBoundingClientRect().height;
+    }
+    fitH = h;
+    if (window.ResizeObserver) {
+      if (!ro) ro = new ResizeObserver(function () {
+        var i = slides[cur].querySelector('.slide-in');
+        if (i && Math.abs(i.getBoundingClientRect().height - fitH) > 2) requestAnimationFrame(fit);
+      });
+      ro.disconnect(); ro.observe(inner);
+    }
   }
 
   // the slide for the part of the notes being read
@@ -86,6 +111,7 @@
     go(i);
   }
   function leave() {
+    if (ro) ro.disconnect();
     var sec = slides[cur].getAttribute('data-section');
     if (document.fullscreenElement) document.exitFullscreen();
     giveBack();
@@ -118,6 +144,8 @@
     else return;
     e.preventDefault();
   });
+
+  addEventListener('resize', function () { if (presenting()) fit(); });
 
   var theme = document.querySelector('.site-nav .theme-toggle');
   if (theme) theme.parentNode.insertBefore(btn('present-toggle', ICON, 'Presentation mode (P)', function () { enter(); }), theme);
