@@ -29,7 +29,7 @@ Some labs also have **slides**: the same page in presentation mode, with the liv
 | :--- | :--- | :--- | :--- |
 | 00 | [Introduction](https://elitsay.github.io/AI_FMI_course/docs/labs/lab00-introduction.html) | [Quiz](https://elitsay.github.io/AI_FMI_course/docs/labs/lab00-quiz.html) | coming soon |
 | 01 | [Uninformed Search](https://elitsay.github.io/AI_FMI_course/docs/labs/lab01-uninformed-search.html) | [Quiz](https://elitsay.github.io/AI_FMI_course/docs/labs/lab01-quiz.html) | [Slides](https://elitsay.github.io/AI_FMI_course/docs/labs/lab01-uninformed-search.html#slide-1) |
-| 02 | [Informed Search](https://elitsay.github.io/AI_FMI_course/docs/labs/lab02-informed-search.html) | [Quiz](https://elitsay.github.io/AI_FMI_course/docs/labs/lab02-quiz.html) | coming soon |
+| 02 | [Informed Search](https://elitsay.github.io/AI_FMI_course/docs/labs/lab02-informed-search.html) | [Quiz](https://elitsay.github.io/AI_FMI_course/docs/labs/lab02-quiz.html) | [Slides](https://elitsay.github.io/AI_FMI_course/docs/labs/lab02-informed-search.html#slide-1) |
 | 03 | [Constraint Satisfaction](https://elitsay.github.io/AI_FMI_course/docs/labs/lab03-csp.html) | [Quiz](https://elitsay.github.io/AI_FMI_course/docs/labs/lab03-quiz.html) | coming soon |
 | 04 | [Genetic Algorithms](https://elitsay.github.io/AI_FMI_course/docs/labs/lab04-genetic-algorithms.html) | [Quiz](https://elitsay.github.io/AI_FMI_course/docs/labs/lab04-quiz.html) | coming soon |
 | 05 | [Games](https://elitsay.github.io/AI_FMI_course/docs/labs/lab05-games.html) | [Quiz](https://elitsay.github.io/AI_FMI_course/docs/labs/lab05-quiz.html) | coming soon |

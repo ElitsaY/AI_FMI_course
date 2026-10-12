@@ -157,7 +157,7 @@
     <p class="section-lede"><b>Description</b>: Greedy search is a strategy for exploration that always selects the frontier node with the <b>lowest heuristic value</b> for expansion, which corresponds to the state it believes is nearest to a goal.</p>
     <p class="section-lede"><b>Frontier Representation</b>: Greedy search operates identically to <a href="lab01-uninformed-search.html#ucs">UCS</a>, with a <i>priority queue</i> — but the priority is the heuristic h(n) instead of the path cost.</p>
 
-    <div class="algo-stats dfs">
+    <div class="algo-stats dfs" id="st-greedy">
       <div class="algo-stat">
         <div class="label">Complete?</div>
         <div class="value">No</div>
@@ -187,7 +187,7 @@
 
     <p class="section-lede" style="margin-top:1.6rem;">Step through greedy search on the graph below — h(n) is printed under each node, edge costs on the arrows. Greedy follows the lowest h and reaches G via S → C → F → G with cost <b>26</b>, even though S → A → D → F → G costs only <b>23</b>: it never looks at the cost already paid.</p>
 
-    <div class="playground">
+    <div class="playground" id="pg-greedy">
       <div class="pg-controls">
         <div class="play-btns" style="margin-left:0;">
           <button class="icon-btn" id="greedy-prev" title="Step back">⏮</button>
@@ -219,7 +219,7 @@
 
     <p class="section-lede">= <a href="#greedy">greedy best-first search</a> with queue limit <b>l</b>, i.e., keeps only the <b>l</b> best nodes in the queue.</p>
 
-    <div class="algo-stats ucs">
+    <div class="algo-stats ucs" id="st-beam">
       <div class="algo-stat">
         <div class="label">Complete?</div>
         <div class="value">No</div>
@@ -257,7 +257,7 @@
 
     <p class="section-lede" style="margin-top:1.6rem;">Step through beam search on the same graph and change the beam width <b>l</b>. Every time the frontier grows beyond l nodes, the worst ones (highest h) are thrown away for good — there is no going back to them.</p>
 
-    <div class="playground">
+    <div class="playground" id="pg-beam">
       <div class="pg-controls">
         <div class="play-btns" style="margin-left:0;">
           <button class="icon-btn" id="beam-prev" title="Step back">⏮</button>
@@ -296,7 +296,7 @@
 
     <p class="section-lede">= <a href="#greedy">greedy best-first search</a> with queue limit <b>l = 1</b>, i.e., keeps only the best node. In other words, it is <a href="#beam">beam search</a> with a beam of width 1.</p>
 
-    <div class="algo-stats bfs">
+    <div class="algo-stats bfs" id="st-hc">
       <div class="algo-stat">
         <div class="label">Complete?</div>
         <div class="value">No</div>
@@ -325,7 +325,7 @@
 
     <p class="section-lede" style="margin-top:1.6rem;">Step through hill climbing on the same graph. After each expansion only the single best child survives; everything else is discarded and there is no backtracking.</p>
 
-    <div class="playground">
+    <div class="playground" id="pg-hc">
       <div class="pg-controls">
         <div class="play-btns" style="margin-left:0;">
           <button class="icon-btn" id="hc-prev" title="Step back">⏮</button>
@@ -352,7 +352,7 @@
     <h3 class="section-title" style="font-size:1.15rem; margin-top:2rem;">Local maxima &amp; random restarts</h3>
     <p class="section-lede">Seen as optimization, hill climbing keeps moving to the better neighbour until no neighbour is better. On the landscape below that often means getting stuck on a <b>local maximum</b>. Random restart simply climbs again from a new random state and keeps the best result — with enough restarts, it will eventually start on the slope of the global maximum.</p>
 
-    <div class="sim-panel">
+    <div class="sim-panel" id="pg-hcl">
       <div class="toggle-row" style="margin-bottom:0.8rem;">
         <button class="toggle-btn" id="hcl-climb">Random start &amp; climb</button>
         <button class="toggle-btn" id="hcl-reset">Reset</button>
@@ -391,7 +391,7 @@
 
     <p class="section-lede" style="margin-top:1.6rem;">Step through A* on the lecture graph. Each frontier entry shows <b>g</b>, <b>h</b> and <b>f = g + h</b>, and A* always expands the entry with the lowest f. Unlike greedy (cost 26), A* returns the optimal path S → A → D → F → G with cost <b>23</b>.</p>
 
-    <div class="playground">
+    <div class="playground" id="pg-astar">
       <div class="pg-controls">
         <div class="play-btns" style="margin-left:0;">
           <button class="icon-btn" id="astar-prev" title="Step back">⏮</button>
@@ -417,7 +417,7 @@
 
     <p class="caption-note"><b>Check yourself:</b> is the heuristic on this graph admissible? <b>No</b> — h(H) = 7, but the true cost H → I → G is only 1 + 5 = 6. It is not consistent either: on the edge D → F, h(D) = 5 &gt; 1 + h(F) = 4. A* happens to find the optimum here, but with this h it is not <i>guaranteed</i> to.</p>
 
-    <div class="algo-stats ids">
+    <div class="algo-stats ids" id="st-astar">
       <div class="algo-stat">
         <div class="label">Complete?</div>
         <div class="value">Yes</div>
@@ -464,7 +464,7 @@
     <h4 style="margin:1.6rem 0 0.4rem;">Proof (admissible h, tree search)</h4>
     <p class="section-lede">Suppose some suboptimal goal G<sub>2</sub> has been generated and is in the queue. Let n be an unexpanded node on a shortest path to an optimal goal G<sub>1</sub>.</p>
 
-    <div class="tree-panel">
+    <div class="tree-panel" id="pf-proof">
       <svg viewBox="0 0 560 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Start node with a path to n, which lies on the optimal path to G1, and a path to the suboptimal goal G2">
         <line x1="300" y1="45" x2="150" y2="180" stroke-width="2.5" style="stroke:var(--ink-soft)"></line>
         <line x1="300" y1="45" x2="470" y2="240" stroke-width="2.5" style="stroke:var(--ink-soft)"></line>
@@ -493,7 +493,7 @@
 
     <!-- lemma -->
     <h4 style="margin:1.6rem 0 0.4rem;">Lemma: A* expands nodes in order of increasing f value</h4>
-    <div class="tree-panel">
+    <div class="tree-panel" id="pf-lemma">
       <div>
         <ul class="concept-list">
           <li>A heuristic is consistent if <b>h(n) ≤ c(n, a, n′) + h(n′)</b></li>
@@ -552,7 +552,7 @@
     <h3 class="section-title" style="font-size:1.15rem; margin-top:2rem;">Example: admissible, but not consistent</h3>
     <p class="section-lede">Is A* with graph search always guaranteed to find the optimal solution when using an admissible heuristic?</p>
 
-    <div class="sim-panel">
+    <div class="sim-panel" id="pg-inc">
       <svg viewBox="0 0 600 260" xmlns="http://www.w3.org/2000/svg" style="width:100%; height:auto;" role="img" aria-label="Graph: S to A cost 1, S to B cost 3, A to B cost 1, B to C cost 2; h(S)=4, h(A)=3, h(B)=0, h(C)=0">
         <defs><marker id="arr-ex" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--ids)"></path></marker></defs>
         <line x1="208" y1="75" x2="116" y2="186" stroke-width="2" marker-end="url(#arr-ex)" style="stroke:var(--ids)"></line>
@@ -603,7 +603,7 @@
     </ul>
 
     <!-- tree vs graph search -->
-    <div class="tree-panel" style="margin-top:1.6rem; grid-template-columns:1fr 1fr;">
+    <div class="tree-panel" id="tree-vs-graph" style="margin-top:1.6rem; grid-template-columns:1fr 1fr;">
       <div>
         <h4 style="margin:0 0 0.6rem;">Tree Search</h4>
         <ul class="concept-list">
@@ -639,7 +639,7 @@
       </li>
     </ul>
 
-    <div class="puzzle-panel">
+    <div class="puzzle-panel" id="pg-puzzle">
       <div class="puzzle-row">
         <div>
           <p class="puzzle-label">Current state</p>
@@ -743,7 +743,7 @@
       <li>The next threshold is the <b>smallest f-value that was pruned</b> in the previous iteration.</li>
     </ul>
 
-    <div class="algo-stats dls">
+    <div class="algo-stats dls" id="st-ida">
       <div class="algo-stat">
         <div class="label">Complete?</div>
         <div class="value">Yes</div>
@@ -775,7 +775,7 @@
       <span class="lg-goal">goal</span>
     </div>
 
-    <div class="sim-panel">
+    <div class="sim-panel" id="ida-example">
       <div class="ida-iter">
         <h4>Iteration 1 — threshold = 2</h4>
         <svg class="ida-tree" viewBox="0 0 720 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="IDA* example tree, iteration 1, threshold 2">
@@ -1243,7 +1243,7 @@
     <p class="caption-note"><b>Note on the goal test:</b> in this example the goal is reported as soon as it is <i>generated</i> (as a child of the f = 8 node at threshold 8). Textbook IDA* applies the goal test when a node is <i>expanded</i>, which requires f(goal) = 15 ≤ threshold — so it would keep iterating until the threshold reaches 15. You can compare both in the interactive version below.</p>
 
     <h3 class="section-title" style="font-size:1.15rem; margin-top:2rem;">Step through IDA* yourself</h3>
-    <div class="playground">
+    <div class="playground" id="pg-ida">
       <div class="pg-controls">
         <div class="strategy-pick">
           <button class="strat-btn ida-mode-btn active" data-mode="generate">Goal test on generation (example)</button>
@@ -1287,7 +1287,7 @@
       <b>Simulated annealing</b> escapes local maxima the opposite way hill climbing gets stuck: it allows some "bad" moves, accepted with probability exp(−Δ/T), and gradually cools T so bad moves become rarer over time.
     </p>
 
-    <div class="sim-panel">
+    <div class="sim-panel" id="pg-sa">
       <div class="sliders">
         <div class="slider-group">
           <label>Temperature T <span class="val" id="sa-t-val">5</span></label>
@@ -1313,7 +1313,7 @@
   <section class="block" id="summary">
     <p class="eyebrow">Reference</p>
     <h2 class="section-title">Summary of algorithms</h2>
-    <div class="table-wrap">
+    <div class="table-wrap" id="tbl-summary">
       <table class="summary">
         <thead>
           <tr><th>Algorithm</th><th>Complete</th><th>Optimal</th><th>Time</th><th>Space</th><th>Data structure</th></tr>
@@ -1516,6 +1516,310 @@
 </main>
 </div>
 
+<!-- ===== PRESENTATION MODE: the slides (present.js); data-embed borrows a widget from the notes ===== -->
+<template id="slides" data-title="Lab 02 · Informed Search">
+
+  <section class="slide sl-cover" data-section="#recap">
+    <div class="slide-in">
+      <p class="sl-eyebrow">Lab 02 · Artificial Intelligence</p>
+      <h1>Informed Search</h1>
+      <p class="sl-lede">A heuristic estimates how close a state is to the goal, and the search uses it to choose what to expand.</p>
+      <ol class="sl-agenda">
+        <li class="ids">Heuristics</li>
+        <li class="dfs">Greedy, beam search, hill climbing</li>
+        <li class="ids">A* and its optimality</li>
+        <li class="ucs">Choosing a heuristic</li>
+        <li class="bfs">IDA* and simulated annealing</li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="slide" data-section="#recap">
+    <div class="slide-in">
+      <span class="badge ids">Recap</span>
+      <h2>Uninformed vs. informed search</h2>
+      <div class="sl-cols">
+        <div class="sl-card">
+          <h3>Uninformed</h3>
+          <p style="margin:0;">Uses only the information in the problem definition (<a href="lab01-uninformed-search.html">Lab 01</a>).</p>
+        </div>
+        <div class="sl-card ids">
+          <h3>Informed</h3>
+          <p style="margin:0;">Has information on the goal state, from a function, the <b>heuristic</b>, that estimates how close a state is to the goal.</p>
+        </div>
+      </div>
+      <div class="sl-cols" style="margin-top:1.2rem;">
+        <div class="sl-card dfs"><h3>Greedy</h3><p style="margin:0;">→ Beam search, Hill climbing</p></div>
+        <div class="sl-card ids"><h3>A*</h3><p style="margin:0;">→ Memory-bounded A*, IDA*</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-section="#heuristics">
+    <div class="slide-in">
+      <span class="badge ids">Heuristic</span>
+      <h2>Heuristic h(n)</h2>
+      <div class="definition-box">
+        <div class="dbox-label">📐 Definition</div>
+        <p>A <b>heuristic h(n)</b> estimates the cost (or distance) from state <b>n</b> to a goal state. It gives problem-specific guidance, so the search prefers more promising states.</p>
+      </div>
+      <ul class="concept-list" style="margin-top:1rem;">
+        <li>Input: a <b>state</b>. Output: an <b>estimate</b>.</li>
+        <li>The computation is <b>specific to the search problem</b>.</li>
+        <li>The agent can <i>prefer</i> expanding states estimated to be closer to a goal.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="slide" data-section="#greedy">
+    <div class="slide-in">
+      <span class="badge dfs">Greedy</span>
+      <h2>Greedy search: lowest h(n) first</h2>
+      <p class="sl-lede">Like <a href="lab01-uninformed-search.html#ucs">UCS</a> with a priority queue, but the priority is h(n) instead of the path cost.</p>
+      <div class="sl-embed" data-embed="#st-greedy"></div>
+      <p class="sl-take">Unpredictable: it can go straight to a goal, or act like a badly guided DFS exploring all the wrong areas.</p>
+    </div>
+  </section>
+
+  <section class="slide" data-section="#greedy">
+    <div class="slide-in">
+      <span class="badge dfs">Try it</span>
+      <h2>Step through greedy search</h2>
+      <p class="sl-lede">Greedy reaches G via S → C → F → G with cost <b>26</b>; S → A → D → F → G costs only <b>23</b>.</p>
+      <div class="sl-embed" data-embed="#pg-greedy"></div>
+    </div>
+  </section>
+
+  <section class="slide" data-section="#beam">
+    <div class="slide-in">
+      <span class="badge ucs">Beam</span>
+      <h2>Beam search: keep the l best</h2>
+      <p class="sl-lede">Greedy best-first search with queue limit <b>l</b>: only the <b>l</b> best nodes stay in the queue.</p>
+      <div class="sl-embed" data-embed="#st-beam"></div>
+      <p class="sl-take">Each level: expand l nodes → l · b successors → score them → keep the best l. Over m levels: O(m · l · b).</p>
+    </div>
+  </section>
+
+  <section class="slide" data-section="#beam">
+    <div class="slide-in">
+      <span class="badge ucs">Try it</span>
+      <h2>Step through beam search</h2>
+      <p class="sl-lede">Change the beam width <b>l</b>: the worst nodes are thrown away for good.</p>
+      <div class="sl-embed" data-embed="#pg-beam"></div>
+    </div>
+  </section>
+
+  <section class="slide" data-section="#hillclimbing">
+    <div class="slide-in">
+      <span class="badge bfs">Hill Climbing</span>
+      <h2>Hill climbing: beam search with l = 1</h2>
+      <p class="sl-lede">Keeps only the best node; no backtracking.</p>
+      <div class="sl-embed" data-embed="#st-hc"></div>
+      <p class="sl-take"><b>Random-restart hill climbing</b> overcomes local maxima: trivially complete.</p>
+    </div>
+  </section>
+
+  <section class="slide" data-section="#hillclimbing">
+    <div class="slide-in">
+      <span class="badge bfs">Try it</span>
+      <h2>Step through hill climbing</h2>
+      <div class="sl-embed" data-embed="#pg-hc"></div>
+    </div>
+  </section>
+
+  <section class="slide" data-section="#hillclimbing">
+    <div class="slide-in">
+      <span class="badge bfs">Try it</span>
+      <h2>Local maxima and random restarts</h2>
+      <p class="sl-lede">Climb until no neighbour is better, often on a <b>local maximum</b>. Restart from a random state and keep the best.</p>
+      <div class="sl-embed" data-embed="#pg-hcl"></div>
+    </div>
+  </section>
+
+  <section class="slide" data-section="#astar">
+    <div class="slide-in">
+      <span class="badge ids">A*</span>
+      <h2>A*: f(n) = g(n) + h(n)</h2>
+      <p class="sl-lede"><b>Idea</b>: avoid expanding paths that are already expensive.</p>
+      <div class="sl-cols three">
+        <div class="sl-card dfs"><h3>g(n)</h3><p style="margin:0;">cost so far to reach n</p></div>
+        <div class="sl-card ucs"><h3>h(n)</h3><p style="margin:0;">estimated cost from n to the goal</p></div>
+        <div class="sl-card ids"><h3>f(n)</h3><p style="margin:0;">estimated total cost of the path through n to the goal</p></div>
+      </div>
+      <div class="definition-box" style="margin-top:1.2rem;">
+        <div class="dbox-label">📐 Admissible heuristic: A* requires it</div>
+        <p><b>h(n) ≤ h*(n)</b>, the true cost from n: it <b>never overestimates</b> (and h(n) ≥ 0, so h(G) = 0). E.g. straight-line distance never overestimates the road distance.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-section="#astar">
+    <div class="slide-in">
+      <span class="badge ids">Try it</span>
+      <h2>Step through A*</h2>
+      <p class="sl-lede">A* expands the lowest f = g + h and returns S → A → D → F → G with cost <b>23</b> (greedy: 26).</p>
+      <div class="sl-embed" data-embed="#pg-astar"></div>
+    </div>
+  </section>
+
+  <section class="slide" data-section="#astar">
+    <div class="slide-in">
+      <span class="badge ids">A*</span>
+      <h2>A*: properties</h2>
+      <div class="sl-embed" data-embed="#st-astar"></div>
+      <div class="sl-cols three">
+        <div class="sl-card good"><h3>f(n) &lt; C*</h3><p style="margin:0;">A* expands <b>all</b> of them</p></div>
+        <div class="sl-card ucs"><h3>f(n) = C*</h3><p style="margin:0;">A* expands <b>some</b></p></div>
+        <div class="sl-card bad"><h3>f(n) &gt; C*</h3><p style="margin:0;">A* expands <b>none</b></p></div>
+      </div>
+      <p class="sl-take">The graph on the previous slides is not admissible: h(H) = 7, but H → I → G costs 6. A* finds the optimum there, but is not <i>guaranteed</i> to.</p>
+    </div>
+  </section>
+
+  <section class="slide" data-section="#astar">
+    <div class="slide-in">
+      <span class="badge ids">Theorem</span>
+      <h2>A* is optimal</h2>
+      <ul class="concept-list">
+        <li>If h(n) is <b>admissible</b>, A* using <b>TREE-SEARCH</b> is optimal.</li>
+        <li>If h(n) is <b>consistent</b>, A* using <b>GRAPH-SEARCH</b> is optimal.</li>
+      </ul>
+      <p class="sl-lede" style="margin-top:1rem;"><b>Proof (admissible h, tree search).</b> A suboptimal goal G<sub>2</sub> is in the queue; n is unexpanded on a shortest path to the optimal goal G<sub>1</sub>.</p>
+      <div class="sl-embed" data-embed="#pf-proof"></div>
+    </div>
+  </section>
+
+  <section class="slide" data-section="#astar">
+    <div class="slide-in">
+      <span class="badge ids">Lemma</span>
+      <h2>A* expands nodes in order of increasing f</h2>
+      <div class="sl-embed" data-embed="#pf-lemma"></div>
+      <p class="sl-take">Consistent ⇒ once a node is expanded, its cost will not be improved, and no node is re-expanded.</p>
+    </div>
+  </section>
+
+  <section class="slide" data-section="#astar">
+    <div class="slide-in">
+      <span class="badge ids">Heuristics</span>
+      <h2>Admissible vs. consistent</h2>
+      <div class="sl-cols">
+        <div class="sl-card ids">
+          <h3>📐 Admissible</h3>
+          <p style="margin:0 0 0.6rem;"><b>h(n) ≤ h*(n)</b> for all n: never overestimates.</p>
+          <p class="note" style="margin:0;">Prove it with a <b>relaxed problem</b>: h(n) = optimal cost in the relaxed problem ≤ optimal cost in the original = h*(n).</p>
+        </div>
+        <div class="sl-card ucs">
+          <h3>📐 Consistent</h3>
+          <p style="margin:0 0 0.6rem;"><b>h(n) ≤ c(n, n′) + h(n′)</b> for every successor n′: h drops by at most the step cost.</p>
+          <p class="note" style="margin:0;">Prove it by checking every single step n → n′.</p>
+        </div>
+      </div>
+      <p class="sl-take">Consistent ⇒ admissible (with h(G) = 0); the converse is not true.</p>
+    </div>
+  </section>
+
+  <section class="slide" data-section="#astar">
+    <div class="slide-in">
+      <span class="badge ids">Example</span>
+      <h2>Admissible, but not consistent</h2>
+      <div class="sl-embed" data-embed="#pg-inc"></div>
+    </div>
+  </section>
+
+  <section class="slide" data-section="#astar">
+    <div class="slide-in">
+      <span class="badge ids">Example</span>
+      <h2>A* graph search returns S–B–C</h2>
+      <p class="sl-lede">The optimal path is <b>S–A–B–C</b>, cost <b>4</b>.</p>
+      <ol class="concept-list">
+        <li>Frontier: S–A with f = 1 + 3 = <b>4</b>, S–B with f = 3 + 0 = <b>3</b> → expand <b>S–B</b>.</li>
+        <li>Frontier: S–A with f = <b>4</b>, B–C with <b>5</b> → expand <b>S–A</b>.</li>
+        <li>B is already reached, so edge A–B is not considered.</li>
+        <li>Only B–C is left: path <b>S–B–C</b>, cost <b>5</b>.</li>
+      </ol>
+      <p class="sl-take">With a closed set, an admissible but inconsistent heuristic can give a suboptimal solution.</p>
+    </div>
+  </section>
+
+  <section class="slide" data-section="#astar">
+    <div class="slide-in">
+      <span class="badge ids">A*</span>
+      <h2>Tree search vs. graph search</h2>
+      <div class="sl-embed" data-embed="#tree-vs-graph"></div>
+    </div>
+  </section>
+
+  <section class="slide" data-section="#choosing">
+    <div class="slide-in">
+      <span class="badge ucs">Try it</span>
+      <h2>Choosing a heuristic: the 8-puzzle</h2>
+      <p class="sl-lede"><b>h<sub>1</sub></b> = misplaced tiles (Hamming), <b>h<sub>2</sub></b> = total Manhattan distance |x − x′| + |y − y′|. Start: h<sub>1</sub> = 6, h<sub>2</sub> = 14.</p>
+      <div class="sl-embed" data-embed="#pg-puzzle"></div>
+    </div>
+  </section>
+
+  <section class="slide" data-section="#choosing">
+    <div class="slide-in">
+      <span class="badge ucs">Heuristics</span>
+      <h2>Dominance, and why Manhattan works</h2>
+      <div class="sl-cols three">
+        <div class="sl-card ucs">
+          <h3>Dominance</h3>
+          <p style="margin:0 0 0.5rem;">h<sub>2</sub>(n) ≥ h<sub>1</sub>(n) for all n (both admissible) → h<sub>2</sub> <b>dominates</b> and is better for search.</p>
+          <p style="margin:0;">max(h<sub>a</sub>, h<sub>b</sub>) is admissible and dominates both.</p>
+        </div>
+        <div class="sl-card ids">
+          <h3>Admissible</h3>
+          <p style="margin:0;"><b>Relaxed problem</b>: each tile moves to its goal ignoring the other tiles and the blank. The real moves can only be more: h<sub>M</sub>(n) ≤ h*(n).</p>
+        </div>
+        <div class="sl-card bfs">
+          <h3>Consistent</h3>
+          <p style="margin:0;">A move (cost 1) changes only tile <i>T</i>'s distance, by ±1: h<sub>M</sub>(n) − h<sub>M</sub>(n′) ≤ 1 = cost(n, n′).</p>
+        </div>
+      </div>
+      <p class="sl-take">Both Hamming and Manhattan are admissible and consistent.</p>
+    </div>
+  </section>
+
+  <section class="slide" data-section="#ida">
+    <div class="slide-in">
+      <span class="badge dls">IDA*</span>
+      <h2>Memory-bounded A* and IDA*</h2>
+      <div class="sl-cols">
+        <div class="sl-card ucs"><h3>Memory-bounded A*</h3><p style="margin:0;">A* + beam search: keeps only <b>l</b> nodes in the queue.</p></div>
+        <div class="sl-card" style="--sl: var(--pink);"><h3>IDA*</h3><p style="margin:0;">A* + iterative deepening: DLS with f(n) = g(n) + h(n) as the <b>threshold</b>. Prune f(n) &gt; threshold; the next threshold is the <b>smallest pruned f</b>.</p></div>
+      </div>
+      <div class="sl-embed" data-embed="#st-ida" style="margin-top:1.2rem;"></div>
+    </div>
+  </section>
+
+  <section class="slide" data-section="#ida">
+    <div class="slide-in">
+      <span class="badge dls">Try it</span>
+      <h2>Step through IDA*</h2>
+      <div class="sl-embed" data-embed="#pg-ida"></div>
+    </div>
+  </section>
+
+  <section class="slide" data-section="#annealing">
+    <div class="slide-in">
+      <span class="badge bfs">Try it</span>
+      <h2>Simulated annealing</h2>
+      <p class="sl-lede">Accept a worse move with probability exp(−Δ/T), and cool T over time.</p>
+      <div class="sl-embed" data-embed="#pg-sa"></div>
+    </div>
+  </section>
+
+  <section class="slide" data-section="#summary">
+    <div class="slide-in">
+      <h2>Summary of algorithms</h2>
+      <div class="sl-embed" data-embed="#tbl-summary"></div>
+      <p class="sl-take">Test yourself: <a href="lab02-quiz.html">the Lab 02 quiz</a>, 19 auto-graded tasks.</p>
+    </div>
+  </section>
+
+</template>
+<script src="../present.js"></script>
 <script src="lab02.js"></script>
 </body>
 </html>
