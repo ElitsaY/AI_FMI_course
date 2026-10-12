@@ -23,24 +23,26 @@ Lab notes with interactive widgets, served from `docs/` on GitHub Pages: **[elit
 
 Each lab is followed by a **quiz**: auto-graded in the browser, with an explanation for every answer and a score per skill. Answers stay in the student's browser; nothing is collected. Quizzes for the later labs are on the way.
 
-| Lab | Class notes | Quiz |
-| :--- | :--- | :--- |
-| 00 | [Introduction](https://elitsay.github.io/AI_FMI_course/docs/labs/lab00-introduction.html) | [Quiz](https://elitsay.github.io/AI_FMI_course/docs/labs/lab00-quiz.html) |
-| 01 | [Uninformed Search](https://elitsay.github.io/AI_FMI_course/docs/labs/lab01-uninformed-search.html) | [Quiz](https://elitsay.github.io/AI_FMI_course/docs/labs/lab01-quiz.html) |
-| 02 | [Informed Search](https://elitsay.github.io/AI_FMI_course/docs/labs/lab02-informed-search.html) | [Quiz](https://elitsay.github.io/AI_FMI_course/docs/labs/lab02-quiz.html) |
-| 03 | [Constraint Satisfaction](https://elitsay.github.io/AI_FMI_course/docs/labs/lab03-csp.html) | [Quiz](https://elitsay.github.io/AI_FMI_course/docs/labs/lab03-quiz.html) |
-| 04 | [Genetic Algorithms](https://elitsay.github.io/AI_FMI_course/docs/labs/lab04-genetic-algorithms.html) | [Quiz](https://elitsay.github.io/AI_FMI_course/docs/labs/lab04-quiz.html) |
-| 05 | [Games](https://elitsay.github.io/AI_FMI_course/docs/labs/lab05-games.html) | [Quiz](https://elitsay.github.io/AI_FMI_course/docs/labs/lab05-quiz.html) |
-| 06 | [Introduction to ML](https://elitsay.github.io/AI_FMI_course/docs/labs/lab06-intro-ml.html) | [Quiz](https://elitsay.github.io/AI_FMI_course/docs/labs/lab06-quiz.html) |
-| 6.5 | [Linear & Logistic Regression](https://elitsay.github.io/AI_FMI_course/docs/labs/lab065-linear-logistic.html) | [Quiz](https://elitsay.github.io/AI_FMI_course/docs/labs/lab065-quiz.html) |
-| 07 | [K-Nearest Neighbours](https://elitsay.github.io/AI_FMI_course/docs/labs/lab07-knn.html) | [Quiz](https://elitsay.github.io/AI_FMI_course/docs/labs/lab07-quiz.html) |
-| 08 | [Naive Bayes Classifier](https://elitsay.github.io/AI_FMI_course/docs/labs/lab08-naive-bayes.html) | [Quiz](https://elitsay.github.io/AI_FMI_course/docs/labs/lab08-quiz.html) |
-| 09 | [Decision Trees](https://elitsay.github.io/AI_FMI_course/docs/labs/lab09-decision-trees.html) | [Quiz](https://elitsay.github.io/AI_FMI_course/docs/labs/lab09-quiz.html) |
-| 10 | [K-Means and Clustering](https://elitsay.github.io/AI_FMI_course/docs/labs/lab10-kmeans.html) | [Quiz](https://elitsay.github.io/AI_FMI_course/docs/labs/lab10-quiz.html) |
-| 11 | [Neural Networks](https://elitsay.github.io/AI_FMI_course/docs/labs/lab11-neural-networks.html) | [Quiz](https://elitsay.github.io/AI_FMI_course/docs/labs/lab11-quiz.html) |
-| 12 | [Transformers and Generative Models](https://elitsay.github.io/AI_FMI_course/docs/labs/lab12-transformers.html) | [Quiz](https://elitsay.github.io/AI_FMI_course/docs/labs/lab12-quiz.html) |
-| 13 | [Post-training and Alignment](https://elitsay.github.io/AI_FMI_course/docs/labs/lab13-alignment.html) | [Quiz](https://elitsay.github.io/AI_FMI_course/docs/labs/lab13-quiz.html) |
-| 14 | [Evaluation, Metrics and Data Analysis](https://elitsay.github.io/AI_FMI_course/docs/labs/lab14-evaluation.html) | [Quiz](https://elitsay.github.io/AI_FMI_course/docs/labs/lab14-quiz.html) |
+Some labs also have **slides**: the same page in presentation mode, with the live widgets on the slides (press **P** on a lab page, arrows to move, **Esc** back to the notes).
+
+| Lab | Class notes | Quiz | Slides |
+| :--- | :--- | :--- | :--- |
+| 00 | [Introduction](https://elitsay.github.io/AI_FMI_course/docs/labs/lab00-introduction.html) | [Quiz](https://elitsay.github.io/AI_FMI_course/docs/labs/lab00-quiz.html) | coming soon |
+| 01 | [Uninformed Search](https://elitsay.github.io/AI_FMI_course/docs/labs/lab01-uninformed-search.html) | [Quiz](https://elitsay.github.io/AI_FMI_course/docs/labs/lab01-quiz.html) | [Slides](https://elitsay.github.io/AI_FMI_course/docs/labs/lab01-uninformed-search.html#slide-1) |
+| 02 | [Informed Search](https://elitsay.github.io/AI_FMI_course/docs/labs/lab02-informed-search.html) | [Quiz](https://elitsay.github.io/AI_FMI_course/docs/labs/lab02-quiz.html) | coming soon |
+| 03 | [Constraint Satisfaction](https://elitsay.github.io/AI_FMI_course/docs/labs/lab03-csp.html) | [Quiz](https://elitsay.github.io/AI_FMI_course/docs/labs/lab03-quiz.html) | coming soon |
+| 04 | [Genetic Algorithms](https://elitsay.github.io/AI_FMI_course/docs/labs/lab04-genetic-algorithms.html) | [Quiz](https://elitsay.github.io/AI_FMI_course/docs/labs/lab04-quiz.html) | coming soon |
+| 05 | [Games](https://elitsay.github.io/AI_FMI_course/docs/labs/lab05-games.html) | [Quiz](https://elitsay.github.io/AI_FMI_course/docs/labs/lab05-quiz.html) | coming soon |
+| 06 | [Introduction to ML](https://elitsay.github.io/AI_FMI_course/docs/labs/lab06-intro-ml.html) | [Quiz](https://elitsay.github.io/AI_FMI_course/docs/labs/lab06-quiz.html) | coming soon |
+| 6.5 | [Linear & Logistic Regression](https://elitsay.github.io/AI_FMI_course/docs/labs/lab065-linear-logistic.html) | [Quiz](https://elitsay.github.io/AI_FMI_course/docs/labs/lab065-quiz.html) | coming soon |
+| 07 | [K-Nearest Neighbours](https://elitsay.github.io/AI_FMI_course/docs/labs/lab07-knn.html) | [Quiz](https://elitsay.github.io/AI_FMI_course/docs/labs/lab07-quiz.html) | coming soon |
+| 08 | [Naive Bayes Classifier](https://elitsay.github.io/AI_FMI_course/docs/labs/lab08-naive-bayes.html) | [Quiz](https://elitsay.github.io/AI_FMI_course/docs/labs/lab08-quiz.html) | coming soon |
+| 09 | [Decision Trees](https://elitsay.github.io/AI_FMI_course/docs/labs/lab09-decision-trees.html) | [Quiz](https://elitsay.github.io/AI_FMI_course/docs/labs/lab09-quiz.html) | coming soon |
+| 10 | [K-Means and Clustering](https://elitsay.github.io/AI_FMI_course/docs/labs/lab10-kmeans.html) | [Quiz](https://elitsay.github.io/AI_FMI_course/docs/labs/lab10-quiz.html) | coming soon |
+| 11 | [Neural Networks](https://elitsay.github.io/AI_FMI_course/docs/labs/lab11-neural-networks.html) | [Quiz](https://elitsay.github.io/AI_FMI_course/docs/labs/lab11-quiz.html) | coming soon |
+| 12 | [Transformers and Generative Models](https://elitsay.github.io/AI_FMI_course/docs/labs/lab12-transformers.html) | [Quiz](https://elitsay.github.io/AI_FMI_course/docs/labs/lab12-quiz.html) | coming soon |
+| 13 | [Post-training and Alignment](https://elitsay.github.io/AI_FMI_course/docs/labs/lab13-alignment.html) | [Quiz](https://elitsay.github.io/AI_FMI_course/docs/labs/lab13-quiz.html) | coming soon |
+| 14 | [Evaluation, Metrics and Data Analysis](https://elitsay.github.io/AI_FMI_course/docs/labs/lab14-evaluation.html) | [Quiz](https://elitsay.github.io/AI_FMI_course/docs/labs/lab14-quiz.html) | coming soon |
 
 ## 💻 Jupyter Notebooks
 
