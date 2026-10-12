@@ -2283,3 +2283,7 @@ html.presenting .deck { position: fixed; inset: 0; z-index: 200; display: flex; 
 .slide #pf-proof svg { max-height: 13rem; }
 .slide #ida-tree { max-height: 14rem; width: 100%; }
 .slide #pg-beam .pg-grid svg { max-height: calc(100vh - 18rem - 60px); }
+/* Lab 03 slides */
+.slide #pg-map svg { max-height: calc(100vh - 19rem - 60px); }
+.slide #bt-graph { max-height: 15rem; }
+.slide .queens-fig { max-height: 11rem; width: 100%; }

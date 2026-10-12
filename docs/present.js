@@ -3,7 +3,8 @@
    ← → / Space / PageUp PageDown move, Home End jump, F full screen, Esc leaves. #slide-N links to a slide.
    A placeholder <div data-embed="#id"> borrows that live widget from the notes while presenting
    (also a part of a widget another slide borrows). A slide taller than the screen is scaled down to fit
-   (CSS zoom, not below MIN_ZOOM), and refitted when a widget's output changes. ===== */
+   (CSS zoom, not below MIN_ZOOM), and refitted when a widget's output changes. Showing a slide fires a
+   window resize event, so widgets that measure their container redraw at the slide's size. ===== */
 (function () {
   var KEY = 'class-notes-present', root = document.documentElement;
   var tpl = document.getElementById('slides');
@@ -68,7 +69,7 @@
     ui.prog.style.width = (100 * (cur + 1) / slides.length) + '%';
     ui.prev.disabled = cur === 0; ui.next.disabled = cur === slides.length - 1;
     history.replaceState(null, '', '#slide-' + (cur + 1));
-    fit();
+    window.dispatchEvent(new Event('resize'));   // widgets that size themselves to their box re-measure (and fit() runs)
   }
 
   // scale the current slide down until it fits the screen; ResizeObserver refits when its content changes
@@ -117,6 +118,7 @@
     giveBack();
     root.classList.remove('presenting');
     remember(false);
+    window.dispatchEvent(new Event('resize'));
     history.replaceState(null, '', location.pathname + location.search);
     var el = sec && document.querySelector(sec);
     var nav = document.querySelector('.site-nav');
