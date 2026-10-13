@@ -2287,3 +2287,29 @@ html.presenting .deck { position: fixed; inset: 0; z-index: 200; display: flex; 
 .slide #pg-map svg { max-height: calc(100vh - 19rem - 60px); }
 .slide #bt-graph { max-height: 15rem; }
 .slide .queens-fig { max-height: 11rem; width: 100%; }
+/* cover slide with a picture beside the heading (Lab 01): the lab's search tree, BFS levels as bands, the DFS dive as a path */
+.sl-cover.sl-cover-pic .slide-in { max-width: 66rem; display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 2.4rem; align-items: center; }
+.sl-cover-pic h1 { font-size: min(3.2rem, 4.6vw); line-height: 1.1; }
+.sl-cover-art { width: 100%; max-height: calc(100vh - 8rem - 60px); }
+.sl-cover-art .cv-band { fill: color-mix(in srgb, var(--bfs) 14%, var(--surface)); }
+.sl-cover-art .cv-depth { font: 700 15px 'Inter', sans-serif; fill: var(--bfs); letter-spacing: 0.04em; }
+.sl-cover-art .cv-edge { stroke: var(--ink-soft); stroke-width: 2.2; opacity: 0.55; }
+.sl-cover-art .cv-dfs { fill: none; stroke: color-mix(in srgb, var(--dfs) 55%, var(--surface)); stroke-width: 16; stroke-linecap: round; stroke-linejoin: round; }
+.sl-cover-art .cv-node { fill: var(--surface); stroke: var(--ink-soft); stroke-width: 2.2; }
+.sl-cover-art .cv-node.on { stroke: var(--dfs); stroke-width: 3; }
+.sl-cover-art .cv-node.start { fill: var(--indigo); stroke: var(--indigo); }
+.sl-cover-art .cv-node.goal { fill: color-mix(in srgb, var(--ucs) 45%, var(--surface)); stroke: var(--ucs); stroke-width: 3; }
+.sl-cover-art .cv-ring { fill: none; stroke: var(--ucs); stroke-width: 2; opacity: 0.6; }
+.sl-cover-art .cv-lbl { font: 800 17px 'Poppins', sans-serif; fill: var(--ink); }
+.sl-cover-art .cv-lbl.start { fill: var(--surface); }
+.sl-cover-art .cv-legend text { font: 600 15px 'Inter', sans-serif; fill: var(--ink-soft); } .sl-cover-art .cv-legend .cv-dfs { stroke-width: 10; }
+/* the corgi on the depth-3 row: fixed coat colours, outlined; its tail wags */
+.sl-cover-art .cv-corgi .cg-fur, .sl-cover-art .cv-corgi .cg-white { stroke: #3a2f28; stroke-width: 2; stroke-linejoin: round; }
+.sl-cover-art .cg-fur { fill: #e3974c; } .sl-cover-art .cg-white { fill: #fff8ee; } .sl-cover-art .cv-corgi .cg-flat { stroke: none; }
+.sl-cover-art .cg-ear { fill: #f4b7a6; } .sl-cover-art .cg-ink { fill: #2b2420; } .sl-cover-art .cg-shine { fill: #fff; }
+.sl-cover-art .cg-line { fill: none; stroke: #3a2f28; stroke-width: 1.6; stroke-linecap: round; }
+.sl-cover-art .cv-sniff { fill: none; stroke: var(--ink-soft); stroke-width: 2; stroke-linecap: round; opacity: 0.6; }
+.sl-cover-art .cv-tail { transform-box: fill-box; transform-origin: 0% 60%; animation: cv-wag 0.5s ease-in-out infinite alternate; }
+@keyframes cv-wag { from { transform: rotate(-14deg); } to { transform: rotate(14deg); } }
+@media (prefers-reduced-motion: reduce) { .sl-cover-art * { animation: none !important; } }
+@media (max-width: 760px) { .sl-cover.sl-cover-pic .slide-in { grid-template-columns: minmax(0, 1fr); gap: 1.2rem; } .sl-cover-art { max-width: 26rem; } }

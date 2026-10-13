@@ -662,18 +662,73 @@
 <!-- ===== PRESENTATION MODE: the slides (present.js); data-embed borrows a widget from the notes ===== -->
 <template id="slides" data-title="Lab 01 · Uninformed Search">
 
-  <section class="slide sl-cover" data-section="#concepts">
+  <section class="slide sl-cover sl-cover-pic" data-section="#concepts">
     <div class="slide-in">
-      <p class="sl-eyebrow">Lab 01 · Artificial Intelligence</p>
-      <h1>Basic Definitions &amp; Uninformed Search</h1>
-      <p class="sl-lede">State spaces, search trees, and five blind strategies compared on the same tree.</p>
-      <ol class="sl-agenda">
-        <li class="ids">State space and search trees</li>
-        <li class="bfs">Global vs. local search</li>
-        <li class="dfs">DFS, BFS, UCS</li>
-        <li class="ucs">DLS and IDS</li>
-        <li class="ids">Complexity compared</li>
-      </ol>
+      <div class="sl-cover-text">
+        <p class="sl-eyebrow">Lab 01 · Artificial Intelligence</p>
+        <h1>Basic Definitions &amp; Uninformed Search</h1>
+      </div>
+      <svg class="sl-cover-art" viewBox="0 0 580 466" role="img" aria-label="Search tree: S branches to A, B, C; A to D, E; C to F and goal G2; D to goal G1. A depth-first path dives S, A, D, G1, horizontal bands mark the levels breadth-first search visits one by one, and a corgi on the bottom level sniffs toward goal G1.">
+        <rect class="cv-band" x="14" y="26" width="552" height="76" rx="16" style="opacity:0.35"/>
+        <text class="cv-depth" x="30" y="69">depth 0</text>
+        <rect class="cv-band" x="14" y="126" width="552" height="76" rx="16" style="opacity:0.55"/>
+        <text class="cv-depth" x="30" y="169">depth 1</text>
+        <rect class="cv-band" x="14" y="226" width="552" height="76" rx="16" style="opacity:0.75"/>
+        <text class="cv-depth" x="30" y="269">depth 2</text>
+        <rect class="cv-band" x="14" y="326" width="552" height="76" rx="16" style="opacity:0.95"/>
+        <text class="cv-depth" x="30" y="369">depth 3</text>
+        <path class="cv-dfs" d="M320 64 L190 164 L140 264 L140 364"/>
+        <line class="cv-edge" x1="320" y1="64" x2="190" y2="164"/>
+        <line class="cv-edge" x1="320" y1="64" x2="320" y2="164"/>
+        <line class="cv-edge" x1="320" y1="64" x2="450" y2="164"/>
+        <line class="cv-edge" x1="190" y1="164" x2="140" y2="264"/>
+        <line class="cv-edge" x1="190" y1="164" x2="240" y2="264"/>
+        <line class="cv-edge" x1="450" y1="164" x2="400" y2="264"/>
+        <line class="cv-edge" x1="450" y1="164" x2="500" y2="264"/>
+        <line class="cv-edge" x1="140" y1="264" x2="140" y2="364"/>
+        <circle class="cv-node start" cx="320" cy="64" r="22"/>
+        <text class="cv-lbl start" x="320" y="70" text-anchor="middle">S</text>
+        <circle class="cv-node on" cx="190" cy="164" r="22"/>
+        <text class="cv-lbl" x="190" y="170" text-anchor="middle">A</text>
+        <circle class="cv-node" cx="320" cy="164" r="22"/>
+        <text class="cv-lbl" x="320" y="170" text-anchor="middle">B</text>
+        <circle class="cv-node" cx="450" cy="164" r="22"/>
+        <text class="cv-lbl" x="450" y="170" text-anchor="middle">C</text>
+        <circle class="cv-node on" cx="140" cy="264" r="22"/>
+        <text class="cv-lbl" x="140" y="270" text-anchor="middle">D</text>
+        <circle class="cv-node" cx="240" cy="264" r="22"/>
+        <text class="cv-lbl" x="240" y="270" text-anchor="middle">E</text>
+        <circle class="cv-node" cx="400" cy="264" r="22"/>
+        <text class="cv-lbl" x="400" y="270" text-anchor="middle">F</text>
+        <circle class="cv-ring" cx="500" cy="264" r="29"/>
+        <circle class="cv-node goal" cx="500" cy="264" r="22"/>
+        <text class="cv-lbl" x="500" y="270" text-anchor="middle">G2</text>
+        <circle class="cv-ring" cx="140" cy="364" r="29"/>
+        <circle class="cv-node goal" cx="140" cy="364" r="22"/>
+        <text class="cv-lbl" x="140" y="370" text-anchor="middle">G1</text>
+        <g class="cv-corgi" transform="translate(256 398) scale(1.15)">
+          <path class="cv-sniff" d="M-40 -44 q-5 4 0 8 M-47 -48 q-7 6 0 13"/>
+          <g class="cv-tail"><ellipse class="cg-fur" cx="66" cy="-36" rx="9" ry="7"/><ellipse class="cg-white" cx="70" cy="-37" rx="4" ry="3.5"/></g>
+          <rect class="cg-fur" x="44" y="-18" width="10" height="18" rx="4"/><rect class="cg-fur" x="56" y="-18" width="10" height="18" rx="4"/>
+          <ellipse class="cg-fur" cx="30" cy="-26" rx="38" ry="17"/>
+          <rect class="cg-white" x="-2" y="-18" width="10" height="18" rx="4"/><rect class="cg-white" x="11" y="-18" width="10" height="18" rx="4"/>
+          <path class="cg-white cg-flat" d="M0 -18 Q26 -6 56 -14 Q30 -2 0 -10 Z"/>
+          <path class="cg-white" d="M-12 -34 Q-6 -16 10 -14 Q16 -26 8 -38 Z"/>
+          <path class="cg-fur" d="M-20 -52 L-15 -72 L-5 -54 Z"/><path class="cg-ear" d="M-17 -55 L-14.5 -66 L-9 -55 Z"/>
+          <path class="cg-fur" d="M-4 -54 L4 -72 L9 -50 Z"/><path class="cg-ear" d="M-1 -54 L3.5 -65 L6 -52 Z"/>
+          <circle class="cg-fur" cx="-8" cy="-42" r="15"/>
+          <path class="cg-white cg-flat" d="M-8 -56 Q-12 -44 -18 -40 Q-24 -32 -16 -29 Q-6 -27 -2 -36 Q-4 -46 -8 -56 Z"/>
+          <ellipse class="cg-white" cx="-21" cy="-35" rx="10" ry="6.5"/>
+          <circle class="cg-ink" cx="-30" cy="-36.5" r="3"/>
+          <circle class="cg-ink" cx="-14" cy="-45" r="2.4"/><circle class="cg-shine" cx="-14.8" cy="-45.8" r="0.8"/>
+          <path class="cg-line" d="M-27 -31 Q-23 -28 -19 -31"/>
+        </g>
+        <g class="cv-legend">
+          <path class="cv-dfs" d="M40 444 L72 444"/><text x="84" y="449">DFS dives deep</text>
+          <rect class="cv-band" x="226" y="432" width="34" height="24" rx="7"/><text x="270" y="449">BFS: level by level</text>
+          <circle class="cv-node goal" cx="452" cy="444" r="10"/><text x="470" y="449">goal</text>
+        </g>
+      </svg>
     </div>
   </section>
 
