@@ -126,7 +126,7 @@
     <p class="section-lede">Each solution (often called an <span class="term" tabindex="0" data-def="One member of the population — a single chromosome / candidate solution.">individual</span> or <span class="term" tabindex="0" data-def="A complete set of genes; represents one potential solution, e.g. [x₁, x₂, x₃, …].">chromosome</span>) is represented by a set of parameters — similar to genes in biology. The <span class="term" tabindex="0" data-def="How well an individual solves the problem at hand (here: higher is better).">fitness</span> of each individual measures how well it solves the problem at hand.</p>
 
     <h3 class="section-title" style="font-size:1.15rem; margin-top:1.8rem;">Key concepts</h3>
-    <div class="ga-concepts">
+    <div class="ga-concepts" id="ga-concepts">
       <div class="ga-concept">
         <div class="ga-visual"><span class="gene-cell g2">7</span></div>
         <h4><span class="term" tabindex="0" data-def="A single parameter or feature that defines part of a solution (e.g. weight, value, or decision variable).">Gene</span></h4>
@@ -155,7 +155,7 @@
   <section class="block" id="steps">
     <h2 class="section-title">Main steps in Genetic Algorithms</h2>
     <p class="section-lede"><b>Initialization</b> (<span class="term" tabindex="0" data-def="A group of chromosomes; represents many solutions being tested at once.">Population</span>) → <b>Selection</b> (<span class="term" tabindex="0" data-def="The function that scores each individual — it measures how well it solves the problem.">Fitness Function</span>) → <b>Crossover</b> → <b>Mutation</b> — repeated <span class="term" tabindex="0" data-def="One pass of the GA loop: selection → crossover → mutation produces a new population.">generation</span> after generation until the population converges.</p>
-    <div class="sim-panel fig-scroll"><svg class="ga-fig" viewBox="0 0 820 290" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Genetic algorithm loop: initial population, evaluation, selection, crossover, mutation, evolved population, convergence check, back to evaluation or result"><defs><marker id="ga-arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--ink)"></path></marker></defs><line x1="182" y1="65" x2="221" y2="65" stroke-width="2.5" marker-end="url(#ga-arr)" style="stroke:var(--ink)"></line><line x1="387" y1="65" x2="426" y2="65" stroke-width="2.5" marker-end="url(#ga-arr)" style="stroke:var(--ink)"></line><line x1="592" y1="65" x2="631" y2="65" stroke-width="2.5" marker-end="url(#ga-arr)" style="stroke:var(--ink)"></line><line x1="715" y1="102" x2="715" y2="186" stroke-width="2.5" marker-end="url(#ga-arr)" style="stroke:var(--ink)"></line><line x1="633" y1="225" x2="594" y2="225" stroke-width="2.5" marker-end="url(#ga-arr)" style="stroke:var(--ink)"></line><line x1="428" y1="225" x2="389" y2="225" stroke-width="2.5" marker-end="url(#ga-arr)" style="stroke:var(--ink)"></line><line x1="223" y1="225" x2="184" y2="225" stroke-width="2.5" marker-end="url(#ga-arr)" style="stroke:var(--ink)"></line><line x1="305" y1="188" x2="305" y2="104" stroke-width="2.5" marker-end="url(#ga-arr)" style="stroke:var(--ink)"></line><rect x="20" y="30" width="160" height="70" rx="14" stroke-width="2.5" style="fill:var(--surface); stroke:var(--ink-soft)"></rect><text x="100" y="55" text-anchor="middle" dominant-baseline="central" font-size="16" font-weight="600" style="fill:var(--ink)"><tspan x="100" dy="0">Initial</tspan><tspan x="100" dy="20">Population</tspan></text><rect x="225" y="30" width="160" height="70" rx="14" stroke-width="2.5" style="fill:var(--surface); stroke:#d9546e"></rect><text x="305" y="55" text-anchor="middle" dominant-baseline="central" font-size="16" font-weight="600" style="fill:var(--ink)"><tspan x="305" dy="0">Evaluation</tspan><tspan x="305" dy="20">(Fitness)</tspan></text><rect x="430" y="30" width="160" height="70" rx="14" stroke-width="2.5" style="fill:var(--surface); stroke:var(--indigo)"></rect><text x="510" y="65" text-anchor="middle" dominant-baseline="central" font-size="16" font-weight="600" style="fill:var(--ink)"><tspan x="510" dy="0">Selection</tspan></text><rect x="635" y="30" width="160" height="70" rx="14" stroke-width="2.5" style="fill:var(--surface); stroke:var(--indigo)"></rect><text x="715" y="65" text-anchor="middle" dominant-baseline="central" font-size="16" font-weight="600" style="fill:var(--ink)"><tspan x="715" dy="0">Crossover</tspan></text><rect x="635" y="190" width="160" height="70" rx="14" stroke-width="2.5" style="fill:var(--surface); stroke:var(--indigo)"></rect><text x="715" y="225" text-anchor="middle" dominant-baseline="central" font-size="16" font-weight="600" style="fill:var(--ink)"><tspan x="715" dy="0">Mutation</tspan></text><rect x="430" y="190" width="160" height="70" rx="14" stroke-width="2.5" style="fill:var(--surface); stroke:var(--ink-soft)"></rect><text x="510" y="215" text-anchor="middle" dominant-baseline="central" font-size="16" font-weight="600" style="fill:var(--ink)"><tspan x="510" dy="0">Evolved</tspan><tspan x="510" dy="20">Population</tspan></text><rect x="225" y="190" width="160" height="70" rx="14" stroke-width="2.5" style="fill:var(--surface); stroke:var(--ucs)"></rect><text x="305" y="215" text-anchor="middle" dominant-baseline="central" font-size="16" font-weight="600" style="fill:var(--ink)"><tspan x="305" dy="0">Convergence</tspan><tspan x="305" dy="20">Check</tspan></text><rect x="20" y="190" width="160" height="70" rx="14" stroke-width="2.5" style="fill:var(--surface); stroke:var(--bfs)"></rect><text x="100" y="225" text-anchor="middle" dominant-baseline="central" font-size="16" font-weight="600" style="fill:var(--ink)"><tspan x="100" dy="0">Result</tspan></text></svg></div>
+    <div class="sim-panel fig-scroll" id="ga-loop"><svg class="ga-fig" viewBox="0 0 820 290" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Genetic algorithm loop: initial population, evaluation, selection, crossover, mutation, evolved population, convergence check, back to evaluation or result"><defs><marker id="ga-arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--ink)"></path></marker></defs><line x1="182" y1="65" x2="221" y2="65" stroke-width="2.5" marker-end="url(#ga-arr)" style="stroke:var(--ink)"></line><line x1="387" y1="65" x2="426" y2="65" stroke-width="2.5" marker-end="url(#ga-arr)" style="stroke:var(--ink)"></line><line x1="592" y1="65" x2="631" y2="65" stroke-width="2.5" marker-end="url(#ga-arr)" style="stroke:var(--ink)"></line><line x1="715" y1="102" x2="715" y2="186" stroke-width="2.5" marker-end="url(#ga-arr)" style="stroke:var(--ink)"></line><line x1="633" y1="225" x2="594" y2="225" stroke-width="2.5" marker-end="url(#ga-arr)" style="stroke:var(--ink)"></line><line x1="428" y1="225" x2="389" y2="225" stroke-width="2.5" marker-end="url(#ga-arr)" style="stroke:var(--ink)"></line><line x1="223" y1="225" x2="184" y2="225" stroke-width="2.5" marker-end="url(#ga-arr)" style="stroke:var(--ink)"></line><line x1="305" y1="188" x2="305" y2="104" stroke-width="2.5" marker-end="url(#ga-arr)" style="stroke:var(--ink)"></line><rect x="20" y="30" width="160" height="70" rx="14" stroke-width="2.5" style="fill:var(--surface); stroke:var(--ink-soft)"></rect><text x="100" y="55" text-anchor="middle" dominant-baseline="central" font-size="16" font-weight="600" style="fill:var(--ink)"><tspan x="100" dy="0">Initial</tspan><tspan x="100" dy="20">Population</tspan></text><rect x="225" y="30" width="160" height="70" rx="14" stroke-width="2.5" style="fill:var(--surface); stroke:#d9546e"></rect><text x="305" y="55" text-anchor="middle" dominant-baseline="central" font-size="16" font-weight="600" style="fill:var(--ink)"><tspan x="305" dy="0">Evaluation</tspan><tspan x="305" dy="20">(Fitness)</tspan></text><rect x="430" y="30" width="160" height="70" rx="14" stroke-width="2.5" style="fill:var(--surface); stroke:var(--indigo)"></rect><text x="510" y="65" text-anchor="middle" dominant-baseline="central" font-size="16" font-weight="600" style="fill:var(--ink)"><tspan x="510" dy="0">Selection</tspan></text><rect x="635" y="30" width="160" height="70" rx="14" stroke-width="2.5" style="fill:var(--surface); stroke:var(--indigo)"></rect><text x="715" y="65" text-anchor="middle" dominant-baseline="central" font-size="16" font-weight="600" style="fill:var(--ink)"><tspan x="715" dy="0">Crossover</tspan></text><rect x="635" y="190" width="160" height="70" rx="14" stroke-width="2.5" style="fill:var(--surface); stroke:var(--indigo)"></rect><text x="715" y="225" text-anchor="middle" dominant-baseline="central" font-size="16" font-weight="600" style="fill:var(--ink)"><tspan x="715" dy="0">Mutation</tspan></text><rect x="430" y="190" width="160" height="70" rx="14" stroke-width="2.5" style="fill:var(--surface); stroke:var(--ink-soft)"></rect><text x="510" y="215" text-anchor="middle" dominant-baseline="central" font-size="16" font-weight="600" style="fill:var(--ink)"><tspan x="510" dy="0">Evolved</tspan><tspan x="510" dy="20">Population</tspan></text><rect x="225" y="190" width="160" height="70" rx="14" stroke-width="2.5" style="fill:var(--surface); stroke:var(--ucs)"></rect><text x="305" y="215" text-anchor="middle" dominant-baseline="central" font-size="16" font-weight="600" style="fill:var(--ink)"><tspan x="305" dy="0">Convergence</tspan><tspan x="305" dy="20">Check</tspan></text><rect x="20" y="190" width="160" height="70" rx="14" stroke-width="2.5" style="fill:var(--surface); stroke:var(--bfs)"></rect><text x="100" y="225" text-anchor="middle" dominant-baseline="central" font-size="16" font-weight="600" style="fill:var(--ink)"><tspan x="100" dy="0">Result</tspan></text></svg></div>
   </section>
 
   <!-- ===== SELECTION ===== -->
@@ -196,7 +196,7 @@
     <p class="section-lede">A variation of roulette wheel selection that ensures a more even and consistent spread of selected individuals. Imagine the roulette wheel as before, but instead of one spin, place <b>multiple evenly spaced pointers</b> on it (equal to the number of parents needed). Spin the wheel once — all pointers select individuals simultaneously.</p>
     <div class="table-wrap"><table class="summary proscons"><thead><tr><th>Pros</th><th>Cons</th></tr></thead><tbody><tr><td>Reduces randomness in selection (less variance).</td><td>Slightly more complex to implement than standard roulette selection.</td></tr><tr><td>Ensures even sampling proportional to fitness.</td><td></td></tr></tbody></table></div>
 
-    <div class="playground" style="margin-top:1.2rem;">
+    <div class="playground" id="pg-rw" style="margin-top:1.2rem;">
       <div class="pg-controls">
         <div class="strategy-pick">
           <button class="strat-btn rw-mode active" data-mode="roulette">Roulette wheel</button>
@@ -271,7 +271,7 @@ print(&quot;Selected chromosomes:&quot;, selected)</code></pre>
     </ul>
     <div class="table-wrap"><table class="summary proscons"><thead><tr><th>Pros</th><th>Cons</th></tr></thead><tbody><tr><td>Easy to implement. Selection pressure can be controlled by changing k.</td><td>May lose diversity if tournament size is too large.</td></tr></tbody></table></div>
 
-    <div class="playground" style="margin-top:1.2rem;">
+    <div class="playground" id="pg-tn" style="margin-top:1.2rem;">
       <div class="pg-controls">
         <div class="beam-control show" style="margin:0;">
           <label>Tournament size k</label>
@@ -412,7 +412,7 @@ print(&quot;Selected chromosomes:&quot;, selected)</code></pre>
     <span class="badge bfs" style="margin-bottom:0.6rem; display:inline-block;">2.2</span>
     <h2 class="section-title">Crossover</h2>
     <p class="section-lede"><span class="term" tabindex="0" data-def="Taking more than one parent solution and producing a child solution from them.">Crossover</span> is a process of taking more than one <span class="term" tabindex="0" data-def="A chromosome chosen by selection to take part in crossover.">parent</span> solution and producing a <span class="term" tabindex="0" data-def="A new chromosome (offspring) produced by crossover from its parents.">child</span> solution from them.</p>
-    <div class="sim-panel"><div class="fig-pair"><svg class="ga-fig" viewBox="0 0 420 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="One-point crossover: children swap parent segments at one crossover point"><rect x="110" y="20" width="290" height="16" fill="#d9546e"></rect><rect x="110" y="50" width="290" height="16" fill="#4d7ea8"></rect><text x="100" y="50" text-anchor="end" font-size="17" font-weight="500" style="fill:var(--ink)">Parents</text><line x1="180" y1="10" x2="180" y2="190" stroke-width="2" stroke-dasharray="5 5" style="stroke:var(--ink)"></line><text x="188" y="112" text-anchor="start" font-size="15" font-weight="500" style="fill:var(--ink)">crossover point</text><rect x="110" y="140" width="70" height="16" fill="#d9546e"></rect><rect x="180" y="140" width="220" height="16" fill="#4d7ea8"></rect><rect x="110" y="170" width="70" height="16" fill="#4d7ea8"></rect><rect x="180" y="170" width="220" height="16" fill="#d9546e"></rect><text x="100" y="168" text-anchor="end" font-size="17" font-weight="500" style="fill:var(--ink)">Children</text><text x="255.0" y="235" text-anchor="middle" font-size="19" font-weight="800" style="fill:var(--ink)">One-point crossover</text></svg><svg class="ga-fig" viewBox="370 0 510 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Two-point crossover: the middle segment is swapped between the parents"><text x="470" y="50" text-anchor="end" font-size="17" font-weight="500" style="fill:var(--ink)">Parents</text><text x="470" y="168" text-anchor="end" font-size="17" font-weight="500" style="fill:var(--ink)">Children</text><rect x="480" y="20" width="390" height="16" fill="#d9546e"></rect><rect x="480" y="50" width="390" height="16" fill="#4d7ea8"></rect><line x1="550" y1="10" x2="550" y2="190" stroke-width="2" stroke-dasharray="5 5" style="stroke:var(--ink)"></line><line x1="740" y1="10" x2="740" y2="190" stroke-width="2" stroke-dasharray="5 5" style="stroke:var(--ink)"></line><text x="645.0" y="112" text-anchor="middle" font-size="15" font-weight="500" style="fill:var(--ink)">crossover points</text><rect x="480" y="140" width="70" height="16" fill="#d9546e"></rect><rect x="550" y="140" width="190" height="16" fill="#4d7ea8"></rect><rect x="740" y="140" width="130" height="16" fill="#d9546e"></rect><rect x="480" y="170" width="70" height="16" fill="#4d7ea8"></rect><rect x="550" y="170" width="190" height="16" fill="#d9546e"></rect><rect x="740" y="170" width="130" height="16" fill="#4d7ea8"></rect><text x="675.0" y="235" text-anchor="middle" font-size="19" font-weight="800" style="fill:var(--ink)">Two-point and k-point crossover</text></svg></div></div>
+    <div class="sim-panel" id="xo-fig"><div class="fig-pair"><svg class="ga-fig" viewBox="0 0 420 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="One-point crossover: children swap parent segments at one crossover point"><rect x="110" y="20" width="290" height="16" fill="#d9546e"></rect><rect x="110" y="50" width="290" height="16" fill="#4d7ea8"></rect><text x="100" y="50" text-anchor="end" font-size="17" font-weight="500" style="fill:var(--ink)">Parents</text><line x1="180" y1="10" x2="180" y2="190" stroke-width="2" stroke-dasharray="5 5" style="stroke:var(--ink)"></line><text x="188" y="112" text-anchor="start" font-size="15" font-weight="500" style="fill:var(--ink)">crossover point</text><rect x="110" y="140" width="70" height="16" fill="#d9546e"></rect><rect x="180" y="140" width="220" height="16" fill="#4d7ea8"></rect><rect x="110" y="170" width="70" height="16" fill="#4d7ea8"></rect><rect x="180" y="170" width="220" height="16" fill="#d9546e"></rect><text x="100" y="168" text-anchor="end" font-size="17" font-weight="500" style="fill:var(--ink)">Children</text><text x="255.0" y="235" text-anchor="middle" font-size="19" font-weight="800" style="fill:var(--ink)">One-point crossover</text></svg><svg class="ga-fig" viewBox="370 0 510 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Two-point crossover: the middle segment is swapped between the parents"><text x="470" y="50" text-anchor="end" font-size="17" font-weight="500" style="fill:var(--ink)">Parents</text><text x="470" y="168" text-anchor="end" font-size="17" font-weight="500" style="fill:var(--ink)">Children</text><rect x="480" y="20" width="390" height="16" fill="#d9546e"></rect><rect x="480" y="50" width="390" height="16" fill="#4d7ea8"></rect><line x1="550" y1="10" x2="550" y2="190" stroke-width="2" stroke-dasharray="5 5" style="stroke:var(--ink)"></line><line x1="740" y1="10" x2="740" y2="190" stroke-width="2" stroke-dasharray="5 5" style="stroke:var(--ink)"></line><text x="645.0" y="112" text-anchor="middle" font-size="15" font-weight="500" style="fill:var(--ink)">crossover points</text><rect x="480" y="140" width="70" height="16" fill="#d9546e"></rect><rect x="550" y="140" width="190" height="16" fill="#4d7ea8"></rect><rect x="740" y="140" width="130" height="16" fill="#d9546e"></rect><rect x="480" y="170" width="70" height="16" fill="#4d7ea8"></rect><rect x="550" y="170" width="190" height="16" fill="#d9546e"></rect><rect x="740" y="170" width="130" height="16" fill="#4d7ea8"></rect><text x="675.0" y="235" text-anchor="middle" font-size="19" font-weight="800" style="fill:var(--ink)">Two-point and k-point crossover</text></svg></div></div>
 
     <p class="section-lede" style="margin-top:1.4rem;">There are a lot of types of crossover, such as:</p>
     <div class="table-wrap">
@@ -430,7 +430,7 @@ print(&quot;Selected chromosomes:&quot;, selected)</code></pre>
 
     <h3 class="section-title" style="font-size:1.2rem; margin-top:2rem;">One-point crossover</h3>
     <p class="section-lede">For order-coded chromosomes (permutations), copy the first part from one parent, then <b>fill the remaining values in their order from the other parent</b> — so no value is repeated. Drag the crossover point:</p>
-    <div class="playground">
+    <div class="playground" id="pg-op">
       <div class="pg-controls">
         <div class="beam-control show" style="margin:0;">
           <label>Crossover point after gene</label>
@@ -443,7 +443,7 @@ print(&quot;Selected chromosomes:&quot;, selected)</code></pre>
 
     <h3 class="section-title" style="font-size:1.2rem; margin-top:2rem;">Uniform crossover</h3>
     <p class="section-lede">Getting a gene from one of the parents <b>randomly</b>! A random mask decides, gene by gene, which parent child 1 takes from; child 2 takes from the other parent.</p>
-    <div class="playground">
+    <div class="playground" id="pg-uc">
       <div class="pg-controls">
         <button class="toggle-btn" id="uc-roll">New random mask</button>
       </div>
@@ -456,9 +456,9 @@ print(&quot;Selected chromosomes:&quot;, selected)</code></pre>
     <span class="badge ucs" style="margin-bottom:0.6rem; display:inline-block;">2.3</span>
     <h2 class="section-title">Mutation</h2>
     <p class="section-lede">A <span class="term" tabindex="0" data-def="A small random change to a chromosome — keeps diversity in the population.">mutation</span> makes a small random change to a single chromosome, which keeps <span class="term" tabindex="0" data-def="How different the individuals in the population are from each other.">diversity</span> in the population. Three common operators for order-coded chromosomes:</p>
-    <div class="sim-panel"><svg class="ga-fig" viewBox="0 0 700 380" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Mutation operators on chromosome 2 1 5 4 3: swap, insertion and reverse"><defs><marker id="mu-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d9546e"></path></marker></defs><rect x="20" y="60" width="52" height="44" stroke-width="1.5" style="fill:var(--surface); stroke:var(--ink-soft)"></rect><text x="46.0" y="82.0" text-anchor="middle" dominant-baseline="central" font-size="20" style="fill:var(--ink)">2</text><rect x="72" y="60" width="52" height="44" stroke-width="1.5" style="fill:var(--surface); stroke:var(--ink-soft)"></rect><text x="98.0" y="82.0" text-anchor="middle" dominant-baseline="central" font-size="20" style="fill:var(--ink)">1</text><rect x="124" y="60" width="52" height="44" stroke-width="1.5" style="fill:var(--surface); stroke:var(--ink-soft)"></rect><text x="150.0" y="82.0" text-anchor="middle" dominant-baseline="central" font-size="20" style="fill:var(--ink)">5</text><rect x="176" y="60" width="52" height="44" stroke-width="1.5" style="fill:var(--surface); stroke:var(--ink-soft)"></rect><text x="202.0" y="82.0" text-anchor="middle" dominant-baseline="central" font-size="20" style="fill:var(--ink)">4</text><rect x="228" y="60" width="52" height="44" stroke-width="1.5" style="fill:var(--surface); stroke:var(--ink-soft)"></rect><text x="254.0" y="82.0" text-anchor="middle" dominant-baseline="central" font-size="20" style="fill:var(--ink)">3</text><rect x="67" y="55" width="62" height="54" fill="none" stroke="#d9546e" stroke-width="3"></rect><rect x="171" y="55" width="62" height="54" fill="none" stroke="#d9546e" stroke-width="3"></rect><path d="M98.0,52 C98.0,10 202.0,10 202.0,52" fill="none" stroke="#d9546e" stroke-width="3" marker-start="url(#mu-arr)" marker-end="url(#mu-arr)"></path><text x="310" y="82.0" dominant-baseline="central" font-size="28" font-weight="800" style="fill:var(--ink)">swap</text><text x="480" y="82.0" dominant-baseline="central" font-size="18" style="fill:var(--ink-soft)">→ 2 4 5 1 3</text><rect x="20" y="175" width="52" height="44" stroke-width="1.5" style="fill:var(--surface); stroke:var(--ink-soft)"></rect><text x="46.0" y="197.0" text-anchor="middle" dominant-baseline="central" font-size="20" style="fill:var(--ink)">2</text><rect x="72" y="175" width="52" height="44" stroke-width="1.5" style="fill:var(--surface); stroke:var(--ink-soft)"></rect><text x="98.0" y="197.0" text-anchor="middle" dominant-baseline="central" font-size="20" style="fill:var(--ink)">1</text><rect x="124" y="175" width="52" height="44" stroke-width="1.5" style="fill:var(--surface); stroke:var(--ink-soft)"></rect><text x="150.0" y="197.0" text-anchor="middle" dominant-baseline="central" font-size="20" style="fill:var(--ink)">5</text><rect x="176" y="175" width="52" height="44" stroke-width="1.5" style="fill:var(--surface); stroke:var(--ink-soft)"></rect><text x="202.0" y="197.0" text-anchor="middle" dominant-baseline="central" font-size="20" style="fill:var(--ink)">4</text><rect x="228" y="175" width="52" height="44" stroke-width="1.5" style="fill:var(--surface); stroke:var(--ink-soft)"></rect><text x="254.0" y="197.0" text-anchor="middle" dominant-baseline="central" font-size="20" style="fill:var(--ink)">3</text><rect x="67" y="170" width="62" height="54" fill="none" stroke="#d9546e" stroke-width="3"></rect><path d="M98.0,167 C98.0,125 228,125 228,171" fill="none" stroke="#d9546e" stroke-width="3" marker-end="url(#mu-arr)"></path><text x="310" y="197.0" dominant-baseline="central" font-size="28" font-weight="800" style="fill:var(--ink)">insertion</text><text x="480" y="197.0" dominant-baseline="central" font-size="18" style="fill:var(--ink-soft)">→ 2 5 4 1 3</text><rect x="20" y="290" width="52" height="44" stroke-width="1.5" style="fill:var(--surface); stroke:var(--ink-soft)"></rect><text x="46.0" y="312.0" text-anchor="middle" dominant-baseline="central" font-size="20" style="fill:var(--ink)">2</text><rect x="72" y="290" width="52" height="44" stroke-width="1.5" style="fill:var(--surface); stroke:var(--ink-soft)"></rect><text x="98.0" y="312.0" text-anchor="middle" dominant-baseline="central" font-size="20" style="fill:var(--ink)">1</text><rect x="124" y="290" width="52" height="44" stroke-width="1.5" style="fill:var(--surface); stroke:var(--ink-soft)"></rect><text x="150.0" y="312.0" text-anchor="middle" dominant-baseline="central" font-size="20" style="fill:var(--ink)">5</text><rect x="176" y="290" width="52" height="44" stroke-width="1.5" style="fill:var(--surface); stroke:var(--ink-soft)"></rect><text x="202.0" y="312.0" text-anchor="middle" dominant-baseline="central" font-size="20" style="fill:var(--ink)">4</text><rect x="228" y="290" width="52" height="44" stroke-width="1.5" style="fill:var(--surface); stroke:var(--ink-soft)"></rect><text x="254.0" y="312.0" text-anchor="middle" dominant-baseline="central" font-size="20" style="fill:var(--ink)">3</text><rect x="67" y="285" width="166" height="54" fill="none" stroke="#d9546e" stroke-width="3"></rect><path d="M207.20000000000002,278 Q150.0,250 92.8,278" fill="none" stroke="#d9546e" stroke-width="3" marker-end="url(#mu-arr)"></path><text x="310" y="312.0" dominant-baseline="central" font-size="28" font-weight="800" style="fill:var(--ink)">reverse</text><text x="480" y="312.0" dominant-baseline="central" font-size="18" style="fill:var(--ink-soft)">→ 2 4 5 1 3</text></svg></div>
+    <div class="sim-panel" id="mu-fig"><svg class="ga-fig" viewBox="0 0 700 380" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Mutation operators on chromosome 2 1 5 4 3: swap, insertion and reverse"><defs><marker id="mu-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d9546e"></path></marker></defs><rect x="20" y="60" width="52" height="44" stroke-width="1.5" style="fill:var(--surface); stroke:var(--ink-soft)"></rect><text x="46.0" y="82.0" text-anchor="middle" dominant-baseline="central" font-size="20" style="fill:var(--ink)">2</text><rect x="72" y="60" width="52" height="44" stroke-width="1.5" style="fill:var(--surface); stroke:var(--ink-soft)"></rect><text x="98.0" y="82.0" text-anchor="middle" dominant-baseline="central" font-size="20" style="fill:var(--ink)">1</text><rect x="124" y="60" width="52" height="44" stroke-width="1.5" style="fill:var(--surface); stroke:var(--ink-soft)"></rect><text x="150.0" y="82.0" text-anchor="middle" dominant-baseline="central" font-size="20" style="fill:var(--ink)">5</text><rect x="176" y="60" width="52" height="44" stroke-width="1.5" style="fill:var(--surface); stroke:var(--ink-soft)"></rect><text x="202.0" y="82.0" text-anchor="middle" dominant-baseline="central" font-size="20" style="fill:var(--ink)">4</text><rect x="228" y="60" width="52" height="44" stroke-width="1.5" style="fill:var(--surface); stroke:var(--ink-soft)"></rect><text x="254.0" y="82.0" text-anchor="middle" dominant-baseline="central" font-size="20" style="fill:var(--ink)">3</text><rect x="67" y="55" width="62" height="54" fill="none" stroke="#d9546e" stroke-width="3"></rect><rect x="171" y="55" width="62" height="54" fill="none" stroke="#d9546e" stroke-width="3"></rect><path d="M98.0,52 C98.0,10 202.0,10 202.0,52" fill="none" stroke="#d9546e" stroke-width="3" marker-start="url(#mu-arr)" marker-end="url(#mu-arr)"></path><text x="310" y="82.0" dominant-baseline="central" font-size="28" font-weight="800" style="fill:var(--ink)">swap</text><text x="480" y="82.0" dominant-baseline="central" font-size="18" style="fill:var(--ink-soft)">→ 2 4 5 1 3</text><rect x="20" y="175" width="52" height="44" stroke-width="1.5" style="fill:var(--surface); stroke:var(--ink-soft)"></rect><text x="46.0" y="197.0" text-anchor="middle" dominant-baseline="central" font-size="20" style="fill:var(--ink)">2</text><rect x="72" y="175" width="52" height="44" stroke-width="1.5" style="fill:var(--surface); stroke:var(--ink-soft)"></rect><text x="98.0" y="197.0" text-anchor="middle" dominant-baseline="central" font-size="20" style="fill:var(--ink)">1</text><rect x="124" y="175" width="52" height="44" stroke-width="1.5" style="fill:var(--surface); stroke:var(--ink-soft)"></rect><text x="150.0" y="197.0" text-anchor="middle" dominant-baseline="central" font-size="20" style="fill:var(--ink)">5</text><rect x="176" y="175" width="52" height="44" stroke-width="1.5" style="fill:var(--surface); stroke:var(--ink-soft)"></rect><text x="202.0" y="197.0" text-anchor="middle" dominant-baseline="central" font-size="20" style="fill:var(--ink)">4</text><rect x="228" y="175" width="52" height="44" stroke-width="1.5" style="fill:var(--surface); stroke:var(--ink-soft)"></rect><text x="254.0" y="197.0" text-anchor="middle" dominant-baseline="central" font-size="20" style="fill:var(--ink)">3</text><rect x="67" y="170" width="62" height="54" fill="none" stroke="#d9546e" stroke-width="3"></rect><path d="M98.0,167 C98.0,125 228,125 228,171" fill="none" stroke="#d9546e" stroke-width="3" marker-end="url(#mu-arr)"></path><text x="310" y="197.0" dominant-baseline="central" font-size="28" font-weight="800" style="fill:var(--ink)">insertion</text><text x="480" y="197.0" dominant-baseline="central" font-size="18" style="fill:var(--ink-soft)">→ 2 5 4 1 3</text><rect x="20" y="290" width="52" height="44" stroke-width="1.5" style="fill:var(--surface); stroke:var(--ink-soft)"></rect><text x="46.0" y="312.0" text-anchor="middle" dominant-baseline="central" font-size="20" style="fill:var(--ink)">2</text><rect x="72" y="290" width="52" height="44" stroke-width="1.5" style="fill:var(--surface); stroke:var(--ink-soft)"></rect><text x="98.0" y="312.0" text-anchor="middle" dominant-baseline="central" font-size="20" style="fill:var(--ink)">1</text><rect x="124" y="290" width="52" height="44" stroke-width="1.5" style="fill:var(--surface); stroke:var(--ink-soft)"></rect><text x="150.0" y="312.0" text-anchor="middle" dominant-baseline="central" font-size="20" style="fill:var(--ink)">5</text><rect x="176" y="290" width="52" height="44" stroke-width="1.5" style="fill:var(--surface); stroke:var(--ink-soft)"></rect><text x="202.0" y="312.0" text-anchor="middle" dominant-baseline="central" font-size="20" style="fill:var(--ink)">4</text><rect x="228" y="290" width="52" height="44" stroke-width="1.5" style="fill:var(--surface); stroke:var(--ink-soft)"></rect><text x="254.0" y="312.0" text-anchor="middle" dominant-baseline="central" font-size="20" style="fill:var(--ink)">3</text><rect x="67" y="285" width="166" height="54" fill="none" stroke="#d9546e" stroke-width="3"></rect><path d="M207.20000000000002,278 Q150.0,250 92.8,278" fill="none" stroke="#d9546e" stroke-width="3" marker-end="url(#mu-arr)"></path><text x="310" y="312.0" dominant-baseline="central" font-size="28" font-weight="800" style="fill:var(--ink)">reverse</text><text x="480" y="312.0" dominant-baseline="central" font-size="18" style="fill:var(--ink-soft)">→ 2 4 5 1 3</text></svg></div>
 
-    <div class="playground" style="margin-top:1.2rem;">
+    <div class="playground" id="pg-mu" style="margin-top:1.2rem;">
       <div class="pg-controls">
         <div class="strategy-pick">
           <button class="strat-btn mu-op active" data-op="swap">Swap</button>
@@ -480,7 +480,7 @@ print(&quot;Selected chromosomes:&quot;, selected)</code></pre>
     <h2 class="section-title">GA in action: Travelling Salesman Problem</h2>
     <p class="section-lede">Everything together. Each <span class="term" tabindex="0" data-def="A complete set of genes; represents one potential solution, e.g. [x₁, x₂, x₃, …].">chromosome</span> is a tour — a permutation of the cities — and <span class="term" tabindex="0" data-def="How well an individual solves the problem at hand (here: higher is better).">fitness</span> is higher for shorter tours. Every <span class="term" tabindex="0" data-def="One pass of the GA loop: selection → crossover → mutation produces a new population.">generation</span>: keep the 2 best tours (<span class="term" tabindex="0" data-def="The best individuals of the current generation are copied unchanged into the next one.">elitism</span>), pick parents by tournament selection (k = 3), combine them with the one-point order crossover from above, and mutate each child with the chosen operator.</p>
 
-    <div class="playground">
+    <div class="playground" id="pg-tsp">
       <div class="pg-controls">
         <div class="strategy-pick">
           <button class="strat-btn ga-op active" data-op="reverse">Reverse</button>
@@ -532,6 +532,384 @@ print(&quot;Selected chromosomes:&quot;, selected)</code></pre>
 </main>
 </div>
 
+<!-- ===== PRESENTATION MODE: the slides (present.js); data-embed borrows a widget from the notes ===== -->
+<template id="slides" data-title="Lab 04 · Genetic Algorithms">
+
+  <section class="slide sl-cover sl-cover-pic sl-dna-slide" data-section="#overview">
+    <svg id="sl-dna" class="dna-helix sl-dna" viewBox="0 0 1200 220" preserveAspectRatio="none" aria-hidden="true"></svg>
+    <div class="slide-in">
+      <div class="sl-cover-text">
+        <p class="sl-eyebrow">Lab 04 · Artificial Intelligence</p>
+        <h1>Genetic Algorithms</h1>
+      </div>
+      <svg class="sl-cover-art" viewBox="0 0 580 466" role="img" aria-label="Three generations of a population of chromosomes (rows of coloured genes). Over the generations the chromosomes become more like the fittest one and the best fitness rises; one gene in the last generation sparkles as a mutation. A corgi looks on.">
+        <text class="ga-cv-h" x="81" y="40" text-anchor="middle">Generation 1</text>
+        <rect class="ga-cv-gene" x="24" y="60" width="17" height="26" rx="4" style="fill:#5c9088"/>
+        <rect class="ga-cv-gene" x="43" y="60" width="17" height="26" rx="4" style="fill:#6f93b0"/>
+        <rect class="ga-cv-gene" x="62" y="60" width="17" height="26" rx="4" style="fill:#d1ab68"/>
+        <rect class="ga-cv-gene" x="81" y="60" width="17" height="26" rx="4" style="fill:#cf9470"/>
+        <rect class="ga-cv-gene" x="100" y="60" width="17" height="26" rx="4" style="fill:#d1ab68"/>
+        <rect class="ga-cv-gene" x="119" y="60" width="17" height="26" rx="4" style="fill:#5c9088"/>
+        <rect class="ga-cv-barbg" x="144" y="68" width="28" height="10" rx="5"/><rect class="ga-cv-bar" x="144" y="68" width="9.3" height="10" rx="5"/>
+        <rect class="ga-cv-gene" x="24" y="100" width="17" height="26" rx="4" style="fill:#d1ab68"/>
+        <rect class="ga-cv-gene" x="43" y="100" width="17" height="26" rx="4" style="fill:#5c9088"/>
+        <rect class="ga-cv-gene" x="62" y="100" width="17" height="26" rx="4" style="fill:#6f93b0"/>
+        <rect class="ga-cv-gene" x="81" y="100" width="17" height="26" rx="4" style="fill:#cf9470"/>
+        <rect class="ga-cv-gene" x="100" y="100" width="17" height="26" rx="4" style="fill:#6f93b0"/>
+        <rect class="ga-cv-gene" x="119" y="100" width="17" height="26" rx="4" style="fill:#5c9088"/>
+        <rect class="ga-cv-barbg" x="144" y="108" width="28" height="10" rx="5"/><rect class="ga-cv-bar" x="144" y="108" width="9.3" height="10" rx="5"/>
+        <rect class="ga-cv-gene" x="24" y="140" width="17" height="26" rx="4" style="fill:#6f93b0"/>
+        <rect class="ga-cv-gene" x="43" y="140" width="17" height="26" rx="4" style="fill:#cf9470"/>
+        <rect class="ga-cv-gene" x="62" y="140" width="17" height="26" rx="4" style="fill:#5c9088"/>
+        <rect class="ga-cv-gene" x="81" y="140" width="17" height="26" rx="4" style="fill:#d1ab68"/>
+        <rect class="ga-cv-gene" x="100" y="140" width="17" height="26" rx="4" style="fill:#d1ab68"/>
+        <rect class="ga-cv-gene" x="119" y="140" width="17" height="26" rx="4" style="fill:#6f93b0"/>
+        <rect class="ga-cv-barbg" x="144" y="148" width="28" height="10" rx="5"/><rect class="ga-cv-bar" x="144" y="148" width="9.3" height="10" rx="5"/>
+        <rect class="ga-cv-gene" x="24" y="180" width="17" height="26" rx="4" style="fill:#cf9470"/>
+        <rect class="ga-cv-gene" x="43" y="180" width="17" height="26" rx="4" style="fill:#d1ab68"/>
+        <rect class="ga-cv-gene" x="62" y="180" width="17" height="26" rx="4" style="fill:#6f93b0"/>
+        <rect class="ga-cv-gene" x="81" y="180" width="17" height="26" rx="4" style="fill:#5c9088"/>
+        <rect class="ga-cv-gene" x="100" y="180" width="17" height="26" rx="4" style="fill:#6f93b0"/>
+        <rect class="ga-cv-gene" x="119" y="180" width="17" height="26" rx="4" style="fill:#cf9470"/>
+        <rect class="ga-cv-barbg" x="144" y="188" width="28" height="10" rx="5"/><rect class="ga-cv-bar" x="144" y="188" width="0" height="10" rx="5"/>
+        <path class="ga-cv-arrow" d="M180 120 L198 120"/><path class="ga-cv-head" d="M198 114 L206 120 L198 126Z"/>
+        <text class="ga-cv-h" x="267" y="40" text-anchor="middle">Generation 2</text>
+        <rect class="ga-cv-gene" x="210" y="60" width="17" height="26" rx="4" style="fill:#6f93b0"/>
+        <rect class="ga-cv-gene" x="229" y="60" width="17" height="26" rx="4" style="fill:#5c9088"/>
+        <rect class="ga-cv-gene" x="248" y="60" width="17" height="26" rx="4" style="fill:#d1ab68"/>
+        <rect class="ga-cv-gene" x="267" y="60" width="17" height="26" rx="4" style="fill:#6f93b0"/>
+        <rect class="ga-cv-gene" x="286" y="60" width="17" height="26" rx="4" style="fill:#5c9088"/>
+        <rect class="ga-cv-gene" x="305" y="60" width="17" height="26" rx="4" style="fill:#6f93b0"/>
+        <rect class="ga-cv-barbg" x="330" y="68" width="28" height="10" rx="5"/><rect class="ga-cv-bar" x="330" y="68" width="23.3" height="10" rx="5"/>
+        <rect class="ga-cv-gene" x="210" y="100" width="17" height="26" rx="4" style="fill:#6f93b0"/>
+        <rect class="ga-cv-gene" x="229" y="100" width="17" height="26" rx="4" style="fill:#5c9088"/>
+        <rect class="ga-cv-gene" x="248" y="100" width="17" height="26" rx="4" style="fill:#cf9470"/>
+        <rect class="ga-cv-gene" x="267" y="100" width="17" height="26" rx="4" style="fill:#cf9470"/>
+        <rect class="ga-cv-gene" x="286" y="100" width="17" height="26" rx="4" style="fill:#5c9088"/>
+        <rect class="ga-cv-gene" x="305" y="100" width="17" height="26" rx="4" style="fill:#6f93b0"/>
+        <rect class="ga-cv-barbg" x="330" y="108" width="28" height="10" rx="5"/><rect class="ga-cv-bar" x="330" y="108" width="23.3" height="10" rx="5"/>
+        <rect class="ga-cv-gene" x="210" y="140" width="17" height="26" rx="4" style="fill:#d1ab68"/>
+        <rect class="ga-cv-gene" x="229" y="140" width="17" height="26" rx="4" style="fill:#5c9088"/>
+        <rect class="ga-cv-gene" x="248" y="140" width="17" height="26" rx="4" style="fill:#d1ab68"/>
+        <rect class="ga-cv-gene" x="267" y="140" width="17" height="26" rx="4" style="fill:#cf9470"/>
+        <rect class="ga-cv-gene" x="286" y="140" width="17" height="26" rx="4" style="fill:#5c9088"/>
+        <rect class="ga-cv-gene" x="305" y="140" width="17" height="26" rx="4" style="fill:#cf9470"/>
+        <rect class="ga-cv-barbg" x="330" y="148" width="28" height="10" rx="5"/><rect class="ga-cv-bar" x="330" y="148" width="18.7" height="10" rx="5"/>
+        <rect class="ga-cv-gene" x="210" y="180" width="17" height="26" rx="4" style="fill:#6f93b0"/>
+        <rect class="ga-cv-gene" x="229" y="180" width="17" height="26" rx="4" style="fill:#5c9088"/>
+        <rect class="ga-cv-gene" x="248" y="180" width="17" height="26" rx="4" style="fill:#6f93b0"/>
+        <rect class="ga-cv-gene" x="267" y="180" width="17" height="26" rx="4" style="fill:#cf9470"/>
+        <rect class="ga-cv-gene" x="286" y="180" width="17" height="26" rx="4" style="fill:#5c9088"/>
+        <rect class="ga-cv-gene" x="305" y="180" width="17" height="26" rx="4" style="fill:#d1ab68"/>
+        <rect class="ga-cv-barbg" x="330" y="188" width="28" height="10" rx="5"/><rect class="ga-cv-bar" x="330" y="188" width="18.7" height="10" rx="5"/>
+        <path class="ga-cv-arrow" d="M366 120 L384 120"/><path class="ga-cv-head" d="M384 114 L392 120 L384 126Z"/>
+        <text class="ga-cv-h" x="453" y="40" text-anchor="middle">Generation 3</text>
+        <rect class="ga-cv-gene" x="396" y="60" width="17" height="26" rx="4" style="fill:#6f93b0"/>
+        <rect class="ga-cv-gene" x="415" y="60" width="17" height="26" rx="4" style="fill:#5c9088"/>
+        <rect class="ga-cv-gene" x="434" y="60" width="17" height="26" rx="4" style="fill:#d1ab68"/>
+        <rect class="ga-cv-gene" x="453" y="60" width="17" height="26" rx="4" style="fill:#cf9470"/>
+        <rect class="ga-cv-gene" x="472" y="60" width="17" height="26" rx="4" style="fill:#5c9088"/>
+        <rect class="ga-cv-gene" x="491" y="60" width="17" height="26" rx="4" style="fill:#6f93b0"/>
+        <rect class="ga-cv-barbg" x="516" y="68" width="28" height="10" rx="5"/><rect class="ga-cv-bar" x="516" y="68" width="28" height="10" rx="5"/>
+        <rect class="ga-cv-gene" x="396" y="100" width="17" height="26" rx="4" style="fill:#6f93b0"/>
+        <rect class="ga-cv-gene" x="415" y="100" width="17" height="26" rx="4" style="fill:#5c9088"/>
+        <rect class="ga-cv-gene" x="434" y="100" width="17" height="26" rx="4" style="fill:#d1ab68"/>
+        <rect class="ga-cv-gene" x="453" y="100" width="17" height="26" rx="4" style="fill:#cf9470"/>
+        <rect class="ga-cv-gene" x="472" y="100" width="17" height="26" rx="4" style="fill:#5c9088"/>
+        <rect class="ga-cv-gene" x="491" y="100" width="17" height="26" rx="4" style="fill:#6f93b0"/>
+        <rect class="ga-cv-barbg" x="516" y="108" width="28" height="10" rx="5"/><rect class="ga-cv-bar" x="516" y="108" width="28" height="10" rx="5"/>
+        <rect class="ga-cv-gene" x="396" y="140" width="17" height="26" rx="4" style="fill:#6f93b0"/>
+        <rect class="ga-cv-gene" x="415" y="140" width="17" height="26" rx="4" style="fill:#5c9088"/>
+        <rect class="ga-cv-gene" x="434" y="140" width="17" height="26" rx="4" style="fill:#d1ab68"/>
+        <rect class="ga-cv-gene" x="453" y="140" width="17" height="26" rx="4" style="fill:#cf9470"/>
+        <rect class="ga-cv-gene" x="472" y="140" width="17" height="26" rx="4" style="fill:#5c9088"/>
+        <rect class="ga-cv-gene" x="491" y="140" width="17" height="26" rx="4" style="fill:#6f93b0"/>
+        <rect class="ga-cv-barbg" x="516" y="148" width="28" height="10" rx="5"/><rect class="ga-cv-bar" x="516" y="148" width="28" height="10" rx="5"/>
+        <rect class="ga-cv-gene" x="396" y="180" width="17" height="26" rx="4" style="fill:#6f93b0"/>
+        <rect class="ga-cv-gene" x="415" y="180" width="17" height="26" rx="4" style="fill:#5c9088"/>
+        <rect class="ga-cv-gene" x="434" y="180" width="17" height="26" rx="4" style="fill:#d1ab68"/>
+        <rect class="ga-cv-gene" x="453" y="180" width="17" height="26" rx="4" style="fill:#cf9470"/>
+        <rect class="ga-cv-gene" x="472" y="180" width="17" height="26" rx="4" style="fill:#5c9088"/>
+        <rect class="ga-cv-gene" x="491" y="180" width="17" height="26" rx="4" style="fill:#cf9470"/>
+        <rect class="ga-cv-barbg" x="516" y="188" width="28" height="10" rx="5"/><rect class="ga-cv-bar" x="516" y="188" width="23.3" height="10" rx="5"/>
+        <path class="ga-cv-spark" d="M499.5 168 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3z"/>
+        <text class="ga-cv-step" x="290" y="232" text-anchor="middle">selection → crossover → mutation, generation after generation</text>
+        <path class="ga-cv-axis" d="M230 280 L230 400 L540 400"/>
+        <polyline class="ga-cv-line" points="260,363.3 380,308.3 500,290"/>
+        <circle class="ga-cv-dot" cx="260" cy="363.3" r="6"/><text class="ga-cv-t" x="260" y="420" text-anchor="middle">gen 1</text>
+        <circle class="ga-cv-dot" cx="380" cy="308.3" r="6"/><text class="ga-cv-t" x="380" y="420" text-anchor="middle">gen 2</text>
+        <circle class="ga-cv-dot" cx="500" cy="290" r="6"/><text class="ga-cv-t" x="500" y="420" text-anchor="middle">gen 3</text>
+        <text class="ga-cv-t" x="238" y="276">best fitness</text>
+        <g class="cv-corgi" transform="translate(112 446) scale(-1.15 1.15)">
+          <path class="cv-sniff" d="M-40 -44 q-5 4 0 8 M-47 -48 q-7 6 0 13"/>
+          <g class="cv-tail"><ellipse class="cg-fur" cx="66" cy="-36" rx="9" ry="7"/><ellipse class="cg-white" cx="70" cy="-37" rx="4" ry="3.5"/></g>
+          <rect class="cg-fur" x="44" y="-18" width="10" height="18" rx="4"/><rect class="cg-fur" x="56" y="-18" width="10" height="18" rx="4"/>
+          <ellipse class="cg-fur" cx="30" cy="-26" rx="38" ry="17"/>
+          <rect class="cg-white" x="-2" y="-18" width="10" height="18" rx="4"/><rect class="cg-white" x="11" y="-18" width="10" height="18" rx="4"/>
+          <path class="cg-white cg-flat" d="M0 -18 Q26 -6 56 -14 Q30 -2 0 -10 Z"/>
+          <path class="cg-white" d="M-12 -34 Q-6 -16 10 -14 Q16 -26 8 -38 Z"/>
+          <path class="cg-fur" d="M-20 -52 L-15 -72 L-5 -54 Z"/><path class="cg-ear" d="M-17 -55 L-14.5 -66 L-9 -55 Z"/>
+          <path class="cg-fur" d="M-4 -54 L4 -72 L9 -50 Z"/><path class="cg-ear" d="M-1 -54 L3.5 -65 L6 -52 Z"/>
+          <circle class="cg-fur" cx="-8" cy="-42" r="15"/>
+          <path class="cg-white cg-flat" d="M-8 -56 Q-12 -44 -18 -40 Q-24 -32 -16 -29 Q-6 -27 -2 -36 Q-4 -46 -8 -56 Z"/>
+          <ellipse class="cg-white" cx="-21" cy="-35" rx="10" ry="6.5"/>
+          <circle class="cg-ink" cx="-30" cy="-36.5" r="3"/>
+          <circle class="cg-ink" cx="-14" cy="-45" r="2.4"/><circle class="cg-shine" cx="-14.8" cy="-45.8" r="0.8"/>
+          <path class="cg-line" d="M-27 -31 Q-23 -28 -19 -31"/>
+        </g>
+      </svg>
+    </div>
+  </section>
+
+  <section class="slide" data-section="#intro">
+    <div class="slide-in">
+      <span class="badge ids">Genetic algorithms</span>
+      <h2>Introduction to genetic algorithms</h2>
+      <ul class="concept-list">
+        <li>A <b>search and optimization technique</b> inspired by natural evolution.</li>
+        <li>Uses the principles of <b>selection</b>, <b>crossover</b> and <b>mutation</b>.</li>
+        <li>Evolves a <b>population</b> of possible solutions to find the best (fittest) one.</li>
+      </ul>
+      <div class="definition-box" style="margin-top:1.2rem;">
+        <div class="dbox-label">📐 Individual and fitness</div>
+        <p>Each solution (an <b>individual</b> or <b>chromosome</b>) is a set of parameters, like genes in biology. Its <b>fitness</b> measures how well it solves the problem.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-section="#intro">
+    <div class="slide-in">
+      <span class="badge ids">Genetic algorithms</span>
+      <h2>Key concepts</h2>
+      <div class="sl-embed" data-embed="#ga-concepts"></div>
+    </div>
+  </section>
+
+  <section class="slide" data-section="#steps">
+    <div class="slide-in">
+      <span class="badge ids">Genetic algorithms</span>
+      <h2>Main steps in genetic algorithms</h2>
+      <p class="sl-lede"><b>Initialization</b> → <b>Selection</b> (fitness) → <b>Crossover</b> → <b>Mutation</b>, generation after generation until the population converges.</p>
+      <div class="sl-embed" data-embed="#ga-loop"></div>
+    </div>
+  </section>
+
+  <section class="slide" data-section="#selection">
+    <div class="slide-in">
+      <span class="badge dfs">Selection</span>
+      <h2>Selection: overview</h2>
+      <p class="sl-lede">Choose chromosomes from the population for later breeding (crossover).</p>
+      <div class="definition-box">
+        <div class="dbox-label">📐 Selection pressure</div>
+        <p>How strongly selection favours the fittest individuals: the <b>degree of bias towards fitter individuals</b>.</p>
+      </div>
+      <div class="sl-cols" style="margin-top:1.2rem;">
+        <div class="sl-card dfs"><h3>High pressure</h3><ul class="concept-list"><li><b>Faster convergence</b></li><li>Risk of <b>premature convergence</b>: diversity is lost, stuck in local optima.</li></ul></div>
+        <div class="sl-card bfs"><h3>Low pressure</h3><ul class="concept-list"><li><b>Slower convergence</b></li><li>Better exploration: more genetic <b>diversity</b>.</li></ul></div>
+      </div>
+      <p class="sl-take">All examples use the same population: <b>A–E</b> with fitness <b>10, 20, 30, 25, 15</b>.</p>
+    </div>
+  </section>
+
+  <section class="slide" data-section="#selection">
+    <div class="slide-in">
+      <span class="badge dfs">Selection</span>
+      <h2>Roulette wheel 🎯</h2>
+      <p class="sl-lede">Each slot is as big as the fitness: <b>probability = fitness / total fitness</b>. SUS spins once with evenly spaced pointers.</p>
+      <div class="sl-embed" data-embed="#pg-rw"></div>
+    </div>
+  </section>
+
+  <section class="slide" data-section="#selection">
+    <div class="slide-in">
+      <span class="badge dfs">Selection</span>
+      <h2>Tournament selection 🏆</h2>
+      <p class="sl-lede">Pick <b>k</b> random individuals, the best one becomes a parent. Larger k → stronger pressure; smaller k → more diversity.</p>
+      <div class="sl-embed" data-embed="#pg-tn"></div>
+    </div>
+  </section>
+
+  <section class="slide" data-section="#selection">
+    <div class="slide-in">
+      <span class="badge dfs">Selection</span>
+      <h2>Elitism 👑</h2>
+      <p class="sl-lede">The <b>best individuals</b> of the current generation go to the next one <b>unchanged</b>.</p>
+      <div class="sl-cols el-cols">
+        <div class="sl-card el-card"><svg class="el-fig" viewBox="0 0 520 250" role="img" aria-label="Elitism: the two fittest individuals of generation t, C and D, are copied unchanged into generation t plus 1; the other places are filled with children made by selection, crossover and mutation."><text class="el-h" x="90" y="24" text-anchor="middle">Generation t</text><text class="el-h" x="430" y="24" text-anchor="middle">Generation t + 1</text><rect class="el-pill elite" x="20" y="40" width="140" height="32" rx="16"/><text class="el-t" x="44" y="61">C</text><text class="el-v" x="146" y="61" text-anchor="end">fitness 30</text><rect class="el-pill elite" x="360" y="40" width="140" height="32" rx="16"/><text class="el-t" x="384" y="61">C</text><text class="el-v" x="486" y="61" text-anchor="end">fitness 30</text><path class="el-copy" d="M168 56 L344 56"/><path class="el-copy-h" d="M344 50 L354 56 L344 62Z"/><rect class="el-pill elite" x="20" y="82" width="140" height="32" rx="16"/><text class="el-t" x="44" y="103">D</text><text class="el-v" x="146" y="103" text-anchor="end">fitness 25</text><rect class="el-pill elite" x="360" y="82" width="140" height="32" rx="16"/><text class="el-t" x="384" y="103">D</text><text class="el-v" x="486" y="103" text-anchor="end">fitness 25</text><path class="el-copy" d="M168 98 L344 98"/><path class="el-copy-h" d="M344 92 L354 98 L344 104Z"/><rect class="el-pill" x="20" y="124" width="140" height="32" rx="16"/><text class="el-t" x="44" y="145">B</text><text class="el-v" x="146" y="145" text-anchor="end">fitness 20</text><rect class="el-pill new" x="360" y="124" width="140" height="32" rx="16"/><text class="el-v new" x="430" y="145" text-anchor="middle">child</text><rect class="el-pill" x="20" y="166" width="140" height="32" rx="16"/><text class="el-t" x="44" y="187">E</text><text class="el-v" x="146" y="187" text-anchor="end">fitness 15</text><rect class="el-pill new" x="360" y="166" width="140" height="32" rx="16"/><text class="el-v new" x="430" y="187" text-anchor="middle">child</text><rect class="el-pill" x="20" y="208" width="140" height="32" rx="16"/><text class="el-t" x="44" y="229">A</text><text class="el-v" x="146" y="229" text-anchor="end">fitness 10</text><rect class="el-pill new" x="360" y="208" width="140" height="32" rx="16"/><text class="el-v new" x="430" y="229" text-anchor="middle">child</text><text class="el-lab" x="256" y="50" text-anchor="middle">copied unchanged</text><path class="el-new" d="M168 166 C250 166 270 166 344 166"/><path class="el-new-h" d="M344 160 L354 166 L344 172Z"/><text class="el-lab soft" x="262" y="190" text-anchor="middle">selection + crossover</text><text class="el-lab soft" x="262" y="207" text-anchor="middle">+ mutation</text></svg></div>
+        <div>
+          <div class="sl-card good"><h3>✅ Pros</h3><ul class="concept-list"><li>The best solutions are never lost.</li><li>Faster convergence.</li></ul></div>
+          <div class="sl-card bad" style="margin-top:1rem;"><h3>❌ Cons</h3><ul class="concept-list"><li>Reduces diversity.</li></ul></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-section="#selection">
+    <div class="slide-in">
+      <span class="badge dfs">Selection</span>
+      <h2>Summary of selection methods</h2>
+      <div class="sel-sum">
+        <div class="table-wrap">
+          <table class="summary sel-table">
+            <thead><tr><th></th><th>Method</th><th>Key idea</th><th>Strength</th><th>Weakness</th></tr></thead>
+            <tbody>
+            <tr data-s="dfs"><td class="sel-ic-td"><svg class="sel-ic" viewBox="0 0 56 56" aria-hidden="true"><path d="M28 30 L28 11 A19 19 0 0 1 39.2 14.6Z" style="fill:#6f93b0" class="ic-w"/><path d="M28 30 L39.2 14.6 A19 19 0 0 1 46.1 35.9Z" style="fill:#5c9088" class="ic-w"/><path d="M28 30 L46.1 35.9 A19 19 0 0 1 16.8 45.4Z" style="fill:#d1ab68" class="ic-w"/><path d="M28 30 L16.8 45.4 A19 19 0 0 1 12.6 18.8Z" style="fill:#cf9470" class="ic-w"/><path d="M28 30 L12.6 18.8 A19 19 0 0 1 28 11Z" style="fill:#d9546e" class="ic-w"/><path class="ic-ptr" d="M28 10 L33 2 L23 2Z"/></svg></td><td><b>Roulette Wheel</b></td><td>Prob. proportional to fitness</td><td>Simple</td><td>Premature convergence</td></tr>
+            <tr data-s="bfs"><td class="sel-ic-td"><svg class="sel-ic" viewBox="0 0 56 56" aria-hidden="true"><path class="ic-gold" d="M16 10 H40 V22 C40 32 34 37 28 37 C22 37 16 32 16 22Z"/><path class="ic-line" d="M16 14 C8 14 8 26 17 27 M40 14 C48 14 48 26 39 27"/><rect class="ic-gold" x="25" y="37" width="6" height="7"/><rect class="ic-dark" x="18" y="44" width="20" height="6" rx="2"/></svg></td><td><b>Tournament</b></td><td>Best of random subset wins</td><td>Adjustable pressure</td><td>Can lose diversity</td></tr>
+            <tr data-s="ucs"><td class="sel-ic-td"><svg class="sel-ic" viewBox="0 0 56 56" aria-hidden="true"><rect class="ic-b" x="6" y="26" width="15" height="22" rx="2"/><rect class="ic-gold" x="21" y="16" width="15" height="32" rx="2"/><rect class="ic-d" x="36" y="32" width="15" height="16" rx="2"/><text class="ic-n" x="13.5" y="41" text-anchor="middle">2</text><text class="ic-n" x="28.5" y="34" text-anchor="middle">1</text><text class="ic-n" x="43.5" y="44" text-anchor="middle">3</text></svg></td><td><b>Rank-Based</b></td><td>Selection by rank</td><td>Stable pressure</td><td>Slower convergence</td></tr>
+            <tr data-s="ids"><td class="sel-ic-td"><svg class="sel-ic" viewBox="0 0 56 56" aria-hidden="true"><path d="M28 30 L28 13 A17 17 0 0 1 38 16.2Z" style="fill:#6f93b0" class="ic-w"/><path d="M28 30 L38 16.2 A17 17 0 0 1 44.2 35.3Z" style="fill:#5c9088" class="ic-w"/><path d="M28 30 L44.2 35.3 A17 17 0 0 1 18 43.8Z" style="fill:#d1ab68" class="ic-w"/><path d="M28 30 L18 43.8 A17 17 0 0 1 14.2 20Z" style="fill:#cf9470" class="ic-w"/><path d="M28 30 L14.2 20 A17 17 0 0 1 28 13Z" style="fill:#d9546e" class="ic-w"/><path class="ic-ptr" d="M28 12 L33 4 L23 4Z"/><path class="ic-ptr" d="M43.6 39 L48 47.3 L53 38.7Z"/><path class="ic-ptr" d="M12.4 39 L3 38.7 L8 47.3Z"/></svg></td><td><b>SUS</b></td><td>Evenly spaced roulette sampling</td><td>Low variance</td><td>More complex</td></tr>
+            <tr data-s="dls"><td class="sel-ic-td"><svg class="sel-ic" viewBox="0 0 56 56" aria-hidden="true"><path class="ic-gold" d="M8 40 L12 16 L21 28 L28 12 L35 28 L44 16 L48 40Z"/><rect class="ic-gold" x="8" y="40" width="40" height="7" rx="2"/><circle class="ic-gem" cx="28" cy="32" r="3.5"/><circle class="ic-gem b" cx="17" cy="35" r="2.5"/><circle class="ic-gem b" cx="39" cy="35" r="2.5"/></svg></td><td><b>Elitism</b></td><td>Best always survive</td><td>Guarantees progress</td><td>Less diversity</td></tr>
+            <tr><td class="sel-ic-td"><svg class="sel-ic" viewBox="0 0 56 56" aria-hidden="true"><rect class="ic-a" x="4" y="22" width="9" height="14" rx="2"/><rect class="ic-a" x="14" y="22" width="9" height="14" rx="2"/><rect class="ic-off" x="27" y="22" width="9" height="14" rx="2"/><rect class="ic-off" x="37" y="22" width="9" height="14" rx="2"/><rect class="ic-off" x="47" y="22" width="6" height="14" rx="2"/><path class="ic-cut" d="M25 10 V48"/><circle class="ic-sc" cx="20" cy="9" r="4"/><circle class="ic-sc" cx="30" cy="9" r="4"/></svg></td><td><b>Truncation</b></td><td>Top % survive</td><td>Simple &amp; strong pressure</td><td>Fast loss of diversity</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <svg class="sel-corgi" viewBox="0 0 160 140" role="img" aria-label="A corgi wearing a crown: elitism keeps the best one unchanged"><g class="cv-corgi" transform="translate(96 100) scale(-1.15 1.15)">
+          <path class="cv-sniff" d="M-40 -44 q-5 4 0 8 M-47 -48 q-7 6 0 13"/>
+          <g class="cv-tail"><ellipse class="cg-fur" cx="66" cy="-36" rx="9" ry="7"/><ellipse class="cg-white" cx="70" cy="-37" rx="4" ry="3.5"/></g>
+          <rect class="cg-fur" x="44" y="-18" width="10" height="18" rx="4"/><rect class="cg-fur" x="56" y="-18" width="10" height="18" rx="4"/>
+          <ellipse class="cg-fur" cx="30" cy="-26" rx="38" ry="17"/>
+          <rect class="cg-white" x="-2" y="-18" width="10" height="18" rx="4"/><rect class="cg-white" x="11" y="-18" width="10" height="18" rx="4"/>
+          <path class="cg-white cg-flat" d="M0 -18 Q26 -6 56 -14 Q30 -2 0 -10 Z"/>
+          <path class="cg-white" d="M-12 -34 Q-6 -16 10 -14 Q16 -26 8 -38 Z"/>
+          <path class="cg-fur" d="M-20 -52 L-15 -72 L-5 -54 Z"/><path class="cg-ear" d="M-17 -55 L-14.5 -66 L-9 -55 Z"/>
+          <path class="cg-fur" d="M-4 -54 L4 -72 L9 -50 Z"/><path class="cg-ear" d="M-1 -54 L3.5 -65 L6 -52 Z"/>
+          <circle class="cg-fur" cx="-8" cy="-42" r="15"/>
+          <path class="cg-white cg-flat" d="M-8 -56 Q-12 -44 -18 -40 Q-24 -32 -16 -29 Q-6 -27 -2 -36 Q-4 -46 -8 -56 Z"/>
+          <ellipse class="cg-white" cx="-21" cy="-35" rx="10" ry="6.5"/>
+          <circle class="cg-ink" cx="-30" cy="-36.5" r="3"/>
+          <circle class="cg-ink" cx="-14" cy="-45" r="2.4"/><circle class="cg-shine" cx="-14.8" cy="-45.8" r="0.8"/>
+          <path class="cg-line" d="M-27 -31 Q-23 -28 -19 -31"/>
+        </g><path class="ic-gold" d="M-18 -56 L-16 -68 L-11 -61 L-7 -71 L-3 -61 L2 -68 L4 -56Z" transform="translate(96 100) scale(-1.15 1.15)"/><text class="sel-corgi-t" x="80" y="132" text-anchor="middle">the elite survive</text></svg>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-section="#crossover">
+    <div class="slide-in">
+      <span class="badge bfs">Crossover</span>
+      <h2>Crossover: overview</h2>
+      <p class="sl-lede">Take more than one <b>parent</b> solution and produce a <b>child</b> solution from them.</p>
+      <div class="sl-embed" data-embed="#xo-fig"></div>
+      <div class="sl-cols three xo-types">
+        <div class="sl-card dfs"><h3>Binary coded</h3><p>Single point, two-point, multi-point, uniform, shuffle</p></div>
+        <div class="sl-card ucs"><h3>Real coded</h3><p>Linear, single arithmetic</p></div>
+        <div class="sl-card ids"><h3>Order coded</h3><p>Partially-mapped, cycle</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-section="#crossover">
+    <div class="slide-in">
+      <span class="badge bfs">Crossover</span>
+      <h2>One-point crossover</h2>
+      <p class="sl-lede">Order coded: copy the first part from one parent, then <b>fill the rest in the other parent's order</b>, so no value repeats.</p>
+      <div class="sl-embed" data-embed="#pg-op"></div>
+    </div>
+  </section>
+
+  <section class="slide" data-section="#crossover">
+    <div class="slide-in">
+      <span class="badge bfs">Crossover</span>
+      <h2>Uniform crossover</h2>
+      <p class="sl-lede">Each gene comes from a <b>random</b> parent: a random mask decides for child 1, child 2 takes the other parent.</p>
+      <div class="sl-embed" data-embed="#pg-uc"></div>
+    </div>
+  </section>
+
+  <section class="slide" data-section="#mutation">
+    <div class="slide-in">
+      <span class="badge ucs">Mutation</span>
+      <h2>Mutation: overview</h2>
+      <p class="sl-lede">A <b>small random change</b> to a single chromosome.</p>
+      <div class="mu-demo">
+        <div><span class="gene-cell g1">2</span><span class="gene-cell g2 mu-hit">1</span><span class="gene-cell g3">5</span><span class="gene-cell g4 mu-hit">4</span><span class="gene-cell g1">3</span></div>
+        <span class="mu-arrow">→</span>
+        <div><span class="gene-cell g1">2</span><span class="gene-cell g4 mu-hit">4</span><span class="gene-cell g3">5</span><span class="gene-cell g2 mu-hit">1</span><span class="gene-cell g1">3</span></div>
+        <span class="mu-note">e.g. swap two genes</span>
+      </div>
+      <div class="sl-cols">
+        <div class="sl-card ucs"><h3>Why mutate?</h3><ul class="concept-list"><li>Keeps <b>diversity</b> in the population.</li><li>Brings in values that crossover alone cannot create.</li></ul></div>
+        <div class="sl-card bad"><h3>Without mutation</h3><ul class="concept-list"><li>The population loses diversity and often gets stuck early: <b>premature convergence</b>.</li></ul></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-section="#mutation">
+    <div class="slide-in">
+      <span class="badge ucs">Mutation</span>
+      <h2>Types of mutation</h2>
+      <p class="sl-lede">Three common operators for order-coded chromosomes: <b>swap</b>, <b>insertion</b>, <b>reverse</b>.</p>
+      <div class="sl-cols mu-cols">
+        <div class="sl-embed" data-embed="#mu-fig"></div>
+        <div class="sl-embed" data-embed="#pg-mu"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-section="#tsp">
+    <div class="slide-in">
+      <span class="badge ids">Applications</span>
+      <h2>Where are GAs used? Are they used today?</h2>
+      <div class="sl-cols ga-apps">
+        <div class="sl-card ucs">
+          <h3>Classic</h3>
+          <ul class="concept-list">
+            <li><b>NASA ST5 antenna</b> (flew 2006): designed by an evolutionary algorithm, comparable to the hand-made design.</li>
+            <li><b>Vehicle routing</b> and <b>timetabling</b>: long-standing uses of GAs.</li>
+          </ul>
+        </div>
+        <div class="sl-card ids">
+          <h3>Today: evolution + neural networks / LLMs</h3>
+          <ul class="concept-list">
+            <li><b>AmoebaNet</b> (Google, 2019): evolution designed an ImageNet classifier.</li>
+            <li><b>FunSearch</b> (DeepMind, Nature 2023): LLM + evolution found new maths constructions.</li>
+            <li><b>EvoPrompt</b> (ICLR 2024): a GA evolves better LLM prompts.</li>
+            <li><b>Model merging</b> (Sakana AI, 2025): evolution combines open LLMs into new models.</li>
+            <li><b>AlphaEvolve</b> (DeepMind, 2025): found a 4×4 complex matrix multiplication with 48 multiplications.</li>
+          </ul>
+        </div>
+      </div>
+      <p class="sl-take">Yes: evolutionary search is still in use, now often with an LLM proposing the changes.</p>
+    </div>
+  </section>
+
+
+  <section class="slide" data-section="#tsp">
+    <div class="slide-in">
+      <span class="badge ids">Demo</span>
+      <h2>GA in action: travelling salesman</h2>
+      <p class="sl-lede">Chromosome = a tour (a permutation of the cities); shorter tour = higher fitness. Elitism 2, tournament k = 3, one-point order crossover, then mutation.</p>
+      <div class="sl-embed" data-embed="#pg-tsp"></div>
+    </div>
+  </section>
+
+  <section class="slide" data-section="#tsp">
+    <div class="slide-in">
+      <span class="badge ids">Summary</span>
+      <h2>Key takeaways</h2>
+      <ol class="concept-list sl-takeaways">
+        <li>A GA evolves a <b>population</b> of chromosomes, generation after generation.</li>
+        <li>The <b>fitness function</b> scores each one; <b>selection</b> prefers the fitter ones.</li>
+        <li><b>Selection pressure</b> trades speed for diversity: too high → premature convergence.</li>
+        <li><b>Roulette</b>: probability ∝ fitness. <b>Tournament</b>: best of k. <b>Elitism</b>: the best survive unchanged.</li>
+        <li><b>Crossover</b> combines parents; <b>mutation</b> makes small random changes and keeps diversity.</li>
+        <li>For permutations (TSP), use order-preserving crossover and mutation so every child is a valid tour.</li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="slide" data-section="#quiz">
+    <div class="slide-in">
+      <span class="badge ids">Quiz</span>
+      <h2>Lab 04 quiz</h2>
+      <a class="qz-cta sl-quiz" href="lab04-quiz.html">
+        <div><span class="qz-cta-k">Test yourself</span><b>Lab 04 quiz</b><p>20 auto-graded tasks, 100 points: GA terminology, selection pressure, roulette wheel and SUS, tournament, rank, elitism and truncation, crossover, mutation and the TSP.</p></div>
+        <span class="qz-btn">Start the quiz →</span>
+      </a>
+    </div>
+  </section>
+
+</template>
+<script src="../present.js"></script>
 <script src="code-cards.js"></script>
 <script src="lab04.js"></script>
 </body>

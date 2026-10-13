@@ -44,8 +44,8 @@ function initTerms() {
 }
 
 /* ---------- animated DNA helix in the hero ---------- */
-function initHelix() {
-  const svg = document.getElementById('dna-helix');
+function initHelix(svg = document.getElementById('dna-helix')) {
+  if (!svg) return;
   const W = 1200, H = 220, mid = H / 2, A = 70, rungs = 48;
   const baseColors = ['var(--dfs)', 'var(--bfs)', 'var(--ucs)', 'var(--ids)'];
   const strandA = svgEl('path', { class: 'strand a' }, svg);
@@ -75,6 +75,16 @@ function initHelix() {
   const t0 = performance.now();
   const tick = (t) => { draw(((t - t0) / 1000) * 0.8); requestAnimationFrame(tick); };
   requestAnimationFrame(tick);
+}
+
+// the same helix behind the cover slide (slide-only): it exists once present.js has built the deck,
+// and present.js fires a resize event on every slide change, so set it up the first time it shows up
+function initSlideHelix() {
+  const svg = document.getElementById('sl-dna');
+  if (!svg) { window.addEventListener('resize', initSlideHelix, { once: true }); return; }
+  if (svg.dataset.ready) return;
+  svg.dataset.ready = '1';
+  initHelix(svg);
 }
 
 /* ---------- shared example population ---------- */
@@ -524,6 +534,7 @@ function initTSP() {
 document.addEventListener('DOMContentLoaded', () => {
   initTerms();
   initHelix();
+  initSlideHelix();
   initRoulette();
   initTournament();
   initRank();
