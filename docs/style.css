@@ -2319,6 +2319,12 @@ html.presenting .deck { position: fixed; inset: 0; z-index: 200; display: flex; 
 .sl-cover-art .cv-cost-bg { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; }
 .sl-cover-art .cv-cost { font: 700 13px 'Inter', sans-serif; fill: var(--ink-soft); font-variant-numeric: tabular-nums; }
 .sl-cover-art .cv-h, .sl-cover-art .cv-legend .cv-h { font: 800 14px 'Poppins', sans-serif; fill: var(--bfs); }
+/* Lab 03 cover: Australia map colouring with its constraint graph (the lab's colours and solution) */
+.sl-cover-art .csp-reg { stroke: var(--surface); stroke-width: 2.5; stroke-linejoin: round; }
+.sl-cover-art .csp-reg.r { fill: color-mix(in srgb, #d9546e 45%, var(--surface)); } .sl-cover-art .csp-reg.g { fill: color-mix(in srgb, #5c9a6a 45%, var(--surface)); } .sl-cover-art .csp-reg.b { fill: color-mix(in srgb, #4d7ea8 45%, var(--surface)); }
+.sl-cover-art .csp-edge { stroke: var(--ink); stroke-width: 2.4; stroke-linecap: round; opacity: 0.7; }
+.sl-cover-art .csp-node { stroke: var(--surface); stroke-width: 2.5; } .sl-cover-art .csp-node.r { fill: #d9546e; } .sl-cover-art .csp-node.g { fill: #5c9a6a; } .sl-cover-art .csp-node.b { fill: #4d7ea8; }
+.sl-cover-art .csp-lbl { font: 800 12px 'Poppins', sans-serif; fill: #fff; pointer-events: none; }
 @media (max-width: 760px) { .sl-cover.sl-cover-pic .slide-in { grid-template-columns: minmax(0, 1fr); gap: 1.2rem; } .sl-cover-art { max-width: 26rem; } }
 /* ---- Lab 02: heuristic on a road map (hv-) ---- */
 .hv-panel svg { display: block; width: 100%; max-width: 32rem; height: auto; margin: 0 auto; }
