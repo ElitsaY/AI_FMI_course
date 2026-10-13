@@ -2312,4 +2312,31 @@ html.presenting .deck { position: fixed; inset: 0; z-index: 200; display: flex; 
 .sl-cover-art .cv-tail { transform-box: fill-box; transform-origin: 0% 60%; animation: cv-wag 0.5s ease-in-out infinite alternate; }
 @keyframes cv-wag { from { transform: rotate(-14deg); } to { transform: rotate(14deg); } }
 @media (prefers-reduced-motion: reduce) { .sl-cover-art * { animation: none !important; } }
+/* Lab 02 cover: greedy vs. A* on part of the lab's graph */
+.sl-cover-art .cv-astar { fill: none; stroke: color-mix(in srgb, var(--indigo) 40%, var(--surface)); stroke-width: 16; stroke-linecap: round; stroke-linejoin: round; }
+.sl-cover-art .cv-greedy { fill: none; stroke: var(--dfs); stroke-width: 4; stroke-dasharray: 9 7; stroke-linecap: round; stroke-linejoin: round; }
+.sl-cover-art .cv-legend .cv-astar { stroke-width: 10; } .sl-cover-art .cv-node.ast { stroke: var(--indigo); stroke-width: 3; }
+.sl-cover-art .cv-cost-bg { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; }
+.sl-cover-art .cv-cost { font: 700 13px 'Inter', sans-serif; fill: var(--ink-soft); font-variant-numeric: tabular-nums; }
+.sl-cover-art .cv-h, .sl-cover-art .cv-legend .cv-h { font: 800 14px 'Poppins', sans-serif; fill: var(--bfs); }
 @media (max-width: 760px) { .sl-cover.sl-cover-pic .slide-in { grid-template-columns: minmax(0, 1fr); gap: 1.2rem; } .sl-cover-art { max-width: 26rem; } }
+/* ---- Lab 02: heuristic on a road map (hv-) ---- */
+.hv-panel svg { display: block; width: 100%; max-width: 32rem; height: auto; margin: 0 auto; }
+.hv-road { stroke: var(--ink-soft); stroke-width: 2.2; opacity: 0.5; }
+.hv-real { fill: none; stroke: color-mix(in srgb, var(--dfs) 55%, var(--surface)); stroke-width: 12; stroke-linejoin: round; stroke-linecap: round; }
+.hv-est { stroke: var(--indigo); stroke-width: 3; stroke-dasharray: 8 6; stroke-linecap: round; }
+.hv-cost-bg { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; }
+.hv-cost { font: 700 13px 'Inter', sans-serif; fill: var(--ink-soft); font-variant-numeric: tabular-nums; }
+.hv-town { cursor: pointer; } .hv-town circle { fill: var(--surface); stroke: var(--ink-soft); stroke-width: 2.2; }
+.hv-town:hover circle { stroke: var(--indigo); stroke-width: 3; }
+.hv-town text { font: 800 17px 'Poppins', sans-serif; fill: var(--ink); pointer-events: none; }
+.hv-town.on circle { fill: var(--indigo); stroke: var(--indigo); } .hv-town.on text { fill: var(--surface); }
+.hv-town.goal circle { fill: color-mix(in srgb, var(--ucs) 45%, var(--surface)); stroke: var(--ucs); stroke-width: 3; }
+.hv-town.goal.on circle { stroke: var(--indigo); stroke-width: 4; } .hv-town.goal.on text { fill: var(--ink); }
+.hv-h { font: 800 14px 'Poppins', sans-serif; fill: var(--indigo); font-variant-numeric: tabular-nums; }
+.hv-formula { margin: 0.8rem 0 0; text-align: center; font-variant-numeric: tabular-nums; } .hv-formula b { color: var(--indigo); } .hv-formula b.real { color: color-mix(in srgb, var(--dfs) 75%, var(--ink)); }
+.hv-legend { margin: 0.4rem 0 0; font-size: 0.85rem; color: var(--ink-soft); text-align: center; }
+.hv-key { display: inline-block; width: 1.6rem; height: 0; vertical-align: middle; margin: 0 0.3rem 0 0.6rem; border-top: 3px dashed var(--indigo); }
+.hv-key.real { border-top: 8px solid color-mix(in srgb, var(--dfs) 55%, var(--surface)); border-radius: 4px; }
+.slide .hv-cols { grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); align-items: start; }
+.slide #h-viz svg { max-height: calc(100vh - 20rem - 60px); }

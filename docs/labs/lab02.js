@@ -101,6 +101,83 @@ function initPuzzle() {
   render();
 }
 
+/* ---------- heuristic on a road map: straight-line distance h(n) vs. shortest road h*(n) ---------- */
+// positions on a 1-unit = 10 km grid; road lengths are never shorter than the straight line
+const HV = {
+  pos: { S: [0, 2], A: [3, 4], B: [4, 0], G: [8, 2] },
+  roads: [['S', 'A', 40], ['S', 'B', 50], ['A', 'G', 60], ['B', 'G', 55]],
+  labelAbove: ['A'],
+};
+
+// slide-only widget: it lives in the slides <template>, so it exists only once present.js has built the deck;
+// present.js fires a resize event on every slide change, so set it up the first time it shows up
+function initHeuristicViz() {
+  const svg = document.getElementById('hv-svg');
+  if (!svg) { window.addEventListener('resize', initHeuristicViz, { once: true }); return; }
+  if (svg.dataset.ready) return;
+  svg.dataset.ready = '1';
+  const ns = 'http://www.w3.org/2000/svg';
+  const xy = n => [40 + 50 * HV.pos[n][0], 45 + 50 * (4 - HV.pos[n][1])];
+  const h = n => Math.round(10 * Math.hypot(HV.pos[n][0] - HV.pos.G[0], HV.pos[n][1] - HV.pos.G[1]));
+  const adj = {};
+  HV.roads.forEach(([a, b, c]) => { (adj[a] = adj[a] || []).push([b, c]); (adj[b] = adj[b] || []).push([a, c]); });
+  // shortest road from n to G (Dijkstra; the map is tiny)
+  function road(n) {
+    const dist = { [n]: 0 }, prev = {}, done = new Set();
+    while (true) {
+      const u = Object.keys(dist).filter(k => !done.has(k)).sort((p, q) => dist[p] - dist[q])[0];
+      if (u === 'G') break;
+      done.add(u);
+      adj[u].forEach(([v, c]) => { if (!(v in dist) || dist[u] + c < dist[v]) { dist[v] = dist[u] + c; prev[v] = u; } });
+    }
+    const path = ['G'];
+    while (path[0] !== n) path.unshift(prev[path[0]]);
+    return { cost: dist.G, path };
+  }
+  const mk = (tag, attrs) => {
+    const e = document.createElementNS(ns, tag);
+    for (const a in attrs) e.setAttribute(a, attrs[a]);
+    svg.appendChild(e);
+    return e;
+  };
+  let sel = 'S';
+
+  function render() {
+    svg.innerHTML = '';
+    const r = road(sel);
+    if (sel !== 'G') mk('polyline', { points: r.path.map(n => xy(n).join(',')).join(' '), class: 'hv-real' });
+    HV.roads.forEach(([a, b]) => { const [x1, y1] = xy(a), [x2, y2] = xy(b); mk('line', { x1, y1, x2, y2, class: 'hv-road' }); });
+    if (sel !== 'G') { const [x1, y1] = xy(sel), [x2, y2] = xy('G'); mk('line', { x1, y1, x2, y2, class: 'hv-est' }); }
+    HV.roads.forEach(([a, b, c]) => {
+      const [x1, y1] = xy(a), [x2, y2] = xy(b), mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
+      mk('rect', { x: mx - 14, y: my - 10, width: 28, height: 20, rx: 6, class: 'hv-cost-bg' });
+      mk('text', { x: mx, y: my + 4.5, 'text-anchor': 'middle', class: 'hv-cost' }).textContent = c;
+    });
+    Object.keys(HV.pos).forEach(n => {
+      const [x, y] = xy(n), top = HV.labelAbove.includes(n);
+      const g = document.createElementNS(ns, 'g');
+      g.setAttribute('class', 'hv-town' + (n === sel ? ' on' : '') + (n === 'G' ? ' goal' : ''));
+      g.dataset.n = n;
+      svg.appendChild(g);
+      const c = document.createElementNS(ns, 'circle');
+      c.setAttribute('cx', x); c.setAttribute('cy', y); c.setAttribute('r', 20);
+      const t = document.createElementNS(ns, 'text');
+      t.setAttribute('x', x); t.setAttribute('y', y + 6); t.setAttribute('text-anchor', 'middle'); t.textContent = n;
+      g.append(c, t);
+      mk('text', { x, y: top ? y - 28 : y + 38, 'text-anchor': 'middle', class: 'hv-h' }).textContent = 'h = ' + h(n);
+    });
+    document.getElementById('hv-formula').innerHTML = sel === 'G'
+      ? 'At the goal: h(G) = <b>0</b> and h*(G) = <b>0</b>. Click another town.'
+      : `h(${sel}) = <b>${h(sel)}</b> km straight line &nbsp;·&nbsp; h*(${sel}) = <b class="real">${r.cost}</b> km by road`;
+  }
+
+  svg.addEventListener('click', e => {
+    const g = e.target.closest('.hv-town');
+    if (g) { sel = g.dataset.n; render(); }
+  });
+  render();
+}
+
 /* ---------- main search graph (Greedy / Beam / Hill Climbing / A*) ---------- */
 const GRAPH = {
   S: { h: 7, x: 290, y: 40 },
@@ -630,6 +707,7 @@ function initSA() {
 
 /* ---------- init ---------- */
 document.addEventListener('DOMContentLoaded', () => {
+  initHeuristicViz();
   initPuzzle();
   initSearchPlayground('greedy', 'greedy-graph', 'greedy');
   initSearchPlayground('beam', 'beam-graph', 'beam');
