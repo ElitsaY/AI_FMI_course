@@ -125,7 +125,6 @@
 
     <ul class="concept-list">
       <li>The computation performed by such a function is <b>specific to the search problem</b> being solved.</li>
-      <li>With heuristics, it becomes very easy to implement logic in our agent that enables it to <i>“prefer”</i> expanding states that are estimated to be closer to goal states when deciding which action to perform.</li>
     </ul>
 
     <p class="caption-note">A concrete example — two heuristics for the 8-puzzle — follows in <a href="#choosing">Choosing a heuristic</a>.</p>
@@ -365,15 +364,41 @@
       </li>
     </ul>
 
-    <div class="definition-box">
-      <div class="dbox-label">📐 Admissible heuristic — A* requires it</div>
-      <p>A* search uses an <b>admissible heuristic</b>, i.e., <b>h(n) ≤ h*(n)</b>, where h*(n) is the true cost from n. (Also require h(n) ≥ 0, so h(G) = 0 for any goal G.) A heuristic h(n) is admissible if it <b>never overestimates</b> the true cost of reaching the goal state G from any node n.</p>
-      <p style="margin-top:0.5rem;">E.g., h<sub>SLD</sub> (straight-line distance) never overestimates the actual road distance.</p>
+    <h4 style="margin:1.6rem 0 0.4rem;">Admissible heuristic: A* requires it</h4>
+    <div class="tree-panel" id="pf-admissible">
+      <div>
+        <ul class="concept-list">
+          <li>A heuristic is admissible if <b>h(n) ≤ h*(n)</b> for every node n</li>
+          <li><b>h*(n)</b> is the true cost of the cheapest path from n to a goal</li>
+          <li>So h(n) <b>never overestimates</b> the cost to reach a goal</li>
+          <li>We also require <b>h(n) ≥ 0</b>. For a goal G:</li>
+        </ul>
+        <p class="caption-note">
+          <span style="display:block;">h*(G) = 0</span>
+          <span style="display:block; margin-top:0.3rem;">0 ≤ h(G) ≤ h*(G) = 0</span>
+          <span style="display:block; margin-top:0.6rem;">hence <b>h(G) = 0</b>.</span>
+        </p>
+      </div>
+      <svg viewBox="0 0 300 335" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Node n reaches goal G through A with step costs 4 and 5, so h*(n) = 9. The dashed estimate h(n) = 7 from n straight to G is not more than 9.">
+        <defs><marker id="arr-adm" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--ink-soft)"></path></marker></defs>
+        <line x1="99.4" y1="50.4" x2="208.8" y2="108.7" stroke-width="2.5" marker-end="url(#arr-adm)" style="stroke:var(--ink-soft)"></line>
+        <line x1="220.6" y1="139.9" x2="160.2" y2="268.3" stroke-width="2.5" marker-end="url(#arr-adm)" style="stroke:var(--ink-soft)"></line>
+        <line x1="85.9" y1="61.2" x2="143.5" y2="266.9" stroke-width="2" stroke-dasharray="7 6" marker-end="url(#arr-adm)" style="stroke:var(--ink-soft)"></line>
+        <circle cx="80" cy="40" r="22" stroke-width="2.5" style="fill:var(--surface); stroke:var(--ids)"></circle>
+        <circle cx="230" cy="120" r="22" stroke-width="2.5" style="fill:var(--surface); stroke:var(--ids)"></circle>
+        <circle cx="150" cy="290" r="22" stroke-width="2.5" style="fill:var(--surface); stroke:#12a894"></circle>
+        <circle cx="150" cy="290" r="17" stroke-width="1.5" style="fill:none; stroke:#12a894"></circle>
+        <text x="80" y="46" text-anchor="middle" font-size="17" font-weight="700" font-style="italic" style="fill:var(--ink)">n</text>
+        <text x="230" y="126" text-anchor="middle" font-size="17" font-weight="700" style="fill:var(--ink)">A</text>
+        <text x="150" y="296" text-anchor="middle" font-size="17" font-weight="700" style="fill:var(--ink)">G</text>
+        <text x="160" y="68" font-size="14" font-weight="700" style="fill:var(--ink)">4</text>
+        <text x="200" y="212" font-size="14" font-weight="700" style="fill:var(--ink)">5</text>
+        <text x="106" y="170" text-anchor="end" font-size="14" font-weight="700" style="fill:var(--ids)">h(n) = 7</text>
+        <text x="150" y="331" text-anchor="middle" font-size="14" font-weight="700" style="fill:var(--ink)">h*(n) = 4 + 5 = 9</text>
+      </svg>
     </div>
 
-    <p class="section-lede" style="margin-top:1.6rem;">Step through A* on the lecture graph. Each frontier entry shows <b>g</b>, <b>h</b> and <b>f = g + h</b>, and A* always expands the entry with the lowest f. Unlike greedy (cost 26), A* returns the optimal path S → A → D → F → G with cost <b>23</b>.</p>
-
-    <div class="playground" id="pg-astar">
+    <div class="playground" id="pg-astar" style="margin-top:1.4rem;">
       <div class="pg-controls">
         <div class="play-btns" style="margin-left:0;">
           <button class="icon-btn" id="astar-prev" title="Step back">⏮</button>
@@ -396,8 +421,6 @@
         </div>
       </div>
     </div>
-
-    <p class="caption-note"><b>Check yourself:</b> is the heuristic on this graph admissible? <b>No</b> — h(H) = 7, but the true cost H → I → G is only 1 + 5 = 6. It is not consistent either: on the edge D → F, h(D) = 5 &gt; 1 + h(F) = 4. A* happens to find the optimum here, but with this h it is not <i>guaranteed</i> to.</p>
 
     <div class="algo-stats ids" id="st-astar">
       <div class="algo-stat">
@@ -519,12 +542,6 @@
     </div>
 
     <ul class="concept-list" style="margin-top:1.2rem;">
-      <li><b>Proof strategy for admissibility</b>: the most common way to prove admissibility is to construct the heuristic as the exact solution to a <b>relaxed problem</b>. A relaxed problem is one where some constraints on the actions are removed, making the path cost to the goal necessarily less than or equal to the cost in the original, more constrained problem.</li>
-    </ul>
-    <p class="caption-note">h(n) = Optimal cost in the relaxed problem ≤ Optimal cost in the original problem = h*(n)</p>
-
-    <ul class="concept-list">
-      <li>A heuristic h(n) is <b>consistent</b> if, for every node n and every successor n′ generated by an action with cost(n, n′), the estimated cost to the goal from n is no greater than the cost to get to n′ plus the estimated cost from n′. The mathematical definition is: <b>h(n) ≤ cost(n, n′) + h(n′)</b>.</li>
       <li>Rearranging this gives the key insight that <b>the drop in the heuristic value must be less than or equal to the actual move cost</b>: h(n) − h(n′) ≤ cost(n, n′).</li>
       <li><b>Proof strategy for consistency</b>: to prove consistency, you must check the inequality for every possible single step from any node n to its neighbor n′. This usually involves showing that the move action is constrained such that the heuristic can decrease by at most the step cost.</li>
       <li><b>Key relationship</b>: any consistent heuristic is also admissible (assuming h(G) = 0). Proving consistency is sufficient to prove admissibility.</li>
@@ -1507,7 +1524,7 @@
         <p class="sl-eyebrow">Lab 02 · Artificial Intelligence</p>
         <h1>Informed Search</h1>
       </div>
-      <svg class="sl-cover-art" viewBox="0 0 580 466" role="img" aria-label="Part of the lab's weighted graph with heuristic values (S 7, A 8, B 6, C 5, D 5, F 3, G 0). Greedy search follows the lowest h along S, C, F, G with cost 26; A* finds S, A, D, F, G with cost 23. A corgi sniffs its way toward the goal.">
+      <svg class="sl-cover-art" viewBox="0 0 580 466" role="img" aria-label="Part of the lab's weighted graph with heuristic values (S 7, A 8, B 6, C 5, D 4, F 3, G 0). Greedy search follows the lowest h along S, C, F, G with cost 26; A* finds S, A, D, F, G with cost 23. A corgi sniffs its way toward the goal.">
         <path class="cv-astar" d="M316 50 L145 124 L230 272 L387 321 L525 391"/>
         <line class="cv-edge" x1="316" y1="50" x2="145" y2="124"/>
         <line class="cv-edge" x1="316" y1="50" x2="292" y2="185"/>
@@ -1544,7 +1561,7 @@
         <text class="cv-h" x="460" y="146" text-anchor="start">h=5</text>
         <circle class="cv-node ast" cx="230" cy="272" r="22"/>
         <text class="cv-lbl" x="230" y="278" text-anchor="middle">D</text>
-        <text class="cv-h" x="202" y="290" text-anchor="end">h=5</text>
+        <text class="cv-h" x="202" y="290" text-anchor="end">h=4</text>
         <circle class="cv-node ast" cx="387" cy="321" r="22"/>
         <text class="cv-lbl" x="387" y="327" text-anchor="middle">F</text>
         <text class="cv-h" x="361" y="345" text-anchor="end">h=3</text>
@@ -1679,7 +1696,8 @@
       </div>
       <div class="definition-box" style="margin-top:1.2rem;">
         <div class="dbox-label">📐 Admissible heuristic: A* requires it</div>
-        <p><b>h(n) ≤ h*(n)</b>, the true cost from n: it <b>never overestimates</b> (and h(n) ≥ 0, so h(G) = 0). E.g. straight-line distance never overestimates the road distance.</p>
+        <p><b>h(n) ≤ h*(n)</b> for every n: it <b>never overestimates</b>. h*(n) is the true cost of the cheapest path from n to a goal.</p>
+        <p style="margin-top:0.5rem;">Also <b>h(n) ≥ 0</b>, and since h*(G) = 0 for a goal G, <b>h(G) = 0</b>.</p>
       </div>
     </div>
   </section>
@@ -1703,7 +1721,7 @@
         <div class="sl-card ucs"><h3>f(n) = C*</h3><p style="margin:0;">A* expands <b>some</b></p></div>
         <div class="sl-card bad"><h3>f(n) &gt; C*</h3><p style="margin:0;">A* expands <b>none</b></p></div>
       </div>
-      <p class="sl-take">The graph on the previous slides is not admissible: h(H) = 7, but H → I → G costs 6. A* finds the optimum there, but is not <i>guaranteed</i> to.</p>
+      <p class="sl-take">The heuristic on the previous slides is admissible and consistent, so A* is <i>guaranteed</i> to return the optimal path (cost 23).</p>
     </div>
   </section>
 
