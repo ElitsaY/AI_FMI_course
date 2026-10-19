@@ -89,26 +89,9 @@
   <!-- work-in-progress notice: remove from a lab once it is finished -->
   <div class="wip-note" role="note"><span class="wip-tag">Work in progress</span> These notes are still being written and reviewed: content may change, and some parts may still contain mistakes.</div>
 
-  <!-- ===== RECAP ===== -->
+  <!-- ===== UNINFORMED VS. INFORMED ===== -->
   <section class="block" id="recap">
-    <h2 class="section-title">Recap from Lab 01</h2>
-
-    <h3 class="section-title" style="font-size:1.15rem;">Search strategies evaluation</h3>
-    <p class="section-lede">Strategies are evaluated along the following dimensions:</p>
-    <ul class="concept-list">
-      <li><b>Completeness</b>: does it always find a solution if one exists?</li>
-      <li><b>Optimality</b>: does it always find a least-cost solution?</li>
-      <li><b>Time complexity</b>: number of nodes generated/expanded. We are interested in the worst-case scenario.</li>
-      <li><b>Space Complexity</b>: maximum number of nodes in memory.</li>
-    </ul>
-    <p class="section-lede">Time and space complexity are measured in terms of:</p>
-    <ul class="concept-list">
-      <li><b>b</b> – maximum branching factor of the search tree</li>
-      <li><b>d</b> – depth of the least-cost solution</li>
-      <li><b>m</b> – maximum depth of the state space (may be ∞)</li>
-    </ul>
-
-    <h3 class="section-title" style="font-size:1.15rem; margin-top:1.8rem;">Uninformed vs. Informed Search</h3>
+    <h2 class="section-title">Uninformed vs. Informed Search</h2>
     <ul class="concept-list">
       <li><b>Uninformed Search</b>: uninformed strategies use only the information available in the problem definition (see <a href="lab01-uninformed-search.html">Lab 01</a>).</li>
       <li><b>Informed Search</b>: informed strategies have information on the goal state, which helps in more efficient searching. This information is obtained by a function (<b>heuristic</b>) that estimates how close a state is to the goal state.</li>
@@ -137,11 +120,10 @@
 
     <div class="definition-box">
       <div class="dbox-label">📐 Definition</div>
-      <p>A <b>heuristic h(n)</b> is a function that estimates the cost (or distance) from a given state <b>n</b> to a goal state. It provides problem-specific guidance to search algorithms to prefer more promising states and reduce the search effort.</p>
+      <p>A <b>heuristic h(n)</b> is a function that estimates the cost (or distance) from a given state <b>n</b> to a goal state.</p>
     </div>
 
     <ul class="concept-list">
-      <li>Heuristics are the driving force that allows estimation of distance to goal states — they're functions that take in a <b>state</b> as input and output a corresponding <b>estimate</b>.</li>
       <li>The computation performed by such a function is <b>specific to the search problem</b> being solved.</li>
       <li>With heuristics, it becomes very easy to implement logic in our agent that enables it to <i>“prefer”</i> expanding states that are estimated to be closer to goal states when deciding which action to perform.</li>
     </ul>
@@ -1604,7 +1586,7 @@
         <div>
           <div class="definition-box">
             <div class="dbox-label">📐 Definition</div>
-            <p>A <b>heuristic h(n)</b> estimates the cost (or distance) from state <b>n</b> to a goal state. It gives problem-specific guidance, so the search prefers more promising states.</p>
+            <p>A <b>heuristic h(n)</b> estimates the cost (or distance) from state <b>n</b> to a goal state.</p>
           </div>
           <ul class="concept-list" style="margin-top:1rem;">
             <li>Input: a <b>state</b>. Output: an <b>estimate</b>.</li>
