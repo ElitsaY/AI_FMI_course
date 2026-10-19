@@ -1364,20 +1364,10 @@
   <section class="block" id="research">
     <p class="eyebrow">Same algorithms, real papers</p>
     <h2 class="section-title">Research connections</h2>
-    <p class="section-lede">These algorithms aren't just puzzle-solvers. Same three ingredients every time — <b>search node</b>, <b>action</b>, <b>frontier/heuristic</b> — applied to prompts, proofs, code, and molecules instead of grids.</p>
+    <p class="section-lede">These algorithms aren't just puzzle-solvers. Same three ingredients every time — <b>search node</b>, <b>action</b>, <b>frontier/heuristic</b> — applied to proofs, prompts and learned heuristics instead of grids.</p>
 
     <div class="paper-group">
       <h3><span class="badge dfs" style="font-size:0.7rem;">Greedy / Best-First</span></h3>
-
-      <div class="paper-card">
-        <h4>Classical Planning with LLM-Generated Heuristics</h4>
-        <div class="venue">Challenging the State of the Art with Python Code · NeurIPS 2025 · <a href="https://arxiv.org/abs/2503.18809" target="_blank" rel="noopener">arXiv:2503.18809</a></div>
-        <dl>
-          <dt>Core idea</dt><dd>Instead of hand-crafting a planning heuristic, ask an LLM to write one as Python code; generate several candidates, keep whichever solves training problems fastest.</dd>
-          <dt>Problem</dt><dd>Domain-independent planning heuristics are hard to design by hand; letting the LLM output a full plan directly is unreliable on unseen tasks.</dd>
-          <dt>How the algorithm fits</dt><dd>Unchanged Greedy Best-First Search: states are planning states, actions are the domain's operators, and h(n) is literally the LLM-generated function ranking the frontier — GBFS still always expands the lowest-h(n) node.</dd>
-        </dl>
-      </div>
 
       <div class="paper-card">
         <h4>LeanDojo: Theorem Proving with Retrieval-Augmented Language Models</h4>
@@ -1395,15 +1385,6 @@
       <h3><span class="badge bfs" style="font-size:0.7rem;">Hill Climbing / Local Search</span></h3>
 
       <div class="paper-card">
-        <h4>Gradient Coordinate Descent</h4>
-        <div class="venue">classical optimization method, not a single paper</div>
-        <dl>
-          <dt>Core idea</dt><dd>Optimize one coordinate (variable) at a time, holding the rest fixed, choosing which coordinate to move next using gradient information — cycle until convergence.</dd>
-          <dt>How the algorithm fits</dt><dd>It <i>is</i> hill climbing in disguise: current point = search state, one-coordinate moves = the neighborhood, gradient magnitude = the heuristic for picking the next move.</dd>
-        </dl>
-      </div>
-
-      <div class="paper-card">
         <h4>Plum: Prompt Learning using Metaheuristic</h4>
         <div class="venue">Pan et al. · ACL Findings 2024 · <a href="https://aclanthology.org/2024.findings-acl.129/" target="_blank" rel="noopener">2024.findings-acl.129</a></div>
         <dl>
@@ -1412,104 +1393,10 @@
           <dt>How the algorithm fits</dt><dd>A prompt is the search node; an LLM-based edit is the action; task accuracy is the heuristic/fitness. Hill climbing accepts a neighbor only if it scores higher, stopping when no neighbor improves.</dd>
         </dl>
       </div>
-
-      <div class="paper-card">
-        <h4>PROTEGE: Prompt-based Diverse Question Generation from Web Articles</h4>
-        <div class="venue">Puranik, Majumder, Chaoji (Amazon) · EMNLP Findings 2023 · <a href="https://aclanthology.org/2023.findings-emnlp.362/" target="_blank" rel="noopener">2023.findings-emnlp.362</a></div>
-        <dl>
-          <dt>Core idea</dt><dd>Generate many candidate FAQ questions from an article, then hill-climb over <i>which subset</i> to keep, balancing diversity and faithfulness to the source.</dd>
-          <dt>Problem</dt><dd>Automatically building a diverse, accurate FAQ knowledge base from long web articles.</dd>
-          <dt>How the algorithm fits</dt><dd>The search node is a candidate subset of questions; a move swaps one question in/out; the heuristic is a diversity+fidelity score; hill climbing keeps improving the subset until no swap helps.</dd>
-        </dl>
-      </div>
-
-      <div class="paper-card">
-        <h4>Synthesizing Programmatic RL Policies with LLM Guided Search</h4>
-        <div class="venue">Liu et al. · ICLR 2025 · <a href="https://arxiv.org/abs/2405.16450" target="_blank" rel="noopener">arXiv:2405.16450</a></div>
-        <dl>
-          <dt>Core idea</dt><dd>Use an LLM to write a starting program (an interpretable RL policy), then run "Scheduled Hill Climbing" to keep improving it.</dd>
-          <dt>Problem</dt><dd>Searching program space for an RL policy from scratch takes tens of millions of environment interactions; an LLM can jump-start the search.</dd>
-          <dt>How the algorithm fits</dt><dd>A candidate program is the node; an LLM-guided edit is a neighbor; reward in the environment is the heuristic; a "schedule" controls exploration over time — hill climbing with a cooling-like control, close to simulated annealing.</dd>
-        </dl>
-      </div>
-
-      <div class="paper-card">
-        <h4>Let's Revise Step-by-Step (ReLoc)</h4>
-        <div class="venue">A Unified Local Search Framework for Code Generation with LLMs · NeurIPS 2025 · <a href="https://arxiv.org/abs/2508.07434" target="_blank" rel="noopener">arXiv:2508.07434</a></div>
-        <dl>
-          <dt>Core idea</dt><dd>Instead of a big search tree of partial code, keep one candidate solution and repeatedly revise it, always keeping the best version seen so far.</dd>
-          <dt>Problem</dt><dd>Tree search over code is expensive; pure single-candidate revision struggles because pass/fail feedback is too coarse to tell good edits from bad ones.</dd>
-          <dt>How the algorithm fits</dt><dd>The node is the current best program; the neighborhood is LLM-generated revisions; a learned reward model replaces coarse pass/fail as the heuristic; the update rule is classic hill climbing — greedily keep the best-scoring neighbor.</dd>
-        </dl>
-      </div>
-    </div>
-
-    <div class="paper-group">
-      <h3><span class="badge ucs" style="font-size:0.7rem;">Beam Search</span></h3>
-
-      <div class="paper-card">
-        <h4>Collaborative Beam Search</h4>
-        <div class="venue">Enhancing LLM Reasoning via Collective Consensus · Xu, Ren, Zhang · EMNLP 2025 · <a href="https://aclanthology.org/2025.emnlp-main.574/" target="_blank" rel="noopener">2025.emnlp-main.574</a></div>
-        <dl>
-          <dt>Core idea</dt><dd>Several different LLMs propose reasoning steps together; instead of a separate verifier model, the group's shared perplexity votes on which steps survive.</dd>
-          <dt>Problem</dt><dd>Single-model beam search for reasoning inherits that one model's blind spots and usually needs an expensive extra verifier.</dd>
-          <dt>How the algorithm fits</dt><dd>A partial reasoning trajectory is the node; the next step (from several LLMs) is the action; the beam keeps the top-B trajectories, scored by cross-model consensus instead of one learned verifier.</dd>
-        </dl>
-      </div>
-
-      <div class="paper-card">
-        <h4>SOAR — Search or Accelerate</h4>
-        <div class="venue">Confidence-Switched Position Beam Search for Diffusion Language Models · Cao et al. · ICML 2026 · <a href="https://arxiv.org/abs/2602.10953" target="_blank" rel="noopener">arXiv:2602.10953</a></div>
-        <dl>
-          <dt>Core idea</dt><dd>Diffusion LMs greedily decide which masked position to reveal next; SOAR detects low confidence and temporarily switches to beam search over alternative reveal-orders, then switches back to fast greedy decoding once confident.</dd>
-          <dt>Problem</dt><dd>A single bad greedy commitment early on can lock a diffusion LM into a bad token order on hard reasoning problems — but always searching would be too slow.</dd>
-          <dt>How the algorithm fits</dt><dd>The node is a partially-unmasked sequence with a confidence score; the beam holds K candidates; low confidence triggers single-position beam branching, high confidence collapses back to parallel greedy decoding.</dd>
-        </dl>
-      </div>
-
-      <div class="paper-card">
-        <h4>Panini: Continual Learning in Token Space via Structured Memory</h4>
-        <div class="venue">ICML 2026 · <a href="https://arxiv.org/abs/2602.15156" target="_blank" rel="noopener">arXiv:2602.15156</a></div>
-        <dl>
-          <dt>Core idea</dt><dd>New documents are converted into a growing graph of question-answer pairs; at query time, the system traverses the graph for the most likely multi-hop reasoning chain instead of re-reading raw text.</dd>
-          <dt>Problem</dt><dd>Standard RAG re-reasons over raw chunks repeatedly and can retrieve irrelevant context.</dd>
-          <dt>How the algorithm fits</dt><dd>A partial inference chain through the graph looks exactly like a beam-search state — but the abstract doesn't use the words "beam search" explicitly, so treat this one as a plausible, unconfirmed connection rather than a verified fact.</dd>
-        </dl>
-      </div>
-
-      <div class="paper-card">
-        <h4>LLM Program Optimization via Retrieval Augmented Search (RAS)</h4>
-        <div class="venue">Anupam, Shypula, Bastani · ACL Findings 2026 · <a href="https://arxiv.org/abs/2501.18916" target="_blank" rel="noopener">arXiv:2501.18916</a></div>
-        <dl>
-          <dt>Core idea</dt><dd>Beam-search over candidate optimized rewrites of a slow program; at each step, retrieve similar past "slow → fast" examples and show them to the LLM as in-context guidance before it edits.</dd>
-          <dt>Problem</dt><dd>LLMs asked to speed up code with no guidance often produce mediocre or unsafe edits.</dd>
-          <dt>How the algorithm fits</dt><dd>A candidate program version is the node; a retrieval-guided LLM edit is the action; the beam keeps the top-B candidate versions by correctness/speed at every step.</dd>
-        </dl>
-      </div>
     </div>
 
     <div class="paper-group">
       <h3><span class="badge ids" style="font-size:0.7rem;">A*</span></h3>
-
-      <div class="paper-card">
-        <h4>Path Planning using Neural A* Search</h4>
-        <div class="venue">Yonetani, Taniai, Barekatain, Nishimura, Kanezaki · ICML 2021 · <a href="https://icml.cc/virtual/2021/spotlight/9056" target="_blank" rel="noopener">ICML page</a></div>
-        <dl>
-          <dt>Core idea</dt><dd>A CNN looks at a map and predicts a "guidance map" of which regions likely lie on the shortest path; A* then searches using that as its heuristic, made differentiable so the whole thing trains end-to-end.</dd>
-          <dt>Problem</dt><dd>Hand-designed heuristics (e.g. Euclidean distance) don't exploit learnable structure in real maps, causing excessive node expansion.</dd>
-          <dt>How the algorithm fits — the key point</dt><dd>A* itself is untouched: still f(n)=g(n)+h(n), still expands the lowest-f frontier node. The network does <b>not</b> replace A* — it only learns what A* uses as h(n).</dd>
-        </dl>
-      </div>
-
-      <div class="paper-card">
-        <h4>KeeA*: Epistemic Exploratory A* Search via Knowledge Calibration</h4>
-        <div class="venue">Zhao, Tu, Sun, Xu · NeurIPS 2025 · <a href="https://openreview.net/forum?id=b8j0Gbg4N3" target="_blank" rel="noopener">OpenReview</a></div>
-        <dl>
-          <dt>Core idea</dt><dd>A learned heuristic's error is itself uncertain. Instead of always expanding the lowest-f node (or sampling randomly), KeeA* clusters frontier nodes and uses the heuristic's own uncertainty to decide which clusters to explore.</dd>
-          <dt>Problem</dt><dd>Learned heuristics have systematic biases from limited training data; blind trust — or blind random exploration — both waste search effort.</dd>
-          <dt>How the algorithm fits</dt><dd>Same node/frontier/h(n) setup as A*, but node <i>selection</i> becomes a knowledge-calibrated, clustered sampling step instead of strict "always expand the minimum." Evaluated on retrosynthetic chemistry planning and circuit design.</dd>
-        </dl>
-      </div>
 
       <div class="paper-card">
         <h4>Learning Admissible Heuristics for A*: Theory and Practice</h4>
@@ -1518,16 +1405,6 @@
           <dt>Core idea</dt><dd>Neural heuristics are powerful but usually aren't trained to respect admissibility. This paper's Cross-Entropy Admissibility (CEA) loss explicitly trains a network to stay admissible, with proven sample-complexity bounds for generalizing to new instances.</dd>
           <dt>Problem</dt><dd>Learned heuristics can overestimate true cost, silently breaking A*'s optimality guarantee, with no guarantee they'll work on unseen problems.</dd>
           <dt>How the algorithm fits</dt><dd>Directly next to this lecture: h(n) is a neural net trained to satisfy h(n) ≤ h*(n), which is exactly the condition that keeps A* optimal. Evaluated on Rubik's Cube against pattern-database heuristics.</dd>
-        </dl>
-      </div>
-
-      <div class="paper-card">
-        <h4>FaSTA*: Fast-Slow Toolpath Agent with Subroutine Mining</h4>
-        <div class="venue">for Efficient Multi-turn Image Editing · ICLR 2026 · <a href="https://arxiv.org/abs/2506.20911" target="_blank" rel="noopener">arXiv:2506.20911</a></div>
-        <dl>
-          <dt>Core idea</dt><dd>An LLM plans an image edit as subtasks; a subtask matching a previously learned "subroutine" is reused instantly (fast path); a genuinely new subtask falls back to A* search over tool-call sequences (slow path), and successes get mined into new subroutines.</dd>
-          <dt>Problem</dt><dd>Re-running expensive tool search for every subtask — even repetitive ones — wastes cost; most subtasks aren't actually novel.</dd>
-          <dt>How the algorithm fits</dt><dd>The node is a partial toolpath applied to the image; the action is invoking one editing tool; A* searches this space, but only when no reusable subroutine already solves the subtask (reported: ~91% of tasks skip search entirely).</dd>
         </dl>
       </div>
     </div>
