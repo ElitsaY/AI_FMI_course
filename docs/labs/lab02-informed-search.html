@@ -622,7 +622,6 @@
           <li>The heuristic must be both <b>admissible and consistent</b> to guarantee that A* finds the optimal path efficiently.</li>
           <li>A consistent heuristic guarantees an optimal path even without a closed set, but reprocessing nodes can be inefficient.</li>
           <li>An <b>inconsistent</b> heuristic can cause extra node expansions, and with a closed set it can even return a <b>suboptimal</b> solution.</li>
-          <li>A* with a consistent heuristic is <b>optimally efficient</b>.</li>
         </ul>
       </div>
     </div>
@@ -1826,7 +1825,6 @@
             <li>The closed set stops revisits through loops and other paths.</li>
             <li>Optimal if h is <b>admissible and consistent</b>.</li>
             <li>Inconsistent h: more expansions; with a closed set, possibly a <b>suboptimal</b> path.</li>
-            <li>Consistent h: A* is <b>optimally efficient</b>.</li>
           </ul>
         </div>
       </div>
