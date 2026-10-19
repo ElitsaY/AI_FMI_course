@@ -544,8 +544,14 @@
     <ul class="concept-list" style="margin-top:1.2rem;">
       <li>Rearranging this gives the key insight that <b>the drop in the heuristic value must be less than or equal to the actual move cost</b>: h(n) − h(n′) ≤ cost(n, n′).</li>
       <li><b>Proof strategy for consistency</b>: to prove consistency, you must check the inequality for every possible single step from any node n to its neighbor n′. This usually involves showing that the move action is constrained such that the heuristic can decrease by at most the step cost.</li>
-      <li><b>Key relationship</b>: any consistent heuristic is also admissible (assuming h(G) = 0). Proving consistency is sufficient to prove admissibility.</li>
     </ul>
+
+    <div class="kr-box">
+      <div class="kr-label">❗ Key relationship</div>
+      <p class="kr-rule"><span class="badge ids">Consistent</span><span class="kr-arrow">⟹</span><span class="badge bfs">Admissible</span></p>
+      <p>Any consistent heuristic is also admissible (assuming h(G) = 0). <b>Proving consistency is sufficient to prove admissibility.</b></p>
+      <p class="kr-not">Not the other way round: an admissible heuristic can be inconsistent (example below).</p>
+    </div>
 
     <!-- admissible but inconsistent example -->
     <h3 class="section-title" style="font-size:1.15rem; margin-top:2rem;">Example: admissible, but not consistent</h3>
@@ -613,11 +619,9 @@
       <div>
         <h4 style="margin:0 0 0.6rem;">Graph Search</h4>
         <ul class="concept-list">
-          <li>In graph search, a closed set is essential to avoid revisiting nodes through different paths (e.g., due to loops).</li>
           <li>The heuristic must be both <b>admissible and consistent</b> to guarantee that A* finds the optimal path efficiently.</li>
           <li>A consistent heuristic guarantees an optimal path even without a closed set, but reprocessing nodes can be inefficient.</li>
-          <li>An inconsistent heuristic can lead to excessive node expansions.</li>
-          <li>Using a closed set with an inconsistent heuristic can lead to suboptimal solutions.</li>
+          <li>An <b>inconsistent</b> heuristic can cause extra node expansions, and with a closed set it can even return a <b>suboptimal</b> solution.</li>
           <li>A* with a consistent heuristic is <b>optimally efficient</b>.</li>
         </ul>
       </div>
@@ -687,9 +691,38 @@
 
     <ul class="concept-list">
       <li><i>Both Manhattan and Hamming heuristics are admissible and consistent.</i></li>
-      <li>If <b>h<sub>2</sub>(n) ≥ h<sub>1</sub>(n)</b> for all n (both admissible), then h<sub>2</sub> <b>dominates</b> h<sub>1</sub> and is better for search.</li>
-      <li>Given any admissible heuristics h<sub>a</sub> and h<sub>b</sub>, then <b>h(n) = max(h<sub>a</sub>(n), h<sub>b</sub>(n))</b> is admissible and dominates h<sub>a</sub>, h<sub>b</sub>.</li>
     </ul>
+
+    <h4 style="margin:1.6rem 0 0.4rem;">Dominance: the larger admissible heuristic is better</h4>
+    <div class="tree-panel" id="pf-dominance">
+      <div>
+        <ul class="concept-list">
+          <li>If <b>h<sub>2</sub>(n) ≥ h<sub>1</sub>(n)</b> for all n (both admissible), then h<sub>2</sub> <b>dominates</b> h<sub>1</sub> and is better for search.</li>
+          <li>Given any admissible heuristics h<sub>a</sub> and h<sub>b</sub>, then <b>h(n) = max(h<sub>a</sub>(n), h<sub>b</sub>(n))</b> is admissible and dominates h<sub>a</sub>, h<sub>b</sub>:</li>
+        </ul>
+        <p class="caption-note">
+          <span style="display:block;">h<sub>a</sub>(n) ≤ h*(n) and h<sub>b</sub>(n) ≤ h*(n)</span>
+          <span style="display:block; margin-top:0.3rem;">⇒ max(h<sub>a</sub>(n), h<sub>b</sub>(n)) ≤ h*(n)</span>
+          <span style="display:block; margin-top:0.6rem;">hence <b>max(h<sub>a</sub>, h<sub>b</sub>) is admissible</b>, and it is ≥ both.</span>
+        </p>
+      </div>
+      <svg viewBox="0 0 300 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Cost scale for the 8-puzzle start S: h1(S) = 6, h2(S) = 14 and the true cost h*(S) = 20. Both heuristics stay below h*, and h2 is closer to it.">
+        <defs><marker id="arr-dom" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--ink-soft)"></path></marker></defs>
+        <line x1="100" y1="300" x2="100" y2="34" stroke-width="2.5" marker-end="url(#arr-dom)" style="stroke:var(--ink-soft)"></line>
+        <text x="100" y="22" text-anchor="middle" font-size="14" font-weight="700" style="fill:var(--ink-soft)">cost</text>
+        <line x1="92" y1="300" x2="108" y2="300" stroke-width="2.5" style="stroke:var(--ink-soft)"></line>
+        <text x="84" y="305" text-anchor="end" font-size="14" font-weight="700" style="fill:var(--ink-soft)">0</text>
+        <line x1="54" y1="222" x2="54" y2="142" stroke-width="2" marker-end="url(#arr-dom)" style="stroke:var(--ink-soft)"></line>
+        <text x="44" y="186" text-anchor="end" font-size="13" font-weight="700" style="fill:var(--ink-soft)">better</text>
+        <circle cx="100" cy="228" r="8" stroke-width="2.5" style="fill:var(--surface); stroke:var(--ids)"></circle>
+        <circle cx="100" cy="132" r="8" stroke-width="2.5" style="fill:var(--ids); stroke:var(--ids)"></circle>
+        <circle cx="100" cy="60" r="8" stroke-width="2.5" style="fill:var(--surface); stroke:#12a894"></circle>
+        <text x="120" y="233" font-size="14" font-weight="700" style="fill:var(--ids)">h₁(S) = 6 <tspan style="fill:var(--ink-soft)" font-weight="400">misplaced</tspan></text>
+        <text x="120" y="137" font-size="14" font-weight="700" style="fill:var(--ids)">h₂(S) = 14 <tspan style="fill:var(--ink-soft)" font-weight="400">Manhattan</tspan></text>
+        <text x="120" y="65" font-size="14" font-weight="700" style="fill:var(--ink)">h*(S) = 20 <tspan style="fill:var(--ink-soft)" font-weight="400">true cost</tspan></text>
+        <text x="190" y="326" text-anchor="middle" font-size="13" style="fill:var(--ink-soft)">8-puzzle start S from above</text>
+      </svg>
+    </div>
 
     <h3 class="section-title" style="font-size:1.15rem; margin-top:2rem;">More formally: the Manhattan distance</h3>
     <p class="section-lede">The Manhattan distance heuristic, h<sub>M</sub>(n), is the sum of the horizontal and vertical distances of every misplaced tile from its goal position.</p>

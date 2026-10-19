@@ -2399,3 +2399,13 @@ html.presenting .deck { position: fixed; inset: 0; z-index: 200; display: flex; 
 .sl-dna-slide .sl-dna { bottom: auto; height: 30%; opacity: 0.22; z-index: 0; }
 .sl-dna-slide .slide-in { position: relative; z-index: 1; }
 @media (max-width: 1000px) { .sel-sum { grid-template-columns: minmax(0, 1fr); } .sel-corgi { max-width: 8rem; margin-top: -0.4rem; } }
+
+/* ---- Lab 02: key relationship callout, consistent ⟹ admissible (kr-) ---- */
+.kr-box { margin: 1.4rem 0; padding: 1.1rem 1.3rem; text-align: center; background: color-mix(in srgb, var(--ucs) 12%, var(--surface)); border: 2px solid var(--ucs); border-radius: var(--radius); box-shadow: var(--shadow-sm); }
+.kr-label { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: color-mix(in srgb, var(--ucs) 60%, var(--ink)); }
+.kr-rule { display: flex; justify-content: center; align-items: center; gap: 0.7rem; margin: 0.6rem 0 0.7rem; }
+.kr-rule .badge { font-size: 1rem; padding: 0.35rem 0.9rem; }
+.kr-arrow { font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 1.6rem; color: var(--ink); line-height: 1; }
+.kr-box p { margin: 0; font-size: 0.98rem; color: var(--ink); line-height: 1.5; }
+.kr-box .kr-not { margin-top: 0.4rem; font-size: 0.86rem; color: var(--ink-soft); }
+@media (max-width: 520px) { .kr-box { padding: 1rem 0.9rem; } .kr-rule { gap: 0.4rem; } .kr-rule .badge { font-size: 0.85rem; padding: 0.3rem 0.65rem; } .kr-arrow { font-size: 1.25rem; } }
